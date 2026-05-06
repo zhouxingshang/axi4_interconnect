@@ -8,7 +8,7 @@ module axi_s2m_s_amt
     parameter W_STRB          = (W_DATA/8),
     parameter W_SID           = W_CID + W_ID,
     parameter SLV_AMT         = 4,
-    parameter MST_ID_FIELD_MSB = W_ID+1,
+    parameter MST_ID_FIELD_MSB = W_SID-1,
     parameter MST_ID_FIELD_LSB = W_ID
 )
 (
@@ -79,6 +79,7 @@ generate
 endgenerate
 
 // Extract master index from ID
+// ID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
 wire [MST_ID_W-1:0] s_bid_mst_idx [0:SLV_AMT-1];
 wire [MST_ID_W-1:0] s_rid_mst_idx [0:SLV_AMT-1];
 generate

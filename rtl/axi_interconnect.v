@@ -20,7 +20,7 @@ module axi_interconnect
     parameter BURST_W           = 2,
     parameter RESP_W            = 2,
     parameter W_STRB            = DATA_WIDTH / 8,
-    parameter W_SID             = $clog2(SLV_AMT) + TRANS_MST_ID_W,
+    parameter W_SID             = $clog2(MST_AMT) + TRANS_MST_ID_W,
     
     // Address mapping (default: upper bits select slave)
     parameter [0:(SLV_AMT*ADDR_WIDTH)-1]  SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},

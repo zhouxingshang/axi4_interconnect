@@ -18,7 +18,7 @@ module axi_crossbar
     parameter MST_ID_W              = $clog2(MST_AMT),           // Width to encode master index
     parameter SLV_ID_W              = $clog2(SLV_AMT),           // Width to encode slave index
     parameter W_STRB                = DATA_WIDTH / 8,            // Byte strobe width
-    parameter W_SID                 = SLV_ID_W + TRANS_MST_ID_W, // Slave-side ID width (SLV_ID + MST_ID + ORIG_ID)
+    parameter W_SID                 = MST_ID_W + TRANS_MST_ID_W, // Slave-side ID width (MST_IDX + ORIG_ID)
     
     // ========== Address Mapping Configuration ==========
     // Default: Upper bits of address select slave
@@ -572,8 +572,8 @@ generate
             .W_STRB(W_STRB),
             .W_SID(W_SID),
             .SLV_AMT(SLV_AMT),
-            .MST_ID_FIELD_MSB(SLV_ID_W + TRANS_MST_ID_W - 1),
-            .MST_ID_FIELD_LSB(SLV_ID_W)
+            .MST_ID_FIELD_MSB(MST_ID_W + TRANS_MST_ID_W - 1),
+            .MST_ID_FIELD_LSB(TRANS_MST_ID_W)
         ) u_axi_s2m (
             .AXI_RSTn(AXI_RSTn),
             .AXI_CLK(AXI_CLK),

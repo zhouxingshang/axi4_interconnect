@@ -349,7 +349,7 @@ end
 // AW Ready Back-pressure: stall if FIFO full (prevent overflow)
 //=============================================================================
 wire aw_stall = aw_fifo_full;
-assign {m_awready[MST_AMT-1:0]} = AWGRANT & {S_AWREADY{MST_AMT{1'b1}}} & ~{aw_stall{MST_AMT{1'b1}}};
+assign m_awready = AWGRANT & {MST_AMT{S_AWREADY}} & ~{MST_AMT{aw_stall}};
 
 //=============================================================================
 // AW/AR Bus Packing & Routing (parameterized Mux)
@@ -362,11 +362,11 @@ wire [NUM_AR_WIDTH-1:0] bus_ar [0:MST_AMT-1];
 
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_BUS_AW_AR
-        // S_AWID/S_ARID format: {SLV_ID[upper], mst_idx[MST_ID_W-1:0], original_ID}
-        // This embeds master identity for response routing in S2M module
-        assign bus_aw[m] = {ADDR_BASE[W_SID-1:W_ID], m[MST_ID_W-1:0], m_awid[m], 
+        // S_AWID/S_ARID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
+        // Embeds master index as ID extension for response routing in S2M module
+        assign bus_aw[m] = {m[MST_ID_W-1:0], m_awid[m],
                            m_awaddr[m], m_awlen[m], m_awsize[m], m_awburst[m], m_awvalid[m]};
-        assign bus_ar[m] = {ADDR_BASE[W_SID-1:W_ID], m[MST_ID_W-1:0], m_arid[m], 
+        assign bus_ar[m] = {m[MST_ID_W-1:0], m_arid[m],
                            m_araddr[m], m_arlen[m], m_arsize[m], m_arburst[m], m_arvalid[m]};
     end
 endgenerate
