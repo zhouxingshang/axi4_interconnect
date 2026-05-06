@@ -78,6 +78,9 @@ module axi_crossbar
     output  wire  [MST_AMT-1                    : 0]  m_RLAST_o,
     output  wire  [MST_AMT-1                    : 0]  m_RVALID_o,
     input   wire  [MST_AMT-1                    : 0]  m_RREADY_i,
+
+    // -- Master-side R SID output (full W_SID, for reorder/sid_buffer)
+    output  wire  [W_SID*MST_AMT-1              : 0]  m_RSID_o,
     
     // ========== Slave Side Interface (FLATTENED) ==========
     // -- Write Address Channel (AW)
@@ -168,6 +171,8 @@ wire [TRANS_WR_RESP_W-1:0]   m_rresp     [0:MST_AMT-1];
 wire                         m_rlast     [0:MST_AMT-1];
 wire                         m_rvalid    [0:MST_AMT-1];
 wire                         m_rready    [0:MST_AMT-1];
+
+wire [W_SID-1:0]             m_rsid      [0:MST_AMT-1];   // Full slave-side RID from S2M
 
 // ========== Flattened Internal Arrays (Slave Side) ==========
 wire [W_SID-1:0]             s_awid      [0:SLV_AMT-1];
@@ -262,6 +267,8 @@ generate
         assign m_ARREADY_o[m] = m_arready[m];
         
         // R channel
+        assign m_rid[m]    = m_rsid[m][TRANS_MST_ID_W-1:0];  // strip master-ID prefix
+        assign m_RSID_o[W_SID*(m+1)-1 -: W_SID] = m_rsid[m];
         assign m_RID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_rid[m];
         assign m_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
         assign m_RRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_rresp[m];
@@ -583,7 +590,7 @@ generate
             .M_BVALID(m_bvalid[m]),
             .M_BREADY(m_bready[m]),
             
-            .M_RSID(),  // Not used
+            .M_RSID(m_rsid[m]),
             .M_RDATA(m_rdata[m]),
             .M_RRESP(m_rresp[m]),
             .M_RLAST(m_rlast[m]),

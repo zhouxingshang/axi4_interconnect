@@ -1,177 +1,195 @@
+//=============================================================================
+// Module: sid_buffer
+// Desc  : Parameterized ordered SID buffer for AXI read reorder tracking
+//         - NUM write ports (one per slave), parameterized ID width
+//         - Single clear port (from master-side R channel completion)
+//         - Stores ARIDs in FIFO order; compacted on clear (shift-down)
+//         - Empty slot detection uses all-zeros sentinel
+//=============================================================================
+module sid_buffer #(
+    parameter NUM   = 3,    // Number of write ports (= SLV_AMT)
+    parameter W_ID  = 8,    // ID width (= W_SID)
+    parameter DEPTH = 4     // Buffer depth (max outstanding AR transactions)
+)(
+    input   wire                        clk,
+    input   wire                        rstn,
 
-module sid_buffer(
-    input            clk          ,
-    input            rstn         ,
+    // Write ports (packed, one per slave)
+    input   wire  [W_ID*NUM-1   : 0]    s_axid,
+    input   wire  [NUM-1        : 0]    s_axid_vld,
+    input   wire  [NUM-1        : 0]    s_fifo_rdy,
+    output  wire  [NUM-1        : 0]    s_push_rdy,
 
-//----------------Write buffer-------------------
-    input [7:0]      s0_axid      ,
-    input            s0_axid_vld  ,
-    input            s0_fifo_rdy  ,
-    output           s0_push_rdy  ,
+    // Single clear port (from master-side R channel completion)
+    input   wire                        clr_last,
+    input   wire  [W_ID-1        : 0]   clr_sid,
+    input   wire                        clr_sid_vld,
+    output  wire                        clr_rdy,
 
-    input [7:0]      s1_axid      ,
-    input            s1_axid_vld  ,
-    input            s1_fifo_rdy  ,
-    output           s1_push_rdy  ,
-
-    input [7:0]      s2_axid      ,
-    input            s2_axid_vld  ,
-    input            s2_fifo_rdy  ,
-    output           s2_push_rdy  ,
-
-//--------Clean buffer and ajust position--------
-    input            last_0       ,      
-    input [7:0]      sid_0        ,
-    input            sid_0_vld    ,
-    output           sid_0_clr_rdy,
-
-    input            last_1       ,      
-    input [7:0]      sid_1        ,
-    input            sid_1_vld    ,
-    output           sid_1_clr_rdy,
-
-    input            last_2       ,      
-    input [7:0]      sid_2        ,
-    input            sid_2_vld    ,
-    output           sid_2_clr_rdy,
-
-    output reg [7:0] sid_buffer [0:3]
+    // Buffer output (ordered SIDs, oldest at index 0)
+    output wire  [W_ID-1        : 0]    sid_buffer [0:DEPTH-1]
 );
 
-parameter NUM = 3;
+//=============================================================================
+// Local parameters
+//=============================================================================
+localparam IDX_W = $clog2(NUM);     // Index width for write port selection
+localparam BUF_IDX_W = $clog2(DEPTH);
 
-reg  [2:0] push_select;
-wire [2:0] push_grant;
-wire       full;
+//=============================================================================
+// Write arbitration signals
+//=============================================================================
+wire [NUM-1:0] push_select;
+wire [NUM-1:0] push_grant;
+wire           full;
 
-wire [2:0] clr_select;
-wire [2:0] clr_grant;
-wire [3:0] clr_idx;
-wire       clr_rdy;
+//=============================================================================
+// Clear signals
+//=============================================================================
+wire           clr_active;
+wire [DEPTH-1:0] clr_match;
+wire [BUF_IDX_W-1:0] clr_match_idx;
+wire           clr_match_valid;
 
-//----------------Write buffer-------------------
-always @(*) begin
-    if (!rstn) begin
-        push_select = 'd0;
-    end else begin
-        push_select[0] = s0_axid_vld & s0_fifo_rdy;
-        push_select[1] = s1_axid_vld & s1_fifo_rdy;
-        push_select[2] = s2_axid_vld & s2_fifo_rdy;
-    end
-end
-
-assign push_grant = priority_sel(push_select);
-
-assign clr_rdy = (~|clr_grant) && (~full);
-
-assign s0_push_rdy = ~(push_select[0] ^ push_grant[0]) && clr_rdy;
-assign s1_push_rdy = ~(push_select[1] ^ push_grant[1]) && clr_rdy;
-assign s2_push_rdy = ~(push_select[2] ^ push_grant[2]) && clr_rdy;
-
-always @(posedge clk ) begin
-    if(!rstn) begin
-        sid_buffer[0] <= 1'b0;
-        sid_buffer[1] <= 1'b0;
-        sid_buffer[2] <= 1'b0;
-        sid_buffer[3] <= 1'b0;
-    end 
-    else if(push_grant[0] && s0_push_rdy) begin
-        if (sid_buffer[0] == 1'b0) begin
-            sid_buffer[0] <= s0_axid;
-        end 
-        else if (sid_buffer[1] == 1'b0) begin
-            sid_buffer[1] <= s0_axid;
-        end
-        else if (sid_buffer[2] == 1'b0) begin
-            sid_buffer[2] <= s0_axid;
-        end
-        else if (sid_buffer[3] == 1'b0) begin
-            sid_buffer[3] <= s0_axid;
-        end
-    end
-    else if(push_grant[1] && s1_push_rdy) begin
-        if (sid_buffer[0] == 1'b0) begin
-            sid_buffer[0] <= s1_axid;
-        end 
-        else if (sid_buffer[1] == 1'b0) begin
-            sid_buffer[1] <= s1_axid;
-        end
-        else if (sid_buffer[2] == 1'b0) begin
-            sid_buffer[2] <= s1_axid;
-        end
-        else if (sid_buffer[3] == 1'b0) begin
-            sid_buffer[3] <= s1_axid;
-        end
-    end
-    else if(push_grant[2] && s2_push_rdy) begin
-        if (sid_buffer[0] == 1'b0) begin
-            sid_buffer[0] <= s2_axid;
-        end 
-        else if (sid_buffer[1] == 1'b0) begin
-            sid_buffer[1] <= s2_axid;
-        end
-        else if (sid_buffer[2] == 1'b0) begin
-            sid_buffer[2] <= s2_axid;
-        end
-        else if (sid_buffer[3] == 1'b0) begin
-            sid_buffer[3] <= s2_axid;
-        end
-    end
-end
-
-assign full = (sid_buffer[3] == 1'b0) ? 0 : 1;
-
-//----------------Clean buffer and ajust position-------------------
-assign clr_select[0] = last_0 & sid_0_vld;
-assign clr_select[1] = last_1 & sid_1_vld;
-assign clr_select[2] = last_2 & sid_2_vld;
-
-assign clr_grant = priority_sel(clr_select);
-
-assign sid_0_clr_rdy = ~(clr_select[0] ^ clr_grant[0]);
-assign sid_1_clr_rdy = ~(clr_select[1] ^ clr_grant[1]);
-assign sid_2_clr_rdy = ~(clr_select[2] ^ clr_grant[2]);
-
-genvar i;
+//=============================================================================
+// Write arbitration: priority select among write requestors
+//=============================================================================
 generate
-    for (i = 0; i < 4; i=i+1) begin : idx_loop
-        assign clr_idx[i] = (clr_grant[0] && (sid_0 == sid_buffer[i])) ? 1'b1 :
-                            (clr_grant[1] && (sid_1 == sid_buffer[i])) ? 1'b1 :
-                            (clr_grant[2] && (sid_2 == sid_buffer[i])) ? 1'b1 : 1'b0;
+    genvar pi;
+    for (pi = 0; pi < NUM; pi = pi + 1) begin : GEN_PUSH_SELECT
+        assign push_select[pi] = s_axid_vld[pi] & s_fifo_rdy[pi];
     end
 endgenerate
 
+assign push_grant = priority_sel(push_select);
 
+// Write allowed only when not full and no clear in progress
+assign full = (sid_buffer[DEPTH-1] != {W_ID{1'b0}});
+assign clr_active = clr_sid_vld & clr_last;
+wire write_allowed = ~full & ~clr_active;
+
+// Push ready: this port won arbitration AND write is allowed
+generate
+    for (pi = 0; pi < NUM; pi = pi + 1) begin : GEN_PUSH_RDY
+        assign s_push_rdy[pi] = push_grant[pi] & write_allowed;
+    end
+endgenerate
+
+//=============================================================================
+// Write logic: find first empty slot, write granted ID
+//=============================================================================
+wire [BUF_IDX_W-1:0] write_slot;
+
+// Find first empty slot (all-zeros = empty)
+function [BUF_IDX_W-1:0] find_empty_slot;
+    input [W_ID-1:0] buf [0:DEPTH-1];
+    integer ei;
+    begin
+        find_empty_slot = 0;
+        for (ei = 0; ei < DEPTH; ei = ei + 1) begin
+            if (buf[ei] == {W_ID{1'b0}}) begin
+                find_empty_slot = ei[BUF_IDX_W-1:0];
+                ei = DEPTH;  // break
+            end
+        end
+    end
+endfunction
+
+assign write_slot = find_empty_slot(sid_buffer);
+
+// Extract the winning write port's ID
+wire [W_ID-1:0] wr_axid;
+wire [IDX_W-1:0] push_grant_idx;
+
+function [IDX_W-1:0] onehot_to_bin;
+    input [NUM-1:0] onehot;
+    integer oi;
+    begin
+        onehot_to_bin = 0;
+        for (oi = 0; oi < NUM; oi = oi + 1) begin
+            if (onehot[oi]) onehot_to_bin = oi[IDX_W-1:0];
+        end
+    end
+endfunction
+
+assign push_grant_idx = onehot_to_bin(push_grant);
+assign wr_axid = s_axid[push_grant_idx * W_ID +: W_ID];
+
+//=============================================================================
+// Clear logic: find matching entry for clear SID
+//=============================================================================
+generate
+    genvar ci;
+    for (ci = 0; ci < DEPTH; ci = ci + 1) begin : GEN_CLR_MATCH
+        assign clr_match[ci] = clr_active & (clr_sid == sid_buffer[ci]);
+    end
+endgenerate
+
+// Find first matching index
+function [BUF_IDX_W-1:0] find_match_idx;
+    input [DEPTH-1:0] match_vec;
+    integer mi;
+    begin
+        find_match_idx = 0;
+        for (mi = 0; mi < DEPTH; mi = mi + 1) begin
+            if (match_vec[mi]) begin
+                find_match_idx = mi[BUF_IDX_W-1:0];
+                mi = DEPTH;  // break
+            end
+        end
+    end
+endfunction
+
+assign clr_match_idx = find_match_idx(clr_match);
+assign clr_match_valid = |clr_match;
+assign clr_rdy = clr_match_valid | ~clr_active;  // ready if match found or no clear requested
+
+//=============================================================================
+// Sequential: write and clear (mutually exclusive per cycle)
+//=============================================================================
+integer si, sj;
 always @(posedge clk) begin
-    if (clr_idx[0]) begin
-        sid_buffer[0] <= sid_buffer[1];
-        sid_buffer[1] <= sid_buffer[2];
-        sid_buffer[2] <= sid_buffer[3];
-        sid_buffer[3] <= 1'b0;
-    end 
-    else if (clr_idx[1]) begin
-        sid_buffer[1] <= sid_buffer[2];
-        sid_buffer[2] <= sid_buffer[3];
-        sid_buffer[3] <= 1'b0;
+    if (!rstn) begin
+        for (si = 0; si < DEPTH; si = si + 1) begin
+            sid_buffer[si] <= {W_ID{1'b0}};
+        end
     end
-    else if(clr_idx[2]) begin
-        sid_buffer[2] <= sid_buffer[3];
-        sid_buffer[3] <= 1'b0;
+    else if (clr_match_valid) begin
+        // Clear: shift entries above match down by one
+        for (si = 0; si < DEPTH; si = si + 1) begin
+            if (si < clr_match_idx) begin
+                sid_buffer[si] <= sid_buffer[si];
+            end else if (si < DEPTH - 1) begin
+                sid_buffer[si] <= sid_buffer[si + 1];
+            end else begin
+                sid_buffer[si] <= {W_ID{1'b0}};
+            end
+        end
     end
-    else if (clr_idx[3]) begin
-        sid_buffer[3] <= 1'b0;
+    else if (|push_grant & write_allowed) begin
+        // Write to first empty slot
+        for (si = 0; si < DEPTH; si = si + 1) begin
+            if (si == write_slot) begin
+                sid_buffer[si] <= wr_axid;
+            end
+        end
     end
 end
 
+//=============================================================================
+// Priority selector: fixed priority, bit 0 highest
+//=============================================================================
 function [NUM-1:0] priority_sel;
-    input    [NUM-1:0] request;
+    input [NUM-1:0] request;
+    integer pi;
     begin
-        casex (request)
-            3'bxx1: priority_sel = 3'h1;
-            3'bx10: priority_sel = 3'h2;
-            3'b100: priority_sel = 3'h4;
-            default:priority_sel = 3'h0;
-        endcase
+        priority_sel = {NUM{1'b0}};
+        for (pi = 0; pi < NUM; pi = pi + 1) begin
+            if (request[pi]) begin
+                priority_sel[pi] = 1'b1;
+                pi = NUM;  // break: first requestor wins
+            end
+        end
     end
 endfunction
 

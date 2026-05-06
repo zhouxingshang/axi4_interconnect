@@ -7,6 +7,7 @@ module axi_s2m_s_amt
     parameter W_DATA          = 32,
     parameter W_STRB          = (W_DATA/8),
     parameter W_SID           = W_CID + W_ID,
+    parameter MST_AMT         = 4,
     parameter SLV_AMT         = 4,
     parameter MST_ID_FIELD_MSB = W_SID-1,
     parameter MST_ID_FIELD_LSB = W_ID
@@ -45,7 +46,7 @@ module axi_s2m_s_amt
     input  wire                       arbiter_type
 );
 
-localparam MST_ID_W = $clog2(SLV_AMT);
+localparam MST_ID_W = $clog2(MST_AMT);
 localparam NUM = SLV_AMT;
 
 // Unpack slave arrays
@@ -93,8 +94,8 @@ endgenerate
 wire [SLV_AMT-1:0] BSELECT, RSELECT, RSELECT_in;
 generate
     for(si = 0; si < SLV_AMT; si = si + 1) begin : SELECT
-        assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID[MST_ID_W-1:0]);
-        assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID[MST_ID_W-1:0]);
+        assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID);
+        assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID);
         assign RSELECT_in[si] = RSELECT[si] & r_order_grant[si];
     end
 endgenerate
