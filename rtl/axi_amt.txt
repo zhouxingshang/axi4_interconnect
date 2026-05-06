@@ -1,8 +1,3 @@
-//=============================================================================
-// Module: aw_order_fifo
-// Desc  : FIFO for storing AW handshake order: {master_idx, awlen}
-//         Used to ensure W channel strictly follows AW channel order
-//=============================================================================
 module aw_order_fifo
 #(
     parameter DATA_WIDTH  = 11,   // {MST_ID_W, ALEN_W} width
@@ -48,10 +43,19 @@ always @(posedge clk) begin
     if (!rst_n) begin
         wr_ptr   <= '0;
         fill_cnt <= '0;
-    end else if (wr_en && !wr_full) begin
-        mem[wr_ptr] <= wr_data;
-        wr_ptr      <= wr_ptr + 1'b1;
-        fill_cnt    <= fill_cnt + 1'b1;
+    end else begin
+        if (wr_en && !wr_full) begin
+            mem[wr_ptr] <= wr_data;
+            wr_ptr      <= wr_ptr + 1'b1;
+        end
+        // Update fill_cnt for write
+        if (wr_en && !wr_full) begin
+            fill_cnt <= fill_cnt + 1'b1;
+        end
+        // Update fill_cnt for read
+        if (rd_en && !rd_empty) begin
+            fill_cnt <= fill_cnt - 1'b1;
+        end
     end
 end
 
@@ -61,17 +65,11 @@ always @(posedge clk) begin
         rd_ptr   <= '0;
     end else if (rd_en && !rd_empty) begin
         rd_ptr   <= rd_ptr + 1'b1;
-        fill_cnt <= fill_cnt - 1'b1;
     end
 end
 
 endmodule
 
-//=============================================================================
-// Module: axi_arbiter_m2s_m_amt (Updated)
-// Desc  : AW/AR Arbitration Wrapper with Handshake Hold Logic
-//         - Uses axi_arbiter_param_rr for NUM-requester selection
-//=============================================================================
 module axi_arbiter_m2s_m_amt #(
     parameter W_CID = 4,
     parameter W_ID  = 4,
@@ -179,12 +177,6 @@ module axi_arbiter_m2s_m_amt #(
 
 endmodule
 
-//=============================================================================
-// Module: axi_arbiter_param_rr
-// Desc  : Parameterized Round-Robin / Fixed-Priority Arbiter
-//         - Supports arbitrary NUM requesters
-//         - arbiter_type: 0=Round-Robin, 1=Fixed-Priority (Lowest index=Highest)
-//=============================================================================
 module axi_arbiter_param_rr #(
     parameter NUM = 4
 )(
@@ -197,7 +189,6 @@ module axi_arbiter_param_rr #(
     localparam PTR_W = (NUM > 1) ? $clog2(NUM) : 1;
 
     reg  [PTR_W-1:0] rr_ptr;      // Points to next priority start index
-    reg  [NUM-1:0]   grant_reg;   // Latched grant output
     wire [NUM-1:0]   grant_nxt;
     wire [NUM-1:0]   fixed_grant;
 
@@ -224,180 +215,202 @@ module axi_arbiter_param_rr #(
     assign fixed_grant = pri_enc(req);
 
     // ---------------------------------------------------------
-    // Round Robin Logic
+    // Round Robin Logic (if NUM > 1)
     // ---------------------------------------------------------
-    // Rotate request vector so that rr_ptr becomes logical index 0
-    wire [2*NUM-1:0] req_rot = {req, req} >> rr_ptr;
-    wire [NUM-1:0]   pri_rot = pri_enc(req_rot[NUM-1:0]);
+    generate
+        if (NUM > 1) begin : rr_gen
+            // Rotate request vector so that rr_ptr becomes logical index 0
+            wire [2*NUM-1:0] req_rot = {req, req} >> rr_ptr;
+            wire [NUM-1:0]   pri_rot = pri_enc(req_rot[NUM-1:0]);
 
-    // Convert rotated one-hot back to absolute winner index
-    reg [PTR_W-1:0] winner_idx;
-    always @(*) begin
-        winner_idx = 0;
-        for(int i = 0; i < NUM; i = i + 1) begin
-            if(pri_rot[i]) begin
-                winner_idx = i[PTR_W-1:0];
-                break;
+            // Convert rotated one-hot back to absolute winner index
+            reg [PTR_W-1:0] winner_idx;
+            always @(*) begin
+                winner_idx = 0;
+                for(int i = 0; i < NUM; i = i + 1) begin
+                    if(pri_rot[i]) begin
+                        winner_idx = i[PTR_W-1:0];
+                        break;
+                    end
+                end
+            end
+
+            // Map back to absolute one-hot grant
+            assign grant_nxt = 1'b1 << ((winner_idx + rr_ptr) % NUM);
+
+            // RR Pointer Update
+            always @(posedge clk) begin
+                if(!rst_n) begin
+                    rr_ptr <= {PTR_W{1'b0}};
+                end else if(grant != 0) begin
+                    rr_ptr <= (winner_idx + 1'b1) % NUM;
+                end
+            end
+        end else begin : single_requester
+            // When only one requester, grant is simply the request
+            assign grant_nxt = req;
+            // rr_ptr unused, tie to 0
+            always @(posedge clk) begin
+                if(!rst_n) rr_ptr <= 0;
+                else rr_ptr <= 0;
             end
         end
-    end
+    endgenerate
 
-    // Map back to absolute one-hot grant
-    assign grant_nxt = 1'b1 << ((winner_idx + rr_ptr) % NUM);
-
-    // ---------------------------------------------------------
-    // Output MUX & RR Pointer Update
-    // ---------------------------------------------------------
+    // Output MUX
     assign grant = (arbiter_type) ? fixed_grant : grant_nxt;
 
-    always @(posedge clk) begin
-        if(!rst_n) begin
-            rr_ptr <= {PTR_W{1'b0}};
-        end else if(grant != 0) begin
-            // Advance pointer to next requester after current winner
-            rr_ptr <= (winner_idx + 1'b1) % NUM;
-        end
+endmodule
+
+//=============================================================================
+// Module: axi_arbiter_s2m_s_amt
+// Desc  : Parameterized arbiter for Slave-to-Master B and R channels
+//         - Supports arbitrary SLV_AMT requesters (parameterized)
+//         - Handshake hold logic ensures grant persists until handshake completes
+//         - Uses axi_arbiter_param_rr for arbitration
+//=============================================================================
+module axi_arbiter_s2m_s_amt #(
+    parameter SLV_AMT = 4,          // Number of slaves (requesters)
+    parameter USE_RLAST = 1         // 1: wait for RLAST at end of read burst
+)(
+    input  wire                  AXI_RSTn,
+    input  wire                  AXI_CLK,
+    
+    // ---------- B Channel (Write Response) ----------
+    input  wire  [SLV_AMT-1:0]   BSELECT,   // Decoded slave select (per slave)
+    input  wire  [SLV_AMT-1:0]   BVALID,    // B valid from each slave
+    input  wire  [SLV_AMT-1:0]   BREADY,    // B ready from master (common)
+    output wire  [SLV_AMT-1:0]   BGRANT,    // Grant to slaves (one-hot)
+    
+    // ---------- R Channel (Read Data) ----------
+    input  wire  [SLV_AMT-1:0]   RSELECT,   // Decoded slave select (per slave)
+    input  wire  [SLV_AMT-1:0]   RVALID,    // R valid from each slave
+    input  wire  [SLV_AMT-1:0]   RREADY,    // R ready from master (common)
+    input  wire  [SLV_AMT-1:0]   RLAST,     // RLAST for each slave (optional)
+    output wire  [SLV_AMT-1:0]   RGRANT,    // Grant to slaves (one-hot)
+    
+    // ---------- Common Control ----------
+    input  wire                  arbiter_type   // 0: RR, 1: Fixed-Priority
+);
+
+//=============================================================================
+// B Channel Arbiter with Handshake Hold
+//=============================================================================
+localparam STB_RUN = 1'b0, STB_WAIT = 1'b1;
+reg  [SLV_AMT-1:0] bgrant_reg;
+reg                 stateB;
+wire [SLV_AMT-1:0] b_req;
+wire [SLV_AMT-1:0] b_sel;
+
+assign b_req = BSELECT & BVALID;
+
+// Instantiate parameterized arbiter for B
+axi_arbiter_param_rr #(
+    .NUM(SLV_AMT)
+) u_arb_b (
+    .clk          (AXI_CLK),
+    .rst_n        (AXI_RSTn),
+    .arbiter_type (arbiter_type),
+    .req          (b_req),
+    .grant        (b_sel)
+);
+
+// State machine for B channel
+always @(posedge AXI_CLK) begin
+    if (!AXI_RSTn) begin
+        bgrant_reg <= {SLV_AMT{1'b0}};
+        stateB     <= STB_RUN;
+    end else begin
+        case (stateB)
+            STB_RUN: begin
+                if (|BGRANT) begin
+                    // Current grant exists; check if handshake not yet done
+                    if (~|(BGRANT & BREADY)) begin
+                        bgrant_reg <= BGRANT;
+                        stateB     <= STB_WAIT;
+                    end
+                end
+            end
+            STB_WAIT: begin
+                // Wait for handshake completion (BVALID & BREADY on granted slave)
+                if (|(BGRANT & BVALID & BREADY)) begin
+                    stateB <= STB_RUN;
+                end
+            end
+        endcase
     end
-endmodule
-
-module axi_arbiter_s2m_s3
-#(parameter NUM=3)
-(
-  input  wire           AXI_RSTn
-, input  wire           AXI_CLK
-
-, input  wire  [NUM:0]  BSELECT
-, input  wire  [NUM:0]  BVALID
-, input  wire  [NUM:0]  BREADY
-, output wire  [NUM:0]  BGRANT
-
-, input  wire  [NUM:0]  RSELECT
-, input  wire  [NUM:0]  RVALID
-, input  wire  [NUM:0]  RREADY
-, input  wire  [NUM:0]  RLAST
-, output wire  [NUM:0]  RGRANT
-, input wire            arbiter_type
-);
-
-//-----------------------------------------------------------
-// read-data arbiter
-localparam  STR_RUN = 'h0, STR_WAIT= 'h1;
-reg [NUM:0] rgrant_reg;
-reg         stateR = STR_RUN;
-
-always @ (posedge AXI_CLK) begin
-      if (!AXI_RSTn) begin
-          rgrant_reg  <= 'h0;
-          stateR      <= STR_RUN;
-      end else begin
-          case (stateR)
-          STR_RUN: begin
-               if (|RGRANT) begin
-                  if (~|(RGRANT & RREADY/* & RLAST*/)) begin
-                      rgrant_reg <= RGRANT;
-                      stateR     <= STR_WAIT;
-                  end
-               end
-               end // STR_RUN
-          STR_WAIT: begin
-               if (|(RGRANT & RVALID & RREADY/* & RLAST*/)) begin
-                //    rgrant_reg <= 'h0;
-                   stateR     <= STR_RUN;
-               end
-               end // STR_WAIT
-          endcase
-      end
 end
 
-wire [3:0] RREQ;
-wire [3:0] r_sel;
-assign RREQ = RSELECT & RVALID;
+assign BGRANT = (stateB == STB_RUN) ? b_sel : bgrant_reg;
 
-// round_robin_s2m u_arbiter_r(
-// .clk    (AXI_CLK ),
-// .rst_n  (AXI_RSTn),
-// .req    (RREQ    ),
-// .sel    (r_sel   ) 
-// );
-rr_fixed_arbiter u_arbiter_r(
-.clk          (AXI_CLK      ),
-.rst_n        (AXI_RSTn     ),
-.arbiter_type (arbiter_type ),
-.req          (RREQ         ),
-.sel          (r_sel       ) 
+//=============================================================================
+// R Channel Arbiter with Handshake Hold (optionally wait for RLAST)
+//=============================================================================
+localparam STR_RUN = 1'b0, STR_WAIT = 1'b1;
+reg  [SLV_AMT-1:0] rgrant_reg;
+reg                 stateR;
+wire [SLV_AMT-1:0] r_req;
+wire [SLV_AMT-1:0] r_sel;
+
+assign r_req = RSELECT & RVALID;
+
+// Instantiate parameterized arbiter for R
+axi_arbiter_param_rr #(
+    .NUM(SLV_AMT)
+) u_arb_r (
+    .clk          (AXI_CLK),
+    .rst_n        (AXI_RSTn),
+    .arbiter_type (arbiter_type),
+    .req          (r_req),
+    .grant        (r_sel)
 );
 
-assign RGRANT = (stateR==STR_RUN) ? r_sel : rgrant_reg;
+// Handshake completion condition for R:
+//   - If USE_RLAST is 1, need RLAST=1 on the granted slave to consider transaction done.
+//   - If USE_RLAST is 0, just RVALID & RREADY is enough.
+wire r_handshake_done;
+generate
+    if (USE_RLAST) begin
+        assign r_handshake_done = |(RGRANT & RVALID & RREADY & RLAST);
+    end else begin
+        assign r_handshake_done = |(RGRANT & RVALID & RREADY);
+    end
+endgenerate
 
-//-----------------------------------------------------------
-// write-response arbiter
-localparam  STB_RUN = 'h0, STB_WAIT = 'h1;
-reg [NUM:0] bgrant_reg;
-reg         stateB = STB_RUN;
-
-always @ (posedge AXI_CLK) begin
-      if (!AXI_RSTn) begin
-          bgrant_reg  <= 'h0;
-          stateB      <= STB_RUN;
-      end else begin
-          case (stateB)
-          STB_RUN: begin
-               if (|BGRANT) begin
-                  if (~|(BGRANT&BREADY)) begin
-                      bgrant_reg <= BGRANT;
-                      stateB     <= STB_WAIT;
-                  end
-               end
-               end // STB_RUN
-          STB_WAIT: begin
-               if (|(BGRANT&BVALID&BREADY)) begin
-                //    bgrant_reg <= 'h0;
-                   stateB     <= STB_RUN;
-               end
-               end // STB_WAIT
-          endcase
-      end
+always @(posedge AXI_CLK) begin
+    if (!AXI_RSTn) begin
+        rgrant_reg <= {SLV_AMT{1'b0}};
+        stateR     <= STR_RUN;
+    end else begin
+        case (stateR)
+            STR_RUN: begin
+                if (|RGRANT) begin
+                    // Hold grant if handshake not yet complete
+                    if (~|(RGRANT & RREADY)) begin
+                        rgrant_reg <= RGRANT;
+                        stateR     <= STR_WAIT;
+                    end
+                end
+            end
+            STR_WAIT: begin
+                if (r_handshake_done) begin
+                    stateR <= STR_RUN;
+                end
+            end
+        endcase
+    end
 end
 
-wire [3:0] BREQ;
-wire [3:0] b_sel;
-assign BREQ = BSELECT & BVALID;
-
-// round_robin_s2m u_arbiter_b(
-// .clk    (AXI_CLK ),
-// .rst_n  (AXI_RSTn),
-// .req    (BREQ    ),
-// .sel    (b_sel   ) 
-// );
-rr_fixed_arbiter u_arbiter_b(
-.clk          (AXI_CLK      ),
-.rst_n        (AXI_RSTn     ),
-.arbiter_type (arbiter_type ),
-.req          (BREQ         ),
-.sel          (b_sel       ) 
-);
-
-assign BGRANT = (stateB==STB_RUN) ? b_sel : bgrant_reg;
+assign RGRANT = (stateR == STR_RUN) ? r_sel : rgrant_reg;
 
 endmodule
 
-//=============================================================================
-// Module: axi_crossbar
-// Desc  : Parameterized AXI Crossbar Interconnect
-//         - Supports arbitrary MST_AMT masters and SLV_AMT slaves
-//         - Flattened interface: [WIDTH*AMT-1:0] for scalable port count
-//         - W channel strictly follows AW channel order (FIFO+counter)
-//         - Retains Read out-of-order/interleaving via reorder logic
-//         - Supports INCR/WRAP burst with 4KB boundary splitting
-//         - Uses parameterized round-robin/fixed-priority arbiter
-//=============================================================================
 module axi_crossbar
 #(
     // ========== Interconnect Configuration ==========
     parameter MST_AMT               = 4,              // Number of masters
     parameter SLV_AMT               = 4,              // Number of slaves
     parameter OUTSTANDING_AMT       = 8,              // Max outstanding transactions per master
-    parameter [0:(MST_AMT*32)-1]    MST_WEIGHT        = {32'd1, 32'd1, 32'd1, 32'd1}, // Arbiter weights
     
     // ========== Transaction Configuration ==========
     parameter TRANS_MST_ID_W        = 4,              // Master transaction ID width
@@ -621,7 +634,7 @@ wire [SLV_AMT-1:0]           r_order_grant_m [0:MST_AMT-1];
 //=============================================================================
 // Port Flattening: Master Side (Unpack)
 //=============================================================================
-genvar m;
+genvar m, s;
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
         // AW channel
@@ -668,7 +681,6 @@ endgenerate
 //=============================================================================
 // Port Flattening: Slave Side (Pack)
 //=============================================================================
-genvar s;
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_SLAVE
         // AW channel
@@ -715,53 +727,39 @@ endgenerate
 //=============================================================================
 // Address Decode & Default Slave Logic
 //=============================================================================
-// AWSELECT_IN/ARSELECT_IN: OR-reduce of non-default slave selects (for default slave fallback)
-genvar s_decode;
 generate
-    for(s_decode = 0; s_decode < SLV_AMT; s_decode = s_decode + 1) begin : ADDR_DECODE
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : ADDR_DECODE
         // Extract slave address base/length for this slave
-        wire [ADDR_WIDTH-1:0] slv_base = SLV_ADDR_BASE[ADDR_WIDTH*(s_decode+1)-1 -: ADDR_WIDTH];
-        wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s_decode+1)-1 -: 8];
+        wire [ADDR_WIDTH-1:0] slv_base = SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH];
+        wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
         
         // Address match: compare upper bits [ADDR_WIDTH-1:slv_len]
         wire [MST_AMT-1:0] aw_match, ar_match;
-        genvar m_decode;
-        generate
-            for(m_decode = 0; m_decode < MST_AMT; m_decode = m_decode + 1) begin : MATCH_LOGIC
-                assign aw_match[m_decode] = (m_awaddr[m_decode][ADDR_WIDTH-1:slv_len] == 
-                                            slv_base[ADDR_WIDTH-1:slv_len]) & slv_en_i[s_decode];
-                assign ar_match[m_decode] = (m_araddr[m_decode][ADDR_WIDTH-1:slv_len] == 
-                                            slv_base[ADDR_WIDTH-1:slv_len]) & slv_en_i[s_decode];
-            end
-        endgenerate
+        for(m = 0; m < MST_AMT; m = m + 1) begin : MATCH_LOGIC
+            assign aw_match[m] = (m_awaddr[m][ADDR_WIDTH-1:slv_len] == 
+                                   slv_base[ADDR_WIDTH-1:slv_len]) & slv_en_i[s];
+            assign ar_match[m] = (m_araddr[m][ADDR_WIDTH-1:slv_len] == 
+                                   slv_base[ADDR_WIDTH-1:slv_len]) & slv_en_i[s];
+        end
         
         // AWSELECT_OUT/ARSELECT_OUT: match result for this slave
-        assign awselect_out[s_decode] = aw_match;
-        assign arselect_out[s_decode] = ar_match;
+        assign awselect_out[s] = aw_match;
+        assign arselect_out[s] = ar_match;
         
-        // AWSELECT_IN/ARSELECT_IN: OR-reduce for default slave (exclude self)
-        if(DEFAULT_SLV_EN && (s_decode == DEFAULT_SLV_IDX)) begin : DEFAULT_SLAVE_INPUT
+        // For default slave, generate AWSELECT_IN as NOT selected by any other slave
+        if(DEFAULT_SLV_EN && s == DEFAULT_SLV_IDX) begin : DEFAULT_SLAVE_INPUT
             wire [MST_AMT-1:0] aw_other, ar_other;
-            genvar m_other;
-            generate
-                for(m_other = 0; m_other < MST_AMT; m_other = m_other + 1) begin : OTHER_SLV
-                    wire [SLV_AMT-1:0] aw_any, ar_any;
-                    genvar s_any;
-                    generate
-                        for(s_any = 0; s_any < SLV_AMT; s_any = s_any + 1) begin : ANY_SLV
-                            if(s_any != DEFAULT_SLV_IDX) begin
-                                assign aw_any[s_any] = awselect_out[s_any][m_other];
-                                assign ar_any[s_any] = arselect_out[s_any][m_other];
-                            end else begin
-                                assign aw_any[s_any] = 1'b0;
-                                assign ar_any[s_any] = 1'b0;
-                            end
-                        end
-                    endgenerate
-                    assign aw_other[m_other] = |aw_any;
-                    assign ar_other[m_other] = |ar_any;
+            for(m = 0; m < MST_AMT; m = m + 1) begin : OTHER_SLV
+                wire aw_any, ar_any;
+                for(s_ = 0; s_ < SLV_AMT; s_ = s_ + 1) begin : ANY_SLV
+                    if(s_ != DEFAULT_SLV_IDX) begin
+                        assign aw_any = |{aw_any, awselect_out[s_][m]};
+                        assign ar_any = |{ar_any, arselect_out[s_][m]};
+                    end
                 end
-            endgenerate
+                assign aw_other[m] = aw_any;
+                assign ar_other[m] = ar_any;
+            end
             assign awselect_in[DEFAULT_SLV_IDX] = ~aw_other;
             assign arselect_in[DEFAULT_SLV_IDX] = ~ar_other;
         end
@@ -773,21 +771,16 @@ endgenerate
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : READY_AGG_M
-        wire [SLV_AMT:0] aw_rdy_vec, w_rdy_vec, ar_rdy_vec;  // +1 for default slave
-        genvar s_agg;
-        generate
-            for(s_agg = 0; s_agg < SLV_AMT; s_agg = s_agg + 1) begin : AGG_SLV
-                assign aw_rdy_vec[s_agg] = (s_agg == DEFAULT_SLV_IDX) ? 
-                                          m_awready_agg[m] : m_awready_agg[m];
-                assign w_rdy_vec[s_agg]  = (s_agg == DEFAULT_SLV_IDX) ? 
-                                          m_wready_agg[m]  : m_wready_agg[m];
-                assign ar_rdy_vec[s_agg] = (s_agg == DEFAULT_SLV_IDX) ? 
-                                          m_arready_agg[m] : m_arready_agg[m];
-            end
-        endgenerate
-        assign m_awready[m] = |aw_rdy_vec[SLV_AMT-1:0];
-        assign m_wready[m]  = |w_rdy_vec[SLV_AMT-1:0];
-        assign m_arready[m] = |ar_rdy_vec[SLV_AMT-1:0];
+        wire [SLV_AMT-1:0] aw_rdy_vec, w_rdy_vec, ar_rdy_vec;
+        for(s = 0; s < SLV_AMT; s = s + 1) begin : AGG_SLV
+            // For simplicity, we use m_awready_agg as placeholder; actual ready from each M2S module
+            assign aw_rdy_vec[s] = m_awready_agg[m]; // Will be connected in M2S instance
+            assign w_rdy_vec[s]  = m_wready_agg[m];
+            assign ar_rdy_vec[s] = m_arready_agg[m];
+        end
+        assign m_awready[m] = |aw_rdy_vec;
+        assign m_wready[m]  = |w_rdy_vec;
+        assign m_arready[m] = |ar_rdy_vec;
     end
 endgenerate
 
@@ -797,13 +790,10 @@ endgenerate
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : READY_AGG_S
         wire [MST_AMT-1:0] b_rdy_vec, r_rdy_vec;
-        genvar m_agg;
-        generate
-            for(m_agg = 0; m_agg < MST_AMT; m_agg = m_agg + 1) begin : AGG_MST
-                assign b_rdy_vec[m_agg] = s_bready_agg[s];  // Will be driven by S2M module
-                assign r_rdy_vec[m_agg] = s_rready_agg[s];
-            end
-        endgenerate
+        for(m = 0; m < MST_AMT; m = m + 1) begin : AGG_MST
+            assign b_rdy_vec[m] = s_bready_agg[s];  // Will be driven by S2M module
+            assign r_rdy_vec[m] = s_rready_agg[s];
+        end
         assign s_bready[s] = |b_rdy_vec;
         assign s_rready[s] = |r_rdy_vec;
     end
@@ -827,6 +817,54 @@ generate
         wire [ADDR_WIDTH-1:0] slv_base = SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH];
         wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
         
+        // Build packed master arrays for connection
+        wire [TRANS_MST_ID_W*MST_AMT-1:0] m_awid_packed;
+        wire [ADDR_WIDTH*MST_AMT-1:0]     m_awaddr_packed;
+        wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_awlen_packed;
+        wire [TRANS_DATA_SIZE_W*MST_AMT-1:0] m_awsize_packed;
+        wire [TRANS_BURST_W*MST_AMT-1:0] m_awburst_packed;
+        wire [MST_AMT-1:0] m_awvalid_packed;
+        wire [MST_AMT-1:0] m_awready_packed;
+        
+        wire [DATA_WIDTH*MST_AMT-1:0] m_wdata_packed;
+        wire [W_STRB*MST_AMT-1:0]     m_wstrb_packed;
+        wire [MST_AMT-1:0] m_wlast_packed;
+        wire [MST_AMT-1:0] m_wvalid_packed;
+        wire [MST_AMT-1:0] m_wready_packed;
+        
+        wire [TRANS_MST_ID_W*MST_AMT-1:0] m_arid_packed;
+        wire [ADDR_WIDTH*MST_AMT-1:0]     m_araddr_packed;
+        wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_arlen_packed;
+        wire [TRANS_DATA_SIZE_W*MST_AMT-1:0] m_arsize_packed;
+        wire [TRANS_BURST_W*MST_AMT-1:0] m_arburst_packed;
+        wire [MST_AMT-1:0] m_arvalid_packed;
+        wire [MST_AMT-1:0] m_arready_packed;
+        
+        // Pack arrays
+        for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_M2S
+            assign m_awid_packed[TRANS_MST_ID_W*m +: TRANS_MST_ID_W] = m_awid[m];
+            assign m_awaddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_awaddr[m];
+            assign m_awlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_awlen[m];
+            assign m_awsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_awsize[m];
+            assign m_awburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_awburst[m];
+            assign m_awvalid_packed[m] = m_awvalid[m];
+            assign m_wdata_packed[DATA_WIDTH*m +: DATA_WIDTH] = m_wdata[m];
+            assign m_wstrb_packed[W_STRB*m +: W_STRB] = m_wstrb[m];
+            assign m_wlast_packed[m] = m_wlast[m];
+            assign m_wvalid_packed[m] = m_wvalid[m];
+            assign m_arid_packed[TRANS_MST_ID_W*m +: TRANS_MST_ID_W] = m_arid[m];
+            assign m_araddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_araddr[m];
+            assign m_arlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_arlen[m];
+            assign m_arsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_arsize[m];
+            assign m_arburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_arburst[m];
+            assign m_arvalid_packed[m] = m_arvalid[m];
+            
+            // Ready outputs from M2S are per-master; connect to aggregated ready
+            assign m_awready[m] = m_awready_packed[m];
+            assign m_wready[m]  = m_wready_packed[m];
+            assign m_arready[m] = m_arready_packed[m];
+        end
+        
         axi_m2s_m_amt #(
             .SLAVE_ID(s),
             .ADDR_BASE(slv_base),
@@ -847,30 +885,28 @@ generate
             .AXI_RSTn(AXI_RSTn),
             .AXI_CLK(AXI_CLK),
             
-            // Master ports (flattened arrays)
-            .M_AWID({m_awid[MST_AMT-1:0]}),
-            .M_AWADDR({m_awaddr[MST_AMT-1:0]}),
-            .M_AWLEN({m_awlen[MST_AMT-1:0]}),
-            .M_AWSIZE({m_awsize[MST_AMT-1:0]}),
-            .M_AWBURST({m_awburst[MST_AMT-1:0]}),
-            .M_AWVALID({m_awvalid[MST_AMT-1:0]}),
-            .M_AWREADY(m_awready_agg),  // Aggregated ready to master
+            .M_AWID(m_awid_packed),
+            .M_AWADDR(m_awaddr_packed),
+            .M_AWLEN(m_awlen_packed),
+            .M_AWSIZE(m_awsize_packed),
+            .M_AWBURST(m_awburst_packed),
+            .M_AWVALID(m_awvalid_packed),
+            .M_AWREADY(m_awready_packed),
             
-            .M_WDATA({m_wdata[MST_AMT-1:0]}),
-            .M_WSTRB({m_wstrb[MST_AMT-1:0]}),
-            .M_WLAST({m_wlast[MST_AMT-1:0]}),
-            .M_WVALID({m_wvalid[MST_AMT-1:0]}),
-            .M_WREADY(m_wready_agg),
+            .M_WDATA(m_wdata_packed),
+            .M_WSTRB(m_wstrb_packed),
+            .M_WLAST(m_wlast_packed),
+            .M_WVALID(m_wvalid_packed),
+            .M_WREADY(m_wready_packed),
             
-            .M_ARID({m_arid[MST_AMT-1:0]}),
-            .M_ARADDR({m_araddr[MST_AMT-1:0]}),
-            .M_ARLEN({m_arlen[MST_AMT-1:0]}),
-            .M_ARSIZE({m_arsize[MST_AMT-1:0]}),
-            .M_ARBURST({m_arburst[MST_AMT-1:0]}),
-            .M_ARVALID({m_arvalid[MST_AMT-1:0]}),
-            .M_ARREADY(m_arready_agg),
+            .M_ARID(m_arid_packed),
+            .M_ARADDR(m_araddr_packed),
+            .M_ARLEN(m_arlen_packed),
+            .M_ARSIZE(m_arsize_packed),
+            .M_ARBURST(m_arburst_packed),
+            .M_ARVALID(m_arvalid_packed),
+            .M_ARREADY(m_arready_packed),
             
-            // Slave ports (single)
             .S_AWID(s_awid[s]),
             .S_AWADDR(s_awaddr[s]),
             .S_AWLEN(s_awlen[s]),
@@ -893,7 +929,6 @@ generate
             .S_ARVALID(s_arvalid[s]),
             .S_ARREADY(s_arready[s]),
             
-            // Control
             .AWSELECT_OUT(awselect_out[s]),
             .ARSELECT_OUT(arselect_out[s]),
             .AWSELECT_IN((s == DEFAULT_SLV_IDX) ? awselect_in[s] : '0),
@@ -908,6 +943,33 @@ endgenerate
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_S2M
+        // Build packed slave arrays
+        wire [W_SID*SLV_AMT-1:0] s_bid_packed;
+        wire [TRANS_WR_RESP_W*SLV_AMT-1:0] s_bresp_packed;
+        wire [SLV_AMT-1:0] s_bvalid_packed;
+        wire [SLV_AMT-1:0] s_bready_packed;
+        
+        wire [W_SID*SLV_AMT-1:0] s_rid_packed;
+        wire [DATA_WIDTH*SLV_AMT-1:0] s_rdata_packed;
+        wire [TRANS_WR_RESP_W*SLV_AMT-1:0] s_rresp_packed;
+        wire [SLV_AMT-1:0] s_rlast_packed;
+        wire [SLV_AMT-1:0] s_rvalid_packed;
+        wire [SLV_AMT-1:0] s_rready_packed;
+        
+        for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_S2M
+            assign s_bid_packed[W_SID*s +: W_SID] = s_bid[s];
+            assign s_bresp_packed[TRANS_WR_RESP_W*s +: TRANS_WR_RESP_W] = s_bresp[s];
+            assign s_bvalid_packed[s] = s_bvalid[s];
+            assign s_rid_packed[W_SID*s +: W_SID] = s_rid[s];
+            assign s_rdata_packed[DATA_WIDTH*s +: DATA_WIDTH] = s_rdata[s];
+            assign s_rresp_packed[TRANS_WR_RESP_W*s +: TRANS_WR_RESP_W] = s_rresp[s];
+            assign s_rlast_packed[s] = s_rlast[s];
+            assign s_rvalid_packed[s] = s_rvalid[s];
+            
+            assign s_bready[s] = s_bready_packed[s];
+            assign s_rready[s] = s_rready_packed[s];
+        end
+        
         axi_s2m_s_amt #(
             .MASTER_ID(m),
             .W_CID(SLV_ID_W),
@@ -917,52 +979,233 @@ generate
             .W_STRB(W_STRB),
             .W_SID(W_SID),
             .SLV_AMT(SLV_AMT),
-            .MST_ID_FIELD_MSB(SLV_ID_W + TRANS_MST_ID_W - 1),  // MST_IDX bit position
+            .MST_ID_FIELD_MSB(SLV_ID_W + TRANS_MST_ID_W - 1),
             .MST_ID_FIELD_LSB(SLV_ID_W)
         ) u_axi_s2m (
             .AXI_RSTn(AXI_RSTn),
             .AXI_CLK(AXI_CLK),
             
-            // Master ports (single)
             .M_BID(m_bid[m]),
             .M_BRESP(m_bresp[m]),
             .M_BVALID(m_bvalid[m]),
             .M_BREADY(m_bready[m]),
             
-            .M_RSID({m_rid[m]}),  // Slave-side ID returned (for debug)
+            .M_RSID(),  // Not used
             .M_RDATA(m_rdata[m]),
             .M_RRESP(m_rresp[m]),
             .M_RLAST(m_rlast[m]),
             .M_RVALID(m_rvalid[m]),
             .M_RREADY(m_rready[m]),
             
-            // Slave ports (flattened arrays)
-            .S_BID({s_bid[SLV_AMT-1:0]}),
-            .S_BRESP({s_bresp[SLV_AMT-1:0]}),
-            .S_BVALID({s_bvalid[SLV_AMT-1:0]}),
-            .S_BREADY(s_bready_agg[m]),  // Per-master ready contribution
+            .S_BID(s_bid_packed),
+            .S_BRESP(s_bresp_packed),
+            .S_BVALID(s_bvalid_packed),
+            .S_BREADY(s_bready_packed),
             
-            .S_RID({s_rid[SLV_AMT-1:0]}),
-            .S_RDATA({s_rdata[SLV_AMT-1:0]}),
-            .S_RRESP({s_rresp[SLV_AMT-1:0]}),
-            .S_RLAST({s_rlast[SLV_AMT-1:0]}),
-            .S_RVALID({s_rvalid[SLV_AMT-1:0]}),
-            .S_RREADY(s_rready_agg[m]),
+            .S_RID(s_rid_packed),
+            .S_RDATA(s_rdata_packed),
+            .S_RRESP(s_rresp_packed),
+            .S_RLAST(s_rlast_packed),
+            .S_RVALID(s_rvalid_packed),
+            .S_RREADY(s_rready_packed),
             
-            // Control
             .r_order_grant(r_order_grant_m[m]),
             .arbiter_type(arbiter_type)
         );
     end
 endgenerate
 
-//=============================================================================
-// Optional: 4KB/Wrap Splitting Pre-processing (if needed at crossbar level)
-// Note: Typically handled inside axi_m2s_m_amt via splitting_4kb_wrap module
-//=============================================================================
-// If you need crossbar-level splitting before M2S routing, instantiate here:
-// splitting_4kb_wrap #(ADDR_WIDTH, TRANS_DATA_LEN_W, TRANS_DATA_SIZE_W) ...
+endmodule
 
+module axi_default_slave
+     #(parameter W_CID  = 4        // Channel ID width
+               , W_ID   = 4        // ID width
+               , W_ADDR = 32       // address width
+               , W_DATA = 32       // data width
+               , W_STRB = W_DATA/8 // data strobe width
+               , W_SID  = W_CID+W_ID
+      )
+(
+       input  wire                  AXI_RSTn
+     , input  wire                  AXI_CLK
+     , input  wire [W_SID-1:0]      AWID
+     , input  wire [W_ADDR-1:0]     AWADDR
+     , input  wire [ 7:0]           AWLEN
+     , input  wire [ 2:0]           AWSIZE
+     , input  wire [ 1:0]           AWBURST
+     , input  wire                  AWVALID
+     , output reg                   AWREADY
+
+     , input  wire [W_SID-1:0]      WID
+     , input  wire [W_DATA-1:0]     WDATA
+     , input  wire [W_STRB-1:0]     WSTRB
+     , input  wire                  WLAST
+     , input  wire                  WVALID
+     , output reg                   WREADY
+
+     , output reg  [W_SID-1:0]      BID
+     , output wire [ 1:0]           BRESP
+     , output reg                   BVALID
+     , input  wire                  BREADY
+
+     , input  wire [W_SID-1:0]      ARID
+     , input  wire [W_ADDR-1:0]     ARADDR
+     , input  wire [ 7:0]           ARLEN
+     , input  wire [ 2:0]           ARSIZE
+     , input  wire [ 1:0]           ARBURST
+     , input  wire                  ARVALID
+     , output reg                   ARREADY
+
+     , output reg  [W_SID-1:0]      RID
+     , output wire [W_DATA-1:0]     RDATA
+     , output wire [ 1:0]           RRESP
+     , output reg                   RLAST
+     , output reg                   RVALID
+     , input  wire                  RREADY
+);
+     //-----------------------------------------------------------
+     // write case
+     assign BRESP = 2'b11; // DECERR: decode error
+     reg [W_SID-1:0] awid_reg;
+     reg [8:0] countW, awlen_reg;
+
+     localparam STW_IDLE   = 'h0,
+                STW_RUN    = 'h1,
+                STW_WAIT   = 'h2,
+                STW_RSP    = 'h3;
+     reg [1:0] stateW=STW_IDLE;
+     always @ (posedge AXI_CLK) begin
+         if (!AXI_RSTn) begin
+             AWREADY   <= 1'b0;
+             WREADY    <= 1'b0;
+             BID       <=  'h0;
+             BVALID    <= 1'b0;
+             countW    <=  'h0;
+             awlen_reg <=  'h0;
+             awid_reg  <=  'h0;
+             stateW    <= STW_IDLE;
+         end else begin
+             case (stateW)
+             STW_IDLE: begin
+                 if (AWVALID==1'b1) begin
+                     AWREADY <= 1'b1;
+                     stateW  <= STW_RUN;
+                 end
+                 end // STW_IDLE
+             STW_RUN: begin
+                 if ((AWVALID==1'b1)&&(AWREADY==1'b1)) begin
+                      AWREADY   <= 1'b0;
+                      WREADY    <= 1'b1;
+                      awlen_reg <= {1'b0,AWLEN};
+                      awid_reg  <= AWID;
+                      stateW    <= STW_WAIT;
+                 end else begin
+                 end
+                 end // STW_IDLE
+             STW_WAIT: begin
+                 if (WVALID==1'b1) begin
+                     if ((countW>=awlen_reg)||(WLAST==1'b1)) begin
+                         BID    <= awid_reg;
+                         BVALID <= 1'b1;
+                         WREADY <= 1'b0;
+                         countW <= 'h0;
+                         stateW <= STW_RSP;
+                         // synopsys translate_off
+                         if (WLAST==1'b0) begin
+                             $display("%04d %m Error expecting WLAST", $time);
+                         end
+                         // synopsys translate_on
+                     end else begin
+                         countW <= countW + 1;
+                     end
+                 end
+                 // synopsys translate_off
+                 if ((WVALID==1'b1)&&(WID!=awid_reg)) begin
+                     $display("%04d %m Error AWID(0x%x):WID(0x%x) mismatch", $time, awid_reg, WID);
+                 end
+                 // synopsys translate_on
+                 end // STW_WAIT
+             STW_RSP: begin
+                 if (BREADY==1'b1) begin
+                     BVALID  <= 1'b0;
+                     if (AWVALID==1'b1) begin
+                         AWREADY <= 1'b1;
+                         stateW  <= STW_RUN;
+                     end else begin
+                         stateW  <= STW_IDLE;
+                     end
+                 end
+                 end // STW_RSP
+             endcase
+         end
+     end
+     
+     //-----------------------------------------------------------
+     // read case
+     assign RRESP = 2'b11; // DECERR; decode error
+     assign RDATA = ~'h0;
+     reg [W_SID-1:0] arid_reg;
+     reg [8:0] countR, arlen_reg;
+
+     localparam STR_IDLE   = 'h0,
+                STR_RUN    = 'h1,
+                STR_WAIT   = 'h2,
+                STR_END    = 'h3;
+     reg [1:0] stateR=STR_IDLE;
+     always @ (posedge AXI_CLK) begin
+         if (!AXI_RSTn) begin
+             ARREADY   <= 1'b0;
+             RID       <=  'h0;
+             RLAST     <= 1'b0;
+             RVALID    <= 1'b0;
+             arid_reg  <=  'h0;
+             arlen_reg <=  'h0;
+             countR    <=  'h0;
+             stateR    <= STR_IDLE;
+         end else begin
+             case (stateR)
+             STR_IDLE: begin
+                 if (ARVALID==1'b1) begin
+                      ARREADY   <= 1'b1;
+                      stateR    <= STR_RUN;
+                 end
+                 end // STR_IDLE
+             STR_RUN: begin
+                 if ((ARVALID==1'b1)&&(ARREADY==1'b1)) begin
+                      ARREADY   <= 1'b0;
+                      arlen_reg <= ARLEN+1;
+                      arid_reg  <= ARID;
+                      RID       <= ARID;
+                      RVALID    <= 1'b1;
+                      RLAST     <= (ARLEN=='h0) ? 1'b1 : 1'b0;
+                      countR    <=  'h2;
+                      stateR    <= STR_WAIT;
+                 end
+                 end // STR_IDLE
+             STR_WAIT: begin
+                 if (RREADY==1'b1) begin
+                     if (countR>=(arlen_reg+1)) begin
+                         RVALID  <= 1'b0;
+                         RLAST   <= 1'b0;
+                         countR  <= 'h0;
+                         stateR  <= STR_END;
+                     end else begin
+                         if (countR==arlen_reg) RLAST  <= 1'b1;
+                         countR <= countR + 1;
+                     end
+                 end
+                 end // STR_WAIT
+             STR_END: begin
+                 if (ARVALID==1'b1) begin
+                      ARREADY   <= 1'b1;
+                      stateR    <= STR_RUN;
+                 end else begin
+                      stateR    <= STR_IDLE;
+                 end
+                 end // STR_END
+             endcase
+         end
+     end
 endmodule
 
 // Synchronous FIFO
@@ -1932,77 +2175,57 @@ end
 
 endmodule
 
-//=============================================================================
-// Module: axi_s2m_s_amt
-// Desc  : Parameterized AXI Slave-to-Master routing module
-//         - Supports arbitrary SLV_AMT slaves via flattened interface
-//         - Routes B/R responses to correct Master via embedded MST_IDX in ID
-//         - Retains Read out-of-order/interleaving via r_order_grant gating
-//         - Uses parameterized arbiter for scalable arbitration
-//=============================================================================
 module axi_s2m_s_amt
 #(
-    parameter MASTER_ID       = 0,              // for reference (kept for compatibility)
-    parameter W_CID           = 4,              // Channel ID width
-    parameter W_ID            = 4,              // Transaction ID width (master side)
-    parameter W_ADDR          = 32,             // Address width
-    parameter W_DATA          = 32,             // Data width
-    parameter W_STRB          = (W_DATA/8),     // Data strobe width
-    parameter W_SID           = W_CID + W_ID,   // Slave-side ID width
-    parameter SLV_AMT         = 4,              // Number of slaves (parameterized)
-    parameter MST_ID_FIELD_MSB = W_ID+1,        // Bit index of MST_IDX field in S_BID/S_RID
-    parameter MST_ID_FIELD_LSB = W_ID           // Bit index of MST_IDX field in S_BID/S_RID
+    parameter MASTER_ID       = 0,
+    parameter W_CID           = 4,
+    parameter W_ID            = 4,
+    parameter W_ADDR          = 32,
+    parameter W_DATA          = 32,
+    parameter W_STRB          = (W_DATA/8),
+    parameter W_SID           = W_CID + W_ID,
+    parameter SLV_AMT         = 4,
+    parameter MST_ID_FIELD_MSB = W_ID+1,
+    parameter MST_ID_FIELD_LSB = W_ID
 )
 (
-    // Global signals
-    input   wire                      AXI_RSTn,
-    input   wire                      AXI_CLK,
+    input  wire                      AXI_RSTn,
+    input  wire                      AXI_CLK,
     
-    // ========== Master side ports (single master interface) ==========
-    // B channel (write response)
-    output  reg   [W_ID-1:0]          M_BID,
-    output  reg   [1:0]               M_BRESP,
-    output  reg                       M_BVALID,
-    input   wire                      M_BREADY,
+    // Master side ports (single master)
+    output reg   [W_ID-1:0]          M_BID,
+    output reg   [1:0]               M_BRESP,
+    output reg                       M_BVALID,
+    input  wire                      M_BREADY,
     
-    // R channel (read data)
-    output  reg   [W_SID-1:0]         M_RSID,     // Slave-side ID returned to master
-    output  reg   [W_DATA-1:0]        M_RDATA,
-    output  reg   [1:0]               M_RRESP,
-    output  reg                       M_RLAST,
-    output  reg                       M_RVALID,
-    input   wire                      M_RREADY,
+    output reg   [W_SID-1:0]         M_RSID,
+    output reg   [W_DATA-1:0]        M_RDATA,
+    output reg   [1:0]               M_RRESP,
+    output reg                       M_RLAST,
+    output reg                       M_RVALID,
+    input  wire                      M_RREADY,
     
-    // ========== Slave side ports (FLATTENED & PARAMETERIZED) ==========
-    // B channel from slaves
-    input   wire  [W_SID*SLV_AMT-1:0]  S_BID,
-    input   wire  [2*SLV_AMT-1:0]      S_BRESP,
-    input   wire  [SLV_AMT-1:0]        S_BVALID,
-    output  wire  [SLV_AMT-1:0]        S_BREADY,
+    // Slave side ports (packed)
+    input  wire  [W_SID*SLV_AMT-1:0]  S_BID,
+    input  wire  [2*SLV_AMT-1:0]      S_BRESP,
+    input  wire  [SLV_AMT-1:0]        S_BVALID,
+    output wire  [SLV_AMT-1:0]        S_BREADY,
     
-    // R channel from slaves
-    input   wire  [W_SID*SLV_AMT-1:0]  S_RID,
-    input   wire  [W_DATA*SLV_AMT-1:0] S_RDATA,
-    input   wire  [2*SLV_AMT-1:0]      S_RRESP,
-    input   wire  [SLV_AMT-1:0]        S_RLAST,
-    input   wire  [SLV_AMT-1:0]        S_RVALID,
-    output  wire  [SLV_AMT-1:0]        S_RREADY,
+    input  wire  [W_SID*SLV_AMT-1:0]  S_RID,
+    input  wire  [W_DATA*SLV_AMT-1:0] S_RDATA,
+    input  wire  [2*SLV_AMT-1:0]      S_RRESP,
+    input  wire  [SLV_AMT-1:0]        S_RLAST,
+    input  wire  [SLV_AMT-1:0]        S_RVALID,
+    output wire  [SLV_AMT-1:0]        S_RREADY,
     
-    // ========== Control ports ==========
-    input   wire  [SLV_AMT-1:0]        r_order_grant,   // Gating for Read reordering
-    input   wire                       arbiter_type     // 0: Round-Robin, 1: Fixed-Priority
+    input  wire  [SLV_AMT-1:0]        r_order_grant,
+    input  wire                       arbiter_type
 );
 
-//=============================================================================
-// Local Parameters
-//=============================================================================
-localparam MST_ID_W       = $clog2(SLV_AMT);          // Width to encode master index in ID
-localparam SLV_IDX_W      = MST_ID_FIELD_MSB - MST_ID_FIELD_LSB + 1; // Width of MST_IDX field
-localparam NUM            = SLV_AMT;                  // Alias for arbiter parameter
+localparam MST_ID_W = $clog2(SLV_AMT);
+localparam NUM = SLV_AMT;
 
-//=============================================================================
-// Internal Signals - Flattened Arrays for Slave Ports
-//=============================================================================
+// Unpack slave arrays
 wire [W_SID-1:0]   s_bid      [0:SLV_AMT-1];
 wire [1:0]         s_bresp    [0:SLV_AMT-1];
 wire               s_bvalid   [0:SLV_AMT-1];
@@ -2015,130 +2238,83 @@ wire               s_rlast    [0:SLV_AMT-1];
 wire               s_rvalid   [0:SLV_AMT-1];
 wire               s_rready   [0:SLV_AMT-1];
 
-//=============================================================================
-// Port Flattening: generate loop for unpack/pack
-//=============================================================================
-genvar s;
+genvar si;
 generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : UNPACK_SLAVE
-        // B channel unpack
-        assign s_bid[s]    = S_BID[W_SID*(s+1)-1 -: W_SID];
-        assign s_bresp[s]  = S_BRESP[2*(s+1)-1 -: 2];
-        assign s_bvalid[s] = S_BVALID[s];
-        assign S_BREADY[s] = s_bready[s];
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : UNPACK
+        assign s_bid[si]    = S_BID[W_SID*si +: W_SID];
+        assign s_bresp[si]  = S_BRESP[2*si +: 2];
+        assign s_bvalid[si] = S_BVALID[si];
+        assign S_BREADY[si] = s_bready[si];
         
-        // R channel unpack
-        assign s_rid[s]    = S_RID[W_SID*(s+1)-1 -: W_SID];
-        assign s_rdata[s]  = S_RDATA[W_DATA*(s+1)-1 -: W_DATA];
-        assign s_rresp[s]  = S_RRESP[2*(s+1)-1 -: 2];
-        assign s_rlast[s]  = S_RLAST[s];
-        assign s_rvalid[s] = S_RVALID[s];
-        assign S_RREADY[s] = s_rready[s];
+        assign s_rid[si]    = S_RID[W_SID*si +: W_SID];
+        assign s_rdata[si]  = S_RDATA[W_DATA*si +: W_DATA];
+        assign s_rresp[si]  = S_RRESP[2*si +: 2];
+        assign s_rlast[si]  = S_RLAST[si];
+        assign s_rvalid[si] = S_RVALID[si];
+        assign S_RREADY[si] = s_rready[si];
     end
 endgenerate
 
-//=============================================================================
-// Master ID Decode: Extract MST_IDX from Slave-returned ID
-// Format: S_BID/S_RID = {SLV_ID_UPPER, MST_IDX[MSB:LSB], ORIGINAL_ID}
-//=============================================================================
+// Extract master index from ID
 wire [MST_ID_W-1:0] s_bid_mst_idx [0:SLV_AMT-1];
 wire [MST_ID_W-1:0] s_rid_mst_idx [0:SLV_AMT-1];
-
 generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : DECODE_MST_IDX
-        assign s_bid_mst_idx[s] = s_bid[s][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
-        assign s_rid_mst_idx[s] = s_rid[s][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : DECODE
+        assign s_bid_mst_idx[si] = s_bid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
+        assign s_rid_mst_idx[si] = s_rid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
     end
 endgenerate
 
-//=============================================================================
-// B/R Channel Select: Match extracted MST_IDX against target MASTER_ID
-//=============================================================================
-wire [SLV_AMT-1:0] BSELECT, RSELECT;
-wire [SLV_AMT-1:0] RSELECT_in;
-
+// Select logic
+wire [SLV_AMT-1:0] BSELECT, RSELECT, RSELECT_in;
 generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : SELECT_LOGIC
-        // B channel: route if slave's returned MST_IDX matches this master
-        assign BSELECT[s] = (s_bid_mst_idx[s] == MASTER_ID[MST_ID_W-1:0]);
-        
-        // R channel: same logic, gated by r_order_grant for reordering
-        assign RSELECT[s] = (s_rid_mst_idx[s] == MASTER_ID[MST_ID_W-1:0]);
-        assign RSELECT_in[s] = RSELECT[s] & r_order_grant[s];
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : SELECT
+        assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID[MST_ID_W-1:0]);
+        assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID[MST_ID_W-1:0]);
+        assign RSELECT_in[si] = RSELECT[si] & r_order_grant[si];
     end
 endgenerate
 
-//=============================================================================
-// B/R Arbitration: Parameterized arbiter for scalable slave arbitration
-//=============================================================================
+// Arbitration
 wire [SLV_AMT-1:0] BGRANT, RGRANT;
-
-axi_arbiter_param_rr #(
-    .NUM(SLV_AMT)
-) u_arbiter_b (
-    .clk          (AXI_CLK),
-    .rst_n        (AXI_RSTn),
-    .arbiter_type (arbiter_type),
-    .req          (BSELECT & {S_BVALID[SLV_AMT-1:0]}),
-    .grant        (BGRANT)
+axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_b (
+    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
+    .req(BSELECT & {S_BVALID[SLV_AMT-1:0]}), .grant(BGRANT)
+);
+axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
+    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
+    .req(RSELECT_in & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
 );
 
-axi_arbiter_param_rr #(
-    .NUM(SLV_AMT)
-) u_arbiter_r (
-    .clk          (AXI_CLK),
-    .rst_n        (AXI_RSTn),
-    .arbiter_type (arbiter_type),
-    .req          (RSELECT_in & {S_RVALID[SLV_AMT-1:0]}),
-    .grant        (RGRANT)
-);
-
-//=============================================================================
-// B/R Bus Packing: Prepare flattened buses for routing Mux
-//=============================================================================
-localparam NUM_B_WIDTH = W_ID + 2 + 1;  // {BID[W_ID-1:0], BRESP[1:0], BVALID}
-localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;  // {RSID, RDATA, RRESP, RLAST, RVALID}
-
+// Pack bus for muxing
+localparam NUM_B_WIDTH = W_ID + 2 + 1;
+localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;
 wire [NUM_B_WIDTH-1:0] bus_b [0:SLV_AMT-1];
 wire [NUM_R_WIDTH-1:0] bus_r [0:SLV_AMT-1];
-
 generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_BUS
-        assign bus_b[s] = {s_bid[s][W_ID-1:0], s_bresp[s], s_bvalid[s]};
-        assign bus_r[s] = {s_rid[s], s_rdata[s], s_rresp[s], s_rlast[s], s_rvalid[s]};
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : PACK
+        assign bus_b[si] = {s_bid[si][W_ID-1:0], s_bresp[si], s_bvalid[si]};
+        assign bus_r[si] = {s_rid[si], s_rdata[si], s_rresp[si], s_rlast[si], s_rvalid[si]};
     end
 endgenerate
 
-//=============================================================================
-// B/R Routing Mux: Select granted slave's data to master output
-//=============================================================================
 `define M_BBUS {M_BID[W_ID-1:0], M_BRESP, M_BVALID}
 always @(*) begin
-    `M_BBUS = '0;
-    for(int i = 0; i < SLV_AMT; i++) begin
-        if(BGRANT[i]) begin
-            `M_BBUS = bus_b[i];
-        end
-    end
+    `M_BBUS = 0;
+    for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];
 end
 
 `define M_RBUS {M_RSID, M_RDATA, M_RRESP, M_RLAST, M_RVALID}
 always @(*) begin
-    `M_RBUS = '0;
-    for(int i = 0; i < SLV_AMT; i++) begin
-        if(RGRANT[i]) begin
-            `M_RBUS = bus_r[i];
-        end
-    end
+    `M_RBUS = 0;
+    for(int i = 0; i < SLV_AMT; i++) if(RGRANT[i]) `M_RBUS = bus_r[i];
 end
 
-//=============================================================================
-// Slave Ready Generation: Grant & Master Ready handshake
-//=============================================================================
+// Ready generation
 generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : READY_GEN
-        assign s_bready[s] = BGRANT[s] & M_BREADY;
-        assign s_rready[s] = RGRANT[s] & M_RREADY;
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : READY_GEN
+        assign s_bready[si] = BGRANT[si] & M_BREADY;
+        assign s_rready[si] = RGRANT[si] & M_RREADY;
     end
 endgenerate
 
@@ -2377,5 +2553,316 @@ always @(*) begin
         end
     end
 end
+
+endmodule
+
+module reorder (
+    input            clk        ,
+    input            rstn       ,
+    
+    input [7:0]      sid_0      ,
+    input            sid_0_vld  ,
+
+    input [7:0]      sid_1      ,
+    input            sid_1_vld  ,
+
+    input [7:0]      sid_2      ,
+    input            sid_2_vld  ,
+
+    input wire [7:0] rob_buffer [0:3] ,
+
+    output reg [2:0] order_grant   
+);
+
+// genvar i, j;
+
+// wire [3:0] s_rid_low  [2:0];
+// wire [3:0] s_rid_high [2:0];
+wire [3:0] s0_rid_low, s0_rid_high;
+wire [3:0] s1_rid_low, s1_rid_high;
+wire [3:0] s2_rid_low, s2_rid_high;
+
+//low 4-bit
+// generate
+//     for (i = 0; i<3; i++) begin
+//         for (j = 0; j<4; j++) begin
+//             assign s_rid_low[i][j] = (s_rid[i][3:0]==rob_buffer[j][3:0]) ? 1'b1 : 1'b0;
+//         end
+        
+//     end
+// endgenerate
+assign s0_rid_low[0] = (sid_0_vld && sid_0[3:0]==rob_buffer[0][3:0]) ? 1'b1 : 1'b0;
+assign s0_rid_low[1] = (sid_0_vld && sid_0[3:0]==rob_buffer[1][3:0]) ? 1'b1 : 1'b0;
+assign s0_rid_low[2] = (sid_0_vld && sid_0[3:0]==rob_buffer[2][3:0]) ? 1'b1 : 1'b0;
+assign s0_rid_low[3] = (sid_0_vld && sid_0[3:0]==rob_buffer[3][3:0]) ? 1'b1 : 1'b0;
+
+assign s1_rid_low[0] = (sid_1_vld && sid_1[3:0]==rob_buffer[0][3:0]) ? 1'b1 : 1'b0;
+assign s1_rid_low[1] = (sid_1_vld && sid_1[3:0]==rob_buffer[1][3:0]) ? 1'b1 : 1'b0;
+assign s1_rid_low[2] = (sid_1_vld && sid_1[3:0]==rob_buffer[2][3:0]) ? 1'b1 : 1'b0;
+assign s1_rid_low[3] = (sid_1_vld && sid_1[3:0]==rob_buffer[3][3:0]) ? 1'b1 : 1'b0;
+
+assign s2_rid_low[0] = (sid_2_vld && sid_2[3:0]==rob_buffer[0][3:0]) ? 1'b1 : 1'b0;
+assign s2_rid_low[1] = (sid_2_vld && sid_2[3:0]==rob_buffer[1][3:0]) ? 1'b1 : 1'b0;
+assign s2_rid_low[2] = (sid_2_vld && sid_2[3:0]==rob_buffer[2][3:0]) ? 1'b1 : 1'b0;
+assign s2_rid_low[3] = (sid_2_vld && sid_2[3:0]==rob_buffer[3][3:0]) ? 1'b1 : 1'b0;
+
+//high 4-bit
+// generate
+//     for (i = 0; i<3; i++) begin
+//         for (j = 0; j<4; j++) begin
+//             assign s_rid_high[i][j] = (s_rid[i][7:4]==rob_buffer[j][7:4]) ? 1'b1 : 1'b0;
+//         end 
+//     end
+// endgenerate
+assign s0_rid_high[0] = (sid_0_vld && sid_0[7:4]==rob_buffer[0][7:4]) ? 1'b1 : 1'b0;
+assign s0_rid_high[1] = (sid_0_vld && sid_0[7:4]==rob_buffer[1][7:4]) ? 1'b1 : 1'b0;
+assign s0_rid_high[2] = (sid_0_vld && sid_0[7:4]==rob_buffer[2][7:4]) ? 1'b1 : 1'b0;
+assign s0_rid_high[3] = (sid_0_vld && sid_0[7:4]==rob_buffer[3][7:4]) ? 1'b1 : 1'b0;
+
+assign s1_rid_high[0] = (sid_1_vld && sid_1[7:4]==rob_buffer[0][7:4]) ? 1'b1 : 1'b0;
+assign s1_rid_high[1] = (sid_1_vld && sid_1[7:4]==rob_buffer[1][7:4]) ? 1'b1 : 1'b0;
+assign s1_rid_high[2] = (sid_1_vld && sid_1[7:4]==rob_buffer[2][7:4]) ? 1'b1 : 1'b0;
+assign s1_rid_high[3] = (sid_1_vld && sid_1[7:4]==rob_buffer[3][7:4]) ? 1'b1 : 1'b0;
+
+assign s2_rid_high[0] = (sid_2_vld && sid_2[7:4]==rob_buffer[0][7:4]) ? 1'b1 : 1'b0;
+assign s2_rid_high[1] = (sid_2_vld && sid_2[7:4]==rob_buffer[1][7:4]) ? 1'b1 : 1'b0;
+assign s2_rid_high[2] = (sid_2_vld && sid_2[7:4]==rob_buffer[2][7:4]) ? 1'b1 : 1'b0;
+assign s2_rid_high[3] = (sid_2_vld && sid_2[7:4]==rob_buffer[3][7:4]) ? 1'b1 : 1'b0;
+
+//s0 order_grant
+always @(posedge clk) begin
+    if(!rstn) begin
+        order_grant[0] <= 'd0;
+    end
+    else begin
+        if(s0_rid_high[0]==1'b1 && s0_rid_low[0]==1'b1)
+            order_grant[0] <= 1'b1;
+        else if(s0_rid_high[1:0]==2'b10 && s0_rid_low[1:0]==2'b10)
+            order_grant[0] <= 1'b1;
+        else if(s0_rid_high[2:0]==3'b100 && s0_rid_low[2:0]==3'b100)
+            order_grant[0] <= 1'b1;
+        else if(s0_rid_high[3:0]==4'b1000 && s0_rid_low[3:0]==4'b1000)
+            order_grant[0] <= 1'b1;
+        else
+            order_grant[0] <= 1'b0;
+    end
+end  
+
+//s1 order_grant
+always @(posedge clk) begin
+    if(!rstn) begin
+        order_grant[1] <= 'd0;
+    end
+    else begin
+        if(s1_rid_high[0]==1'b1 && s1_rid_low[0]==1'b1)
+            order_grant[1] <= 1'b1;
+        else if(s1_rid_high[1:0]==2'b10 && s1_rid_low[1:0]==2'b10)
+            order_grant[1] <= 1'b1;
+        else if(s1_rid_high[2:0]==3'b100 && s1_rid_low[2:0]==3'b100)
+            order_grant[1] <= 1'b1;
+        else if(s1_rid_high[3:0]==4'b1000 && s1_rid_low[3:0]==4'b1000)
+            order_grant[1] <= 1'b1;
+        else
+            order_grant[1] <= 1'b0;
+    end
+end  
+
+//s2 order_grant
+always @(posedge clk) begin
+    if(!rstn) begin
+        order_grant[2] <= 'd0;
+    end
+    else begin
+        if(s2_rid_high[0]==1'b1 && s2_rid_low[0]==1'b1)
+            order_grant[2] <= 1'b1;
+        else if(s2_rid_high[1:0]==2'b10 && s2_rid_low[1:0]==2'b10)
+            order_grant[2] <= 1'b1;
+        else if(s2_rid_high[2:0]==3'b100 && s2_rid_low[2:0]==3'b100)
+            order_grant[2] <= 1'b1;
+        else if(s2_rid_high[3:0]==4'b1000 && s2_rid_low[3:0]==4'b1000)
+            order_grant[2] <= 1'b1;
+        else
+            order_grant[2] <= 1'b0;
+    end
+end  
+
+endmodule
+
+
+module sid_buffer(
+    input            clk          ,
+    input            rstn         ,
+
+//----------------Write buffer-------------------
+    input [7:0]      s0_axid      ,
+    input            s0_axid_vld  ,
+    input            s0_fifo_rdy  ,
+    output           s0_push_rdy  ,
+
+    input [7:0]      s1_axid      ,
+    input            s1_axid_vld  ,
+    input            s1_fifo_rdy  ,
+    output           s1_push_rdy  ,
+
+    input [7:0]      s2_axid      ,
+    input            s2_axid_vld  ,
+    input            s2_fifo_rdy  ,
+    output           s2_push_rdy  ,
+
+//--------Clean buffer and ajust position--------
+    input            last_0       ,      
+    input [7:0]      sid_0        ,
+    input            sid_0_vld    ,
+    output           sid_0_clr_rdy,
+
+    input            last_1       ,      
+    input [7:0]      sid_1        ,
+    input            sid_1_vld    ,
+    output           sid_1_clr_rdy,
+
+    input            last_2       ,      
+    input [7:0]      sid_2        ,
+    input            sid_2_vld    ,
+    output           sid_2_clr_rdy,
+
+    output reg [7:0] sid_buffer [0:3]
+);
+
+parameter NUM = 3;
+
+reg  [2:0] push_select;
+wire [2:0] push_grant;
+wire       full;
+
+wire [2:0] clr_select;
+wire [2:0] clr_grant;
+wire [3:0] clr_idx;
+wire       clr_rdy;
+
+//----------------Write buffer-------------------
+always @(*) begin
+    if (!rstn) begin
+        push_select = 'd0;
+    end else begin
+        push_select[0] = s0_axid_vld & s0_fifo_rdy;
+        push_select[1] = s1_axid_vld & s1_fifo_rdy;
+        push_select[2] = s2_axid_vld & s2_fifo_rdy;
+    end
+end
+
+assign push_grant = priority_sel(push_select);
+
+assign clr_rdy = (~|clr_grant) && (~full);
+
+assign s0_push_rdy = ~(push_select[0] ^ push_grant[0]) && clr_rdy;
+assign s1_push_rdy = ~(push_select[1] ^ push_grant[1]) && clr_rdy;
+assign s2_push_rdy = ~(push_select[2] ^ push_grant[2]) && clr_rdy;
+
+always @(posedge clk ) begin
+    if(!rstn) begin
+        sid_buffer[0] <= 1'b0;
+        sid_buffer[1] <= 1'b0;
+        sid_buffer[2] <= 1'b0;
+        sid_buffer[3] <= 1'b0;
+    end 
+    else if(push_grant[0] && s0_push_rdy) begin
+        if (sid_buffer[0] == 1'b0) begin
+            sid_buffer[0] <= s0_axid;
+        end 
+        else if (sid_buffer[1] == 1'b0) begin
+            sid_buffer[1] <= s0_axid;
+        end
+        else if (sid_buffer[2] == 1'b0) begin
+            sid_buffer[2] <= s0_axid;
+        end
+        else if (sid_buffer[3] == 1'b0) begin
+            sid_buffer[3] <= s0_axid;
+        end
+    end
+    else if(push_grant[1] && s1_push_rdy) begin
+        if (sid_buffer[0] == 1'b0) begin
+            sid_buffer[0] <= s1_axid;
+        end 
+        else if (sid_buffer[1] == 1'b0) begin
+            sid_buffer[1] <= s1_axid;
+        end
+        else if (sid_buffer[2] == 1'b0) begin
+            sid_buffer[2] <= s1_axid;
+        end
+        else if (sid_buffer[3] == 1'b0) begin
+            sid_buffer[3] <= s1_axid;
+        end
+    end
+    else if(push_grant[2] && s2_push_rdy) begin
+        if (sid_buffer[0] == 1'b0) begin
+            sid_buffer[0] <= s2_axid;
+        end 
+        else if (sid_buffer[1] == 1'b0) begin
+            sid_buffer[1] <= s2_axid;
+        end
+        else if (sid_buffer[2] == 1'b0) begin
+            sid_buffer[2] <= s2_axid;
+        end
+        else if (sid_buffer[3] == 1'b0) begin
+            sid_buffer[3] <= s2_axid;
+        end
+    end
+end
+
+assign full = (sid_buffer[3] == 1'b0) ? 0 : 1;
+
+//----------------Clean buffer and ajust position-------------------
+assign clr_select[0] = last_0 & sid_0_vld;
+assign clr_select[1] = last_1 & sid_1_vld;
+assign clr_select[2] = last_2 & sid_2_vld;
+
+assign clr_grant = priority_sel(clr_select);
+
+assign sid_0_clr_rdy = ~(clr_select[0] ^ clr_grant[0]);
+assign sid_1_clr_rdy = ~(clr_select[1] ^ clr_grant[1]);
+assign sid_2_clr_rdy = ~(clr_select[2] ^ clr_grant[2]);
+
+genvar i;
+generate
+    for (i = 0; i < 4; i=i+1) begin : idx_loop
+        assign clr_idx[i] = (clr_grant[0] && (sid_0 == sid_buffer[i])) ? 1'b1 :
+                            (clr_grant[1] && (sid_1 == sid_buffer[i])) ? 1'b1 :
+                            (clr_grant[2] && (sid_2 == sid_buffer[i])) ? 1'b1 : 1'b0;
+    end
+endgenerate
+
+
+always @(posedge clk) begin
+    if (clr_idx[0]) begin
+        sid_buffer[0] <= sid_buffer[1];
+        sid_buffer[1] <= sid_buffer[2];
+        sid_buffer[2] <= sid_buffer[3];
+        sid_buffer[3] <= 1'b0;
+    end 
+    else if (clr_idx[1]) begin
+        sid_buffer[1] <= sid_buffer[2];
+        sid_buffer[2] <= sid_buffer[3];
+        sid_buffer[3] <= 1'b0;
+    end
+    else if(clr_idx[2]) begin
+        sid_buffer[2] <= sid_buffer[3];
+        sid_buffer[3] <= 1'b0;
+    end
+    else if (clr_idx[3]) begin
+        sid_buffer[3] <= 1'b0;
+    end
+end
+
+function [NUM-1:0] priority_sel;
+    input    [NUM-1:0] request;
+    begin
+        casex (request)
+            3'bxx1: priority_sel = 3'h1;
+            3'bx10: priority_sel = 3'h2;
+            3'b100: priority_sel = 3'h4;
+            default:priority_sel = 3'h0;
+        endcase
+    end
+endfunction
 
 endmodule
