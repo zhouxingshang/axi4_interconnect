@@ -1,12 +1,9 @@
 //=============================================================================
 // Module: axi_interconnect
-// Desc  : Top-level AXI Interconnect Wrapper
-//         Hierarchy: Master -> cross_4k_if -> pre_FIFO -> axi_crossbar -> Slave
-//         - Supports arbitrary MST_AMT / SLV_AMT via flattened interfaces
-//         - 4KB crossing & WRAP/INCR burst splitting handled by cross_4k_if
-//         - Channel decoupling & backpressure handled by axi_fifo_sync
-//         - Read reorder via sid_buffer + reorder per master
-//         - W-follows-AW handled inside axi_crossbar submodules
+// Desc  : Top-level AXI Interconnect Wrapper with symmetric FIFOs on both sides
+//         of the crossbar.
+//         - Master side: pre-FIFO for AW/AR/W, post-FIFO for B/R
+//         - Slave side:  post-FIFO for AW/AR/W, pre-FIFO for B/R
 //=============================================================================
 module axi_interconnect
 #(
@@ -171,7 +168,7 @@ wire                        pre_arvalid [0:MST_AMT-1];
 wire                        pre_arready [0:MST_AMT-1];
 
 //=============================================================================
-// Post-FIFO buses: between crossbar output and FIFO input → FIFO output to master
+// Post-FIFO buses (Master side): between crossbar output and FIFO → master
 //=============================================================================
 wire [TRANS_MST_ID_W-1:0]   cbar_m_awid     [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       cbar_m_awaddr   [0:MST_AMT-1];
@@ -207,32 +204,90 @@ wire                        cbar_m_rlast    [0:MST_AMT-1];
 wire                        cbar_m_rvalid   [0:MST_AMT-1];
 wire                        cbar_m_rready   [0:MST_AMT-1];
 
-//=============================================================================
-// Crossbar M_RSID output (full slave-side RID, for sid_buffer clear)
-//=============================================================================
 wire [W_SID*MST_AMT-1:0]    cbar_m_rsid_packed;
 wire [W_SID-1:0]            cbar_m_rsid     [0:MST_AMT-1];
 
 //=============================================================================
-// Reorder / sid_buffer interconnect signals
+// NEW: Slave side internal signals (crossbar output → slave FIFO input)
 //=============================================================================
-// Per-slave unpacked AR outputs (from crossbar, for sid_buffer write)
-wire [W_SID-1:0]            s_arid_unpk     [0:SLV_AMT-1];
-wire                        s_arvalid_unpk  [0:SLV_AMT-1];
-wire                        s_arready_unpk  [0:SLV_AMT-1];
+wire [W_SID-1:0]            cbar_s_awid     [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]       cbar_s_awaddr   [0:SLV_AMT-1];
+wire [LEN_W-1:0]            cbar_s_awlen    [0:SLV_AMT-1];
+wire [SIZE_W-1:0]           cbar_s_awsize   [0:SLV_AMT-1];
+wire [BURST_W-1:0]          cbar_s_awburst  [0:SLV_AMT-1];
+wire                        cbar_s_awvalid  [0:SLV_AMT-1];
+wire                        cbar_s_awready  [0:SLV_AMT-1];
 
-// Per-slave unpacked R inputs (from slaves, for reorder)
-wire [W_SID-1:0]            s_rid_unpk      [0:SLV_AMT-1];
-wire                        s_rvalid_unpk   [0:SLV_AMT-1];
+wire [DATA_WIDTH-1:0]       cbar_s_wdata    [0:SLV_AMT-1];
+wire [W_STRB-1:0]           cbar_s_wstrb    [0:SLV_AMT-1];
+wire                        cbar_s_wlast    [0:SLV_AMT-1];
+wire                        cbar_s_wvalid   [0:SLV_AMT-1];
+wire                        cbar_s_wready   [0:SLV_AMT-1];
 
-// Per-master sid_buffer output (connected to reorder rob_buffer)
+wire [W_SID-1:0]            cbar_s_arid     [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]       cbar_s_araddr   [0:SLV_AMT-1];
+wire [LEN_W-1:0]            cbar_s_arlen    [0:SLV_AMT-1];
+wire [SIZE_W-1:0]           cbar_s_arsize   [0:SLV_AMT-1];
+wire [BURST_W-1:0]          cbar_s_arburst  [0:SLV_AMT-1];
+wire                        cbar_s_arvalid  [0:SLV_AMT-1];
+wire                        cbar_s_arready  [0:SLV_AMT-1];
+
+// Slave side B/R pre-FIFO (slave → crossbar)
+wire [W_SID-1:0]            s_bid_fifo      [0:SLV_AMT-1];
+wire [RESP_W-1:0]           s_bresp_fifo    [0:SLV_AMT-1];
+wire                        s_bvalid_fifo   [0:SLV_AMT-1];
+wire                        s_bready_fifo   [0:SLV_AMT-1];
+
+wire [W_SID-1:0]            s_rid_fifo      [0:SLV_AMT-1];
+wire [DATA_WIDTH-1:0]       s_rdata_fifo    [0:SLV_AMT-1];
+wire [RESP_W-1:0]           s_rresp_fifo    [0:SLV_AMT-1];
+wire                        s_rlast_fifo    [0:SLV_AMT-1];
+wire                        s_rvalid_fifo   [0:SLV_AMT-1];
+wire                        s_rready_fifo   [0:SLV_AMT-1];
+
+// Slave side FIFO output to top (or from top for B/R)
+wire [W_SID-1:0]            s_awid_out      [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]       s_awaddr_out    [0:SLV_AMT-1];
+wire [LEN_W-1:0]            s_awlen_out     [0:SLV_AMT-1];
+wire [SIZE_W-1:0]           s_awsize_out    [0:SLV_AMT-1];
+wire [BURST_W-1:0]          s_awburst_out   [0:SLV_AMT-1];
+wire                        s_awvalid_out   [0:SLV_AMT-1];
+wire                        s_awready_out   [0:SLV_AMT-1];   // from top
+
+wire [DATA_WIDTH-1:0]       s_wdata_out     [0:SLV_AMT-1];
+wire [W_STRB-1:0]           s_wstrb_out     [0:SLV_AMT-1];
+wire                        s_wlast_out     [0:SLV_AMT-1];
+wire                        s_wvalid_out    [0:SLV_AMT-1];
+wire                        s_wready_out    [0:SLV_AMT-1];   // from top
+
+wire [W_SID-1:0]            s_arid_out      [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]       s_araddr_out    [0:SLV_AMT-1];
+wire [LEN_W-1:0]            s_arlen_out     [0:SLV_AMT-1];
+wire [SIZE_W-1:0]           s_arsize_out    [0:SLV_AMT-1];
+wire [BURST_W-1:0]          s_arburst_out   [0:SLV_AMT-1];
+wire                        s_arvalid_out   [0:SLV_AMT-1];
+wire                        s_arready_out   [0:SLV_AMT-1];   // from top
+
+// B/R from top to pre-FIFO
+wire [W_SID-1:0]            s_bid_in        [0:SLV_AMT-1];
+wire [RESP_W-1:0]           s_bresp_in      [0:SLV_AMT-1];
+wire                        s_bvalid_in     [0:SLV_AMT-1];
+wire                        s_bready_in     [0:SLV_AMT-1];   // to top
+
+wire [W_SID-1:0]            s_rid_in        [0:SLV_AMT-1];
+wire [DATA_WIDTH-1:0]       s_rdata_in      [0:SLV_AMT-1];
+wire [RESP_W-1:0]           s_rresp_in      [0:SLV_AMT-1];
+wire                        s_rlast_in      [0:SLV_AMT-1];
+wire                        s_rvalid_in     [0:SLV_AMT-1];
+wire                        s_rready_in     [0:SLV_AMT-1];   // to top
+
+//=============================================================================
+// Read Reorder Signals (unchanged)
+//=============================================================================
 wire [W_SID-1:0]            sid_buf_out     [0:MST_AMT-1][0:3];  // DEPTH=4
-
-// Per-master reorder grant outputs
 wire [SLV_AMT-1:0]          reorder_grant_m [0:MST_AMT-1];
-
-// Packed internal reorder grant (from reorder modules)
 wire [MST_AMT*SLV_AMT-1:0]  internal_r_order_grant;
+wire [MST_AMT*SLV_AMT-1:0]  effective_r_order_grant;
 
 //=============================================================================
 // Port Flattening (Unpack Master Inputs / Pack Master Outputs)
@@ -274,7 +329,7 @@ generate
         assign m_RLAST_o[m] = m_rlast[m];
         assign m_RVALID_o[m] = m_rvalid[m];
 
-        // W channel: direct from master to pre-FIFO (cross_4k_if handles only AW/AR)
+        // W channel: direct from master to pre-FIFO
         assign pre_wdata[m]  = m_wdata[m];
         assign pre_wstrb[m]  = m_wstrb[m];
         assign pre_wlast[m]  = m_wlast[m];
@@ -284,12 +339,53 @@ generate
 endgenerate
 
 //=============================================================================
-// 1. cross_4k_if: 4KB Boundary & WRAP/INCR Splitting (per Master)
-//    Outputs now drive pre_* buses (not cbar_m_*)
+// Unpack Slave Flattened Ports (connect to internal FIFO interfaces)
 //=============================================================================
-genvar c4k;
 generate
-    for(c4k = 0; c4k < MST_AMT; c4k = c4k + 1) begin : INST_CROSS_4K
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : UNPACK_SLV
+        // Outputs (from slave FIFO to top)
+        assign s_AWID_o   [W_SID*(s+1)-1 -: W_SID]   = s_awid_out[s];
+        assign s_AWADDR_o [ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr_out[s];
+        assign s_AWLEN_o  [LEN_W*(s+1)-1 -: LEN_W]   = s_awlen_out[s];
+        assign s_AWSIZE_o [SIZE_W*(s+1)-1 -: SIZE_W] = s_awsize_out[s];
+        assign s_AWBURST_o[BURST_W*(s+1)-1 -: BURST_W] = s_awburst_out[s];
+        assign s_AWVALID_o[s] = s_awvalid_out[s];
+        assign s_awready_out[s] = s_AWREADY_i[s];
+
+        assign s_WDATA_o [DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata_out[s];
+        assign s_WSTRB_o [W_STRB*(s+1)-1 -: W_STRB] = s_wstrb_out[s];
+        assign s_WLAST_o [s] = s_wlast_out[s];
+        assign s_WVALID_o[s] = s_wvalid_out[s];
+        assign s_wready_out[s] = s_WREADY_i[s];
+
+        assign s_ARID_o    [W_SID*(s+1)-1 -: W_SID]   = s_arid_out[s];
+        assign s_ARADDR_o  [ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr_out[s];
+        assign s_ARLEN_o   [LEN_W*(s+1)-1 -: LEN_W]   = s_arlen_out[s];
+        assign s_ARSIZE_o  [SIZE_W*(s+1)-1 -: SIZE_W] = s_arsize_out[s];
+        assign s_ARBURST_o [BURST_W*(s+1)-1 -: BURST_W] = s_arburst_out[s];
+        assign s_ARVALID_o [s] = s_arvalid_out[s];
+        assign s_arready_out[s] = s_ARREADY_i[s];
+
+        // Inputs (from top to slave pre-FIFO)
+        assign s_bid_in[s]   = s_BID_i[W_SID*(s+1)-1 -: W_SID];
+        assign s_bresp_in[s] = s_BRESP_i[RESP_W*(s+1)-1 -: RESP_W];
+        assign s_bvalid_in[s]= s_BVALID_i[s];
+        assign s_BREADY_o[s] = s_bready_in[s];
+
+        assign s_rid_in[s]   = s_RID_i[W_SID*(s+1)-1 -: W_SID];
+        assign s_rdata_in[s] = s_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
+        assign s_rresp_in[s] = s_RRESP_i[RESP_W*(s+1)-1 -: RESP_W];
+        assign s_rlast_in[s] = s_RLAST_i[s];
+        assign s_rvalid_in[s]= s_RVALID_i[s];
+        assign s_RREADY_o[s] = s_rready_in[s];
+    end
+endgenerate
+
+//=============================================================================
+// 1. cross_4k_if: 4KB Boundary & WRAP/INCR Splitting (per Master)
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : INST_CROSS_4K
         cross_4k_if #(
             .W_ID   (TRANS_MST_ID_W),
             .W_CID  ($clog2(SLV_AMT)),
@@ -301,180 +397,249 @@ generate
         ) u_cross_4k (
             .clk             (AXI_CLK),
             .rst_n           (AXI_RSTn),
-            // Master AW/AR -> Splitter
-            .m_axi_arid      (m_arid[c4k]),
-            .m_axi_araddr    (m_araddr[c4k]),
-            .m_axi_arlen     (m_arlen[c4k]),
-            .m_axi_arsize    (m_arsize[c4k]),
-            .m_axi_arburst   (m_arburst[c4k]),
-            .m_axi_arvalid   (m_arvalid[c4k]),
-            .m_axi_arready   (m_arready[c4k]),
-            .m_axi_awid      (m_awid[c4k]),
-            .m_axi_awaddr    (m_awaddr[c4k]),
-            .m_axi_awlen     (m_awlen[c4k]),
-            .m_axi_awsize    (m_awsize[c4k]),
-            .m_axi_awburst   (m_awburst[c4k]),
-            .m_axi_awvalid   (m_awvalid[c4k]),
-            .m_axi_awready   (m_awready[c4k]),
-            // Splitter -> pre-FIFO (drives pre_* buses)
-            .s_axi_arid      (pre_arid[c4k]),
-            .s_axi_araddr    (pre_araddr[c4k]),
-            .s_axi_arlen     (pre_arlen[c4k]),
-            .s_axi_arsize    (pre_arsize[c4k]),
-            .s_axi_arburst   (pre_arburst[c4k]),
-            .s_axi_arvalid   (pre_arvalid[c4k]),
-            .s_axi_arready   (pre_arready[c4k]),
-            .s_axi_awid      (pre_awid[c4k]),
-            .s_axi_awaddr    (pre_awaddr[c4k]),
-            .s_axi_awlen     (pre_awlen[c4k]),
-            .s_axi_awsize    (pre_awsize[c4k]),
-            .s_axi_awburst   (pre_awburst[c4k]),
-            .s_axi_awvalid   (pre_awvalid[c4k]),
-            .s_axi_awready   (pre_awready[c4k])
+            .m_axi_arid      (m_arid[m]),
+            .m_axi_araddr    (m_araddr[m]),
+            .m_axi_arlen     (m_arlen[m]),
+            .m_axi_arsize    (m_arsize[m]),
+            .m_axi_arburst   (m_arburst[m]),
+            .m_axi_arvalid   (m_arvalid[m]),
+            .m_axi_arready   (m_arready[m]),
+            .m_axi_awid      (m_awid[m]),
+            .m_axi_awaddr    (m_awaddr[m]),
+            .m_axi_awlen     (m_awlen[m]),
+            .m_axi_awsize    (m_awsize[m]),
+            .m_axi_awburst   (m_awburst[m]),
+            .m_axi_awvalid   (m_awvalid[m]),
+            .m_axi_awready   (m_awready[m]),
+            .s_axi_arid      (pre_arid[m]),
+            .s_axi_araddr    (pre_araddr[m]),
+            .s_axi_arlen     (pre_arlen[m]),
+            .s_axi_arsize    (pre_arsize[m]),
+            .s_axi_arburst   (pre_arburst[m]),
+            .s_axi_arvalid   (pre_arvalid[m]),
+            .s_axi_arready   (pre_arready[m]),
+            .s_axi_awid      (pre_awid[m]),
+            .s_axi_awaddr    (pre_awaddr[m]),
+            .s_axi_awlen     (pre_awlen[m]),
+            .s_axi_awsize    (pre_awsize[m]),
+            .s_axi_awburst   (pre_awburst[m]),
+            .s_axi_awvalid   (pre_awvalid[m]),
+            .s_axi_awready   (pre_awready[m])
         );
     end
 endgenerate
 
 //=============================================================================
-// 2. Pre-Crossbar FIFOs: AW/W/AR (Master -> Crossbar)
-//    wr_din from pre_* buses, rd_dout drives cbar_m_* buses
+// 2. Pre-Crossbar FIFOs: Master -> Crossbar (AW/W/AR)
 //=============================================================================
-genvar fifo_aw_ar;
 generate
-    for(fifo_aw_ar = 0; fifo_aw_ar < MST_AMT; fifo_aw_ar = fifo_aw_ar + 1) begin : INST_FIFO_AW_W_AR
-        // AW FIFO: pre_aw* → cbar_m_aw*
+    for(m = 0; m < MST_AMT; m = m + 1) begin : INST_FIFO_AW_W_AR
+        // AW FIFO: valid from rd_vld only (not stored in data)
         axi_fifo_sync #(
-            .FDW(TRANS_MST_ID_W + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W + 1),
+            .FDW(TRANS_MST_ID_W + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
             .FAW(2)
         ) u_fifo_aw (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (pre_awready[fifo_aw_ar]),
-            .wr_vld (pre_awvalid[fifo_aw_ar]),
-            .wr_din ({pre_awid[fifo_aw_ar], pre_awaddr[fifo_aw_ar],
-                      pre_awlen[fifo_aw_ar], pre_awsize[fifo_aw_ar],
-                      pre_awburst[fifo_aw_ar], pre_awvalid[fifo_aw_ar]}),
-            .rd_rdy (cbar_m_awready[fifo_aw_ar]),
-            .rd_vld (cbar_m_awvalid[fifo_aw_ar]),
-            .rd_dout ({cbar_m_awid[fifo_aw_ar], cbar_m_awaddr[fifo_aw_ar],
-                       cbar_m_awlen[fifo_aw_ar], cbar_m_awsize[fifo_aw_ar],
-                       cbar_m_awburst[fifo_aw_ar], cbar_m_awvalid[fifo_aw_ar]})
+            .wr_rdy (pre_awready[m]),
+            .wr_vld (pre_awvalid[m]),
+            .wr_din ({pre_awid[m], pre_awaddr[m], pre_awlen[m],
+                      pre_awsize[m], pre_awburst[m]}),
+            .rd_rdy (cbar_m_awready[m]),
+            .rd_vld (cbar_m_awvalid[m]),
+            .rd_dout ({cbar_m_awid[m], cbar_m_awaddr[m], cbar_m_awlen[m],
+                       cbar_m_awsize[m], cbar_m_awburst[m]})
         );
 
-        // W FIFO: pre_w* → cbar_m_w*
+        // W FIFO
         axi_fifo_sync #(
             .FDW(DATA_WIDTH + W_STRB + 1),
             .FAW(2)
         ) u_fifo_w (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (pre_wready[fifo_aw_ar]),
-            .wr_vld (pre_wvalid[fifo_aw_ar]),
-            .wr_din ({pre_wdata[fifo_aw_ar], pre_wstrb[fifo_aw_ar], pre_wlast[fifo_aw_ar]}),
-            .rd_rdy (cbar_m_wready[fifo_aw_ar]),
-            .rd_vld (cbar_m_wvalid[fifo_aw_ar]),
-            .rd_dout ({cbar_m_wdata[fifo_aw_ar], cbar_m_wstrb[fifo_aw_ar], cbar_m_wlast[fifo_aw_ar]})
+            .wr_rdy (pre_wready[m]),
+            .wr_vld (pre_wvalid[m]),
+            .wr_din ({pre_wdata[m], pre_wstrb[m], pre_wlast[m]}),
+            .rd_rdy (cbar_m_wready[m]),
+            .rd_vld (cbar_m_wvalid[m]),
+            .rd_dout ({cbar_m_wdata[m], cbar_m_wstrb[m], cbar_m_wlast[m]})
         );
 
-        // AR FIFO: pre_ar* → cbar_m_ar*
+        // AR FIFO: valid from rd_vld only (not stored in data)
         axi_fifo_sync #(
-            .FDW(TRANS_MST_ID_W + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W + 1),
+            .FDW(TRANS_MST_ID_W + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
             .FAW(2)
         ) u_fifo_ar (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (pre_arready[fifo_aw_ar]),
-            .wr_vld (pre_arvalid[fifo_aw_ar]),
-            .wr_din ({pre_arid[fifo_aw_ar], pre_araddr[fifo_aw_ar],
-                      pre_arlen[fifo_aw_ar], pre_arsize[fifo_aw_ar],
-                      pre_arburst[fifo_aw_ar], pre_arvalid[fifo_aw_ar]}),
-            .rd_rdy (cbar_m_arready[fifo_aw_ar]),
-            .rd_vld (cbar_m_arvalid[fifo_aw_ar]),
-            .rd_dout ({cbar_m_arid[fifo_aw_ar], cbar_m_araddr[fifo_aw_ar],
-                       cbar_m_arlen[fifo_aw_ar], cbar_m_arsize[fifo_aw_ar],
-                       cbar_m_arburst[fifo_aw_ar], cbar_m_arvalid[fifo_aw_ar]})
+            .wr_rdy (pre_arready[m]),
+            .wr_vld (pre_arvalid[m]),
+            .wr_din ({pre_arid[m], pre_araddr[m], pre_arlen[m],
+                      pre_arsize[m], pre_arburst[m]}),
+            .rd_rdy (cbar_m_arready[m]),
+            .rd_vld (cbar_m_arvalid[m]),
+            .rd_dout ({cbar_m_arid[m], cbar_m_araddr[m], cbar_m_arlen[m],
+                       cbar_m_arsize[m], cbar_m_arburst[m]})
         );
     end
 endgenerate
 
 //=============================================================================
-// 3. Post-Crossbar FIFOs: B/R (Crossbar -> Master)
-//    Crossbar output cbar_m_b* → FIFO → m_b* (correct pattern, kept)
+// 3. New: Post-Crossbar FIFOs: Crossbar -> Slave (AW/W/AR)
 //=============================================================================
-genvar fifo_b_r;
 generate
-    for(fifo_b_r = 0; fifo_b_r < MST_AMT; fifo_b_r = fifo_b_r + 1) begin : INST_FIFO_B_R
-        // B FIFO: stores {bid, bresp}, rd_vld drives m_bvalid
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_POST_FIFO_AW_W_AR
+        // AW FIFO
+        axi_fifo_sync #(
+            .FDW(W_SID + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
+            .FAW(2)
+        ) u_fifo_aw_slv (
+            .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
+            .wr_rdy (cbar_s_awready[s]),
+            .wr_vld (cbar_s_awvalid[s]),
+            .wr_din ({cbar_s_awid[s], cbar_s_awaddr[s], cbar_s_awlen[s],
+                      cbar_s_awsize[s], cbar_s_awburst[s]}),
+            .rd_rdy (s_awready_out[s]),
+            .rd_vld (s_awvalid_out[s]),
+            .rd_dout ({s_awid_out[s], s_awaddr_out[s], s_awlen_out[s],
+                       s_awsize_out[s], s_awburst_out[s]})
+        );
+
+        // W FIFO
+        axi_fifo_sync #(
+            .FDW(DATA_WIDTH + W_STRB + 1),
+            .FAW(2)
+        ) u_fifo_w_slv (
+            .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
+            .wr_rdy (cbar_s_wready[s]),
+            .wr_vld (cbar_s_wvalid[s]),
+            .wr_din ({cbar_s_wdata[s], cbar_s_wstrb[s], cbar_s_wlast[s]}),
+            .rd_rdy (s_wready_out[s]),
+            .rd_vld (s_wvalid_out[s]),
+            .rd_dout ({s_wdata_out[s], s_wstrb_out[s], s_wlast_out[s]})
+        );
+
+        // AR FIFO
+        axi_fifo_sync #(
+            .FDW(W_SID + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
+            .FAW(2)
+        ) u_fifo_ar_slv (
+            .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
+            .wr_rdy (cbar_s_arready[s]),
+            .wr_vld (cbar_s_arvalid[s]),
+            .wr_din ({cbar_s_arid[s], cbar_s_araddr[s], cbar_s_arlen[s],
+                      cbar_s_arsize[s], cbar_s_arburst[s]}),
+            .rd_rdy (s_arready_out[s]),
+            .rd_vld (s_arvalid_out[s]),
+            .rd_dout ({s_arid_out[s], s_araddr_out[s], s_arlen_out[s],
+                       s_arsize_out[s], s_arburst_out[s]})
+        );
+    end
+endgenerate
+
+//=============================================================================
+// 4. New: Pre-Crossbar FIFOs: Slave -> Crossbar (B/R)
+//=============================================================================
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_PRE_FIFO_B_R
+        // B FIFO
+        axi_fifo_sync #(
+            .FDW(W_SID + RESP_W),
+            .FAW(2)
+        ) u_fifo_b_slv (
+            .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
+            .wr_rdy (s_bready_in[s]),
+            .wr_vld (s_bvalid_in[s]),
+            .wr_din ({s_bid_in[s], s_bresp_in[s]}),
+            .rd_rdy (s_bready_fifo[s]),
+            .rd_vld (s_bvalid_fifo[s]),
+            .rd_dout ({s_bid_fifo[s], s_bresp_fifo[s]})
+        );
+
+        // R FIFO
+        axi_fifo_sync #(
+            .FDW(W_SID + DATA_WIDTH + RESP_W + 1),
+            .FAW(2)
+        ) u_fifo_r_slv (
+            .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
+            .wr_rdy (s_rready_in[s]),
+            .wr_vld (s_rvalid_in[s]),
+            .wr_din ({s_rid_in[s], s_rdata_in[s], s_rresp_in[s], s_rlast_in[s]}),
+            .rd_rdy (s_rready_fifo[s]),
+            .rd_vld (s_rvalid_fifo[s]),
+            .rd_dout ({s_rid_fifo[s], s_rdata_fifo[s], s_rresp_fifo[s], s_rlast_fifo[s]})
+        );
+    end
+endgenerate
+
+//=============================================================================
+// 5. Post-Crossbar FIFOs: Crossbar -> Master (B/R) – unchanged
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : INST_FIFO_B_R_MST
+        // B FIFO
         axi_fifo_sync #(
             .FDW(TRANS_MST_ID_W + RESP_W),
             .FAW(2)
-        ) u_fifo_b (
+        ) u_fifo_b_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_m_bready[fifo_b_r]),
-            .wr_vld (cbar_m_bvalid[fifo_b_r]),
-            .wr_din ({cbar_m_bid[fifo_b_r], cbar_m_bresp[fifo_b_r]}),
-            .rd_rdy (m_bready[fifo_b_r]),
-            .rd_vld (m_bvalid[fifo_b_r]),
-            .rd_dout ({m_bid[fifo_b_r], m_bresp[fifo_b_r]})
+            .wr_rdy (cbar_m_bready[m]),
+            .wr_vld (cbar_m_bvalid[m]),
+            .wr_din ({cbar_m_bid[m], cbar_m_bresp[m]}),
+            .rd_rdy (m_bready[m]),
+            .rd_vld (m_bvalid[m]),
+            .rd_dout ({m_bid[m], m_bresp[m]})
         );
 
-        // R FIFO: stores {rid, rdata, rresp, rlast}, rd_vld drives m_rvalid
+        // R FIFO
         axi_fifo_sync #(
             .FDW(TRANS_MST_ID_W + DATA_WIDTH + RESP_W + 1),
             .FAW(2)
-        ) u_fifo_r (
+        ) u_fifo_r_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_m_rready[fifo_b_r]),
-            .wr_vld (cbar_m_rvalid[fifo_b_r]),
-            .wr_din ({cbar_m_rid[fifo_b_r], cbar_m_rdata[fifo_b_r],
-                      cbar_m_rresp[fifo_b_r], cbar_m_rlast[fifo_b_r]}),
-            .rd_rdy (m_rready[fifo_b_r]),
-            .rd_vld (m_rvalid[fifo_b_r]),
-            .rd_dout ({m_rid[fifo_b_r], m_rdata[fifo_b_r],
-                       m_rresp[fifo_b_r], m_rlast[fifo_b_r]})
+            .wr_rdy (cbar_m_rready[m]),
+            .wr_vld (cbar_m_rvalid[m]),
+            .wr_din ({cbar_m_rid[m], cbar_m_rdata[m],
+                      cbar_m_rresp[m], cbar_m_rlast[m]}),
+            .rd_rdy (m_rready[m]),
+            .rd_vld (m_rvalid[m]),
+            .rd_dout ({m_rid[m], m_rdata[m], m_rresp[m], m_rlast[m]})
         );
     end
 endgenerate
 
 //=============================================================================
-// 4. Slave-side signal unpacking (for sid_buffer and reorder)
+// 6. Read Reorder Logic (unchanged, but note slave AR/R now come from FIFOs)
 //=============================================================================
-genvar s_unpack;
-generate
-    for(s_unpack = 0; s_unpack < SLV_AMT; s_unpack = s_unpack + 1) begin : UNPACK_SLV_SID
-        // AR outputs from crossbar → sid_buffer write data
-        assign s_arid_unpk[s_unpack]    = s_ARID_o[W_SID*(s_unpack+1)-1 -: W_SID];
-        assign s_arvalid_unpk[s_unpack] = s_ARVALID_o[s_unpack];
-        assign s_arready_unpk[s_unpack] = s_ARREADY_i[s_unpack];
+// Slave side signals for reorder (use FIFO outputs, not direct top)
+wire [W_SID-1:0]   slave_arid_for_reorder  [0:SLV_AMT-1];
+wire               slave_arvalid_for_reorder[0:SLV_AMT-1];
+wire               slave_arready_for_reorder[0:SLV_AMT-1];
+wire [W_SID-1:0]   slave_rid_for_reorder   [0:SLV_AMT-1];
+wire               slave_rvalid_for_reorder[0:SLV_AMT-1];
 
-        // R inputs from slaves → reorder
-        assign s_rid_unpk[s_unpack]     = s_RID_i[W_SID*(s_unpack+1)-1 -: W_SID];
-        assign s_rvalid_unpk[s_unpack]  = s_RVALID_i[s_unpack];
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : REORDER_SLV_SIGNALS
+        assign slave_arid_for_reorder[s]   = s_arid_out[s];
+        assign slave_arvalid_for_reorder[s]= s_arvalid_out[s];
+        assign slave_arready_for_reorder[s]= s_arready_out[s];
+        assign slave_rid_for_reorder[s]    = s_rid_fifo[s];
+        assign slave_rvalid_for_reorder[s] = s_rvalid_fifo[s];
     end
 endgenerate
 
-//=============================================================================
-// 5. Read Reorder Logic: sid_buffer + reorder per Master
-//=============================================================================
 genvar rm;
 generate
     for(rm = 0; rm < MST_AMT; rm = rm + 1) begin : INST_REORDER_M
-
-        // ----- sid_buffer -----
-        // Writes: capture s_ARID on per-slave AR handshake
-        // Clear:  from crossbar master-side R completion (m_RSID + m_RVALID + m_RLAST)
-
         wire [W_SID*SLV_AMT-1:0] sid_buf_wr_id_packed;
         wire [SLV_AMT-1:0]       sid_buf_wr_vld;
         wire [SLV_AMT-1:0]       sid_buf_wr_rdy;
 
         genvar si_wr;
         for(si_wr = 0; si_wr < SLV_AMT; si_wr = si_wr + 1) begin : SID_BUF_WR_PACK
-            assign sid_buf_wr_id_packed[W_SID*(si_wr+1)-1 -: W_SID] = s_arid_unpk[si_wr];
-            // Write on AR handshake completion
-            assign sid_buf_wr_vld[si_wr] = s_arvalid_unpk[si_wr] & s_arready_unpk[si_wr];
-            // Always ready to accept (only enabled when vld & rdy)
+            assign sid_buf_wr_id_packed[W_SID*(si_wr+1)-1 -: W_SID] = slave_arid_for_reorder[si_wr];
+            assign sid_buf_wr_vld[si_wr] = slave_arvalid_for_reorder[si_wr] & slave_arready_for_reorder[si_wr];
             assign sid_buf_wr_rdy[si_wr] = 1'b1;
         end
 
-        // Clear on: master-side R handshake with last beat
         wire clr_last_wire = cbar_m_rlast[rm];
         wire clr_vld_wire  = cbar_m_rvalid[rm] & m_rready[rm];
 
@@ -485,31 +650,24 @@ generate
         ) u_sid_buffer (
             .clk         (AXI_CLK),
             .rstn        (AXI_RSTn),
-            // Write ports
             .s_axid      (sid_buf_wr_id_packed),
             .s_axid_vld  (sid_buf_wr_vld),
             .s_fifo_rdy  (sid_buf_wr_rdy),
-            .s_push_rdy  (),                           // unused
-            // Single clear port (from crossbar master-side R)
+            .s_push_rdy  (),   // unused
             .clr_last    (clr_last_wire),
             .clr_sid     (cbar_m_rsid[rm]),
             .clr_sid_vld (clr_vld_wire),
-            .clr_rdy     (),                           // unused
-            // Buffer output
+            .clr_rdy     (),
             .sid_buffer  (sid_buf_out[rm])
         );
-
-        // ----- reorder -----
-        // Inputs: per-slave RID/RVALID from slave response channel
-        // rob_buffer: from sid_buffer output (expected AR order)
 
         wire [W_SID*SLV_AMT-1:0] reorder_sid_packed;
         wire [SLV_AMT-1:0]       reorder_sid_vld;
 
         genvar si_ro;
         for(si_ro = 0; si_ro < SLV_AMT; si_ro = si_ro + 1) begin : REORDER_IN_PACK
-            assign reorder_sid_packed[W_SID*(si_ro+1)-1 -: W_SID] = s_rid_unpk[si_ro];
-            assign reorder_sid_vld[si_ro] = s_rvalid_unpk[si_ro];
+            assign reorder_sid_packed[W_SID*(si_ro+1)-1 -: W_SID] = slave_rid_for_reorder[si_ro];
+            assign reorder_sid_vld[si_ro] = slave_rvalid_for_reorder[si_ro];
         end
 
         reorder #(
@@ -528,23 +686,18 @@ generate
 endgenerate
 
 //=============================================================================
-// 6. Pack internal reorder grants + bypass logic
+// Pack internal reorder grants + bypass logic
 //=============================================================================
-genvar rg;
 generate
-    for(rg = 0; rg < MST_AMT; rg = rg + 1) begin : PACK_RORDER_GRANT
-        assign internal_r_order_grant[SLV_AMT*(rg+1)-1 -: SLV_AMT] = reorder_grant_m[rg];
+    for(rm = 0; rm < MST_AMT; rm = rm + 1) begin : PACK_RORDER_GRANT
+        assign internal_r_order_grant[SLV_AMT*(rm+1)-1 -: SLV_AMT] = reorder_grant_m[rm];
     end
 endgenerate
 
-// External r_order_grant_i can override internal reorder (for debug/bypass):
-//   - If r_order_grant_i is all-zeros, use internal reorder grants
-//   - Otherwise, use external grants directly
-wire [MST_AMT*SLV_AMT-1:0] effective_r_order_grant;
 assign effective_r_order_grant = (|r_order_grant_i) ? r_order_grant_i : internal_r_order_grant;
 
 //=============================================================================
-// 7. Unpack crossbar M_RSID output
+// Unpack crossbar M_RSID output
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_RSID
@@ -553,7 +706,7 @@ generate
 endgenerate
 
 //=============================================================================
-// 8. axi_crossbar: Core Routing Engine
+// 7. axi_crossbar: Core Routing Engine (connect to new slave side FIFOs)
 //=============================================================================
 axi_crossbar #(
     .MST_AMT(MST_AMT),
@@ -574,7 +727,7 @@ axi_crossbar #(
     .AXI_CLK(AXI_CLK),
     .AXI_RSTn(AXI_RSTn),
 
-    // Master Ports
+    // Master Ports (connected to pre-FIFO outputs)
     .m_AWID_i({cbar_m_awid[MST_AMT-1:0]}),
     .m_AWADDR_i({cbar_m_awaddr[MST_AMT-1:0]}),
     .m_AWLEN_i({cbar_m_awlen[MST_AMT-1:0]}),
@@ -606,19 +759,36 @@ axi_crossbar #(
     .m_RREADY_i({cbar_m_rready[MST_AMT-1:0]}),
     .m_RSID_o(cbar_m_rsid_packed),
 
-    // Slave Ports (Direct to external)
-    .s_AWID_o(s_AWID_o), .s_AWADDR_o(s_AWADDR_o), .s_AWLEN_o(s_AWLEN_o),
-    .s_AWSIZE_o(s_AWSIZE_o), .s_AWBURST_o(s_AWBURST_o), .s_AWVALID_o(s_AWVALID_o),
-    .s_AWREADY_i(s_AWREADY_i),
-    .s_WDATA_o(s_WDATA_o), .s_WSTRB_o(s_WSTRB_o), .s_WLAST_o(s_WLAST_o),
-    .s_WVALID_o(s_WVALID_o), .s_WREADY_i(s_WREADY_i),
-    .s_BID_i(s_BID_i), .s_BRESP_i(s_BRESP_i), .s_BVALID_i(s_BVALID_i),
-    .s_BREADY_o(s_BREADY_o),
-    .s_ARID_o(s_ARID_o), .s_ARADDR_o(s_ARADDR_o), .s_ARLEN_o(s_ARLEN_o),
-    .s_ARSIZE_o(s_ARSIZE_o), .s_ARBURST_o(s_ARBURST_o), .s_ARVALID_o(s_ARVALID_o),
-    .s_ARREADY_i(s_ARREADY_i),
-    .s_RID_i(s_RID_i), .s_RDATA_i(s_RDATA_i), .s_RRESP_i(s_RRESP_i),
-    .s_RLAST_i(s_RLAST_i), .s_RVALID_i(s_RVALID_i), .s_RREADY_o(s_RREADY_o),
+    // Slave Ports (connected to new slave-side FIFOs)
+    .s_AWID_o({cbar_s_awid[SLV_AMT-1:0]}),
+    .s_AWADDR_o({cbar_s_awaddr[SLV_AMT-1:0]}),
+    .s_AWLEN_o({cbar_s_awlen[SLV_AMT-1:0]}),
+    .s_AWSIZE_o({cbar_s_awsize[SLV_AMT-1:0]}),
+    .s_AWBURST_o({cbar_s_awburst[SLV_AMT-1:0]}),
+    .s_AWVALID_o({cbar_s_awvalid[SLV_AMT-1:0]}),
+    .s_AWREADY_i({cbar_s_awready[SLV_AMT-1:0]}),
+    .s_WDATA_o({cbar_s_wdata[SLV_AMT-1:0]}),
+    .s_WSTRB_o({cbar_s_wstrb[SLV_AMT-1:0]}),
+    .s_WLAST_o({cbar_s_wlast[SLV_AMT-1:0]}),
+    .s_WVALID_o({cbar_s_wvalid[SLV_AMT-1:0]}),
+    .s_WREADY_i({cbar_s_wready[SLV_AMT-1:0]}),
+    .s_BID_i({s_bid_fifo[SLV_AMT-1:0]}),
+    .s_BRESP_i({s_bresp_fifo[SLV_AMT-1:0]}),
+    .s_BVALID_i({s_bvalid_fifo[SLV_AMT-1:0]}),
+    .s_BREADY_o({s_bready_fifo[SLV_AMT-1:0]}),
+    .s_ARID_o({cbar_s_arid[SLV_AMT-1:0]}),
+    .s_ARADDR_o({cbar_s_araddr[SLV_AMT-1:0]}),
+    .s_ARLEN_o({cbar_s_arlen[SLV_AMT-1:0]}),
+    .s_ARSIZE_o({cbar_s_arsize[SLV_AMT-1:0]}),
+    .s_ARBURST_o({cbar_s_arburst[SLV_AMT-1:0]}),
+    .s_ARVALID_o({cbar_s_arvalid[SLV_AMT-1:0]}),
+    .s_ARREADY_i({cbar_s_arready[SLV_AMT-1:0]}),
+    .s_RID_i({s_rid_fifo[SLV_AMT-1:0]}),
+    .s_RDATA_i({s_rdata_fifo[SLV_AMT-1:0]}),
+    .s_RRESP_i({s_rresp_fifo[SLV_AMT-1:0]}),
+    .s_RLAST_i({s_rlast_fifo[SLV_AMT-1:0]}),
+    .s_RVALID_i({s_rvalid_fifo[SLV_AMT-1:0]}),
+    .s_RREADY_o({s_rready_fifo[SLV_AMT-1:0]}),
 
     // Control
     .arbiter_type(arbiter_type),
