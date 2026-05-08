@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python -c ':*)",
-      "Bash(grep -v \"^[[:space:]]*//\")"
+      "Bash(grep -v \"^[[:space:]]*//\")",
+      "Bash(sed -i '144s/genvar cii;/genvar cii, cp;/' \"c:/Users/22612/Desktop/AXI4/rtl/sid_buffer.v\")",
+      "Bash(sed -i '147s/genvar cp = 0/cp = 0/' \"c:/Users/22612/Desktop/AXI4/rtl/sid_buffer.v\")"
     ]
   }
 }

@@ -125,8 +125,8 @@ module axi_crossbar
     // ========== Control/Status Ports ==========
     input   wire                      arbiter_type,           // 0: Round-Robin, 1: Fixed-Priority
     
-    // Read reorder control: per-master grant vector [SLV_AMT-1:0]
-    input   wire  [MST_AMT*SLV_AMT-1  : 0]  r_order_grant_i,
+    // Read reorder control: per-slave grant, shared across all S2M instances
+    input   wire  [SLV_AMT-1              : 0]  r_order_grant_i,
     
     // Optional: APB-style configuration (can be tied to constants)
     input   wire  [SLV_AMT-1          : 0]  slv_en_i            // Slave enable mask
@@ -225,9 +225,6 @@ wire                         m_arready_agg [0:MST_AMT-1];
 // B/R ready aggregation: per-slave OR-reduced from all masters
 wire [SLV_AMT-1:0]           s_bready_agg;
 wire [SLV_AMT-1:0]           s_rready_agg;
-
-// Read reorder grant: per-master slice [SLV_AMT-1:0]
-wire [SLV_AMT-1:0]           r_order_grant_m [0:MST_AMT-1];
 
 //=============================================================================
 // Port Flattening: Master Side (Unpack)
@@ -396,15 +393,6 @@ generate
         end
         assign s_bready[s] = |b_rdy_vec;
         assign s_rready[s] = |r_rdy_vec;
-    end
-endgenerate
-
-//=============================================================================
-// Read Reorder Grant Slicing: per-master [SLV_AMT-1:0]
-//=============================================================================
-generate
-    for(m = 0; m < MST_AMT; m = m + 1) begin : R_ORDER_SLICE
-        assign r_order_grant_m[m] = r_order_grant_i[SLV_AMT*(m+1)-1 -: SLV_AMT];
     end
 endgenerate
 
@@ -609,7 +597,7 @@ generate
             .S_RVALID(s_rvalid_packed),
             .S_RREADY(s_rready_packed),
             
-            .r_order_grant(r_order_grant_m[m]),
+            .r_order_grant(r_order_grant_i),
             .arbiter_type(arbiter_type)
         );
     end

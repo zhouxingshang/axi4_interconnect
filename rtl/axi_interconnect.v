@@ -102,7 +102,7 @@ module axi_interconnect
 
     // ========== Control Ports ==========
     input   wire                      arbiter_type,
-    input   wire  [MST_AMT*SLV_AMT-1  : 0]  r_order_grant_i
+    input   wire  [SLV_AMT-1              : 0]  r_order_grant_i
 );
 
 //=============================================================================
@@ -282,12 +282,16 @@ wire                        s_rvalid_in     [0:SLV_AMT-1];
 wire                        s_rready_in     [0:SLV_AMT-1];   // to top
 
 //=============================================================================
-// Read Reorder Signals (unchanged)
+// Read Reorder Signals — single shared sid_buffer + reorder
 //=============================================================================
-wire [W_SID-1:0]            sid_buf_out     [0:MST_AMT-1][0:3];  // DEPTH=4
-wire [SLV_AMT-1:0]          reorder_grant_m [0:MST_AMT-1];
-wire [MST_AMT*SLV_AMT-1:0]  internal_r_order_grant;
-wire [MST_AMT*SLV_AMT-1:0]  effective_r_order_grant;
+wire [W_SID-1:0]            sid_buf_out         [0:3];          // DEPTH=4
+wire [SLV_AMT-1:0]          reorder_grant;
+wire [SLV_AMT-1:0]          internal_r_order_grant;
+wire [SLV_AMT-1:0]          effective_r_order_grant;
+
+// sid_buffer backpressure: s_push_rdy per slave, gated AR ready
+wire [SLV_AMT-1:0]          sid_buf_push_rdy;                   // per-slave
+wire [SLV_AMT-1:0]          cbar_s_arready_fifo;                // AR FIFO wr_rdy before gate
 
 //=============================================================================
 // Port Flattening (Unpack Master Inputs / Pack Master Outputs)
@@ -517,13 +521,13 @@ generate
             .rd_dout ({s_wdata_out[s], s_wstrb_out[s], s_wlast_out[s]})
         );
 
-        // AR FIFO
+        // AR FIFO: wr_rdy → intermediate, gated by sid_buffer backpressure
         axi_fifo_sync #(
             .FDW(W_SID + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
             .FAW(2)
         ) u_fifo_ar_slv (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_s_arready[s]),
+            .wr_rdy (cbar_s_arready_fifo[s]),
             .wr_vld (cbar_s_arvalid[s]),
             .wr_din ({cbar_s_arid[s], cbar_s_araddr[s], cbar_s_arlen[s],
                       cbar_s_arsize[s], cbar_s_arburst[s]}),
@@ -532,6 +536,16 @@ generate
             .rd_dout ({s_arid_out[s], s_araddr_out[s], s_arlen_out[s],
                        s_arsize_out[s], s_arburst_out[s]})
         );
+    end
+endgenerate
+
+// Gate AR ready to crossbar: use s_push_rdy from shared sid_buffer per slave
+// rf-style push_rdy = ~(select ^ grant) & clr_allowed
+// When buffer has space: push_rdy[s]=1 → arready passes
+// When buffer full or clearing: push_rdy[s]=0 → arready gated
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : GEN_ARREADY_GATE
+        assign cbar_s_arready[s] = cbar_s_arready_fifo[s] & sid_buf_push_rdy[s];
     end
 endgenerate
 
@@ -626,74 +640,98 @@ generate
     end
 endgenerate
 
-genvar rm;
+//=============================================================================
+// 7. Single shared sid_buffer + reorder (not per-master)
+//    - Write: per-slave AR handshake captures s_arid
+//    - Clear: per-master R completion (one port per master, priority-arbitrated)
+//    - reorder: compares S_RID against shared rob_buffer → per-slave order_grant
+//    - order_grant shared to ALL S2M instances (each filters by MASTER_ID)
+//=============================================================================
+
+// ----- Write port packing (per slave) -----
+wire [W_SID*SLV_AMT-1:0] sid_buf_wr_id_packed;
+wire [SLV_AMT-1:0]       sid_buf_wr_vld;
+wire [SLV_AMT-1:0]       sid_buf_wr_rdy;
+
+genvar si_wr;
 generate
-    for(rm = 0; rm < MST_AMT; rm = rm + 1) begin : INST_REORDER_M
-        wire [W_SID*SLV_AMT-1:0] sid_buf_wr_id_packed;
-        wire [SLV_AMT-1:0]       sid_buf_wr_vld;
-        wire [SLV_AMT-1:0]       sid_buf_wr_rdy;
-
-        genvar si_wr;
-        for(si_wr = 0; si_wr < SLV_AMT; si_wr = si_wr + 1) begin : SID_BUF_WR_PACK
-            assign sid_buf_wr_id_packed[W_SID*(si_wr+1)-1 -: W_SID] = slave_arid_for_reorder[si_wr];
-            assign sid_buf_wr_vld[si_wr] = slave_arvalid_for_reorder[si_wr] & slave_arready_for_reorder[si_wr];
-            assign sid_buf_wr_rdy[si_wr] = 1'b1;
-        end
-
-        wire clr_last_wire = cbar_m_rlast[rm];
-        wire clr_vld_wire  = cbar_m_rvalid[rm] & m_rready[rm];
-
-        sid_buffer #(
-            .NUM  (SLV_AMT),
-            .W_ID (W_SID),
-            .DEPTH(4)
-        ) u_sid_buffer (
-            .clk         (AXI_CLK),
-            .rstn        (AXI_RSTn),
-            .s_axid      (sid_buf_wr_id_packed),
-            .s_axid_vld  (sid_buf_wr_vld),
-            .s_fifo_rdy  (sid_buf_wr_rdy),
-            .s_push_rdy  (),   // unused
-            .clr_last    (clr_last_wire),
-            .clr_sid     (cbar_m_rsid[rm]),
-            .clr_sid_vld (clr_vld_wire),
-            .clr_rdy     (),
-            .sid_buffer  (sid_buf_out[rm])
-        );
-
-        wire [W_SID*SLV_AMT-1:0] reorder_sid_packed;
-        wire [SLV_AMT-1:0]       reorder_sid_vld;
-
-        genvar si_ro;
-        for(si_ro = 0; si_ro < SLV_AMT; si_ro = si_ro + 1) begin : REORDER_IN_PACK
-            assign reorder_sid_packed[W_SID*(si_ro+1)-1 -: W_SID] = slave_rid_for_reorder[si_ro];
-            assign reorder_sid_vld[si_ro] = slave_rvalid_for_reorder[si_ro];
-        end
-
-        reorder #(
-            .NUM  (SLV_AMT),
-            .W_ID (W_SID),
-            .DEPTH(4)
-        ) u_reorder (
-            .clk         (AXI_CLK),
-            .rstn        (AXI_RSTn),
-            .s_sid       (reorder_sid_packed),
-            .s_sid_vld   (reorder_sid_vld),
-            .rob_buffer  (sid_buf_out[rm]),
-            .order_grant (reorder_grant_m[rm])
-        );
+    for(si_wr = 0; si_wr < SLV_AMT; si_wr = si_wr + 1) begin : SID_BUF_WR_PACK
+        assign sid_buf_wr_id_packed[W_SID*(si_wr+1)-1 -: W_SID] = slave_arid_for_reorder[si_wr];
+        assign sid_buf_wr_vld[si_wr] = slave_arvalid_for_reorder[si_wr] & slave_arready_for_reorder[si_wr];
+        assign sid_buf_wr_rdy[si_wr] = 1'b1;
     end
 endgenerate
 
-//=============================================================================
-// Pack internal reorder grants + bypass logic
-//=============================================================================
+// ----- Clear port packing (per master, one port per master) -----
+// Each master's R completion drives one clear port; priority_sel picks winner
+wire [SLV_AMT-1:0]       clr_last_packed;
+wire [W_SID*SLV_AMT-1:0] clr_sid_packed;
+wire [SLV_AMT-1:0]       clr_sid_vld_packed;
+
+genvar si_clr;
 generate
-    for(rm = 0; rm < MST_AMT; rm = rm + 1) begin : PACK_RORDER_GRANT
-        assign internal_r_order_grant[SLV_AMT*(rm+1)-1 -: SLV_AMT] = reorder_grant_m[rm];
+    for(si_clr = 0; si_clr < SLV_AMT; si_clr = si_clr + 1) begin : SID_BUF_CLR_PACK
+        if (si_clr < MST_AMT) begin : CLR_MASTER_PORT
+            assign clr_last_packed[si_clr]    = cbar_m_rlast[si_clr];
+            assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = cbar_m_rsid[si_clr];
+            assign clr_sid_vld_packed[si_clr] = cbar_m_rvalid[si_clr] & m_rready[si_clr];
+        end else begin : CLR_UNUSED_PORT
+            assign clr_last_packed[si_clr]    = 1'b0;
+            assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = {W_SID{1'b0}};
+            assign clr_sid_vld_packed[si_clr] = 1'b0;
+        end
     end
 endgenerate
 
+// ----- Shared sid_buffer -----
+sid_buffer #(
+    .NUM  (SLV_AMT),
+    .W_ID (W_SID),
+    .DEPTH(4)
+) u_sid_buffer (
+    .clk         (AXI_CLK),
+    .rstn        (AXI_RSTn),
+    .s_axid      (sid_buf_wr_id_packed),
+    .s_axid_vld  (sid_buf_wr_vld),
+    .s_fifo_rdy  (sid_buf_wr_rdy),
+    .s_push_rdy  (sid_buf_push_rdy),
+    .clr_last    (clr_last_packed),
+    .clr_sid     (clr_sid_packed),
+    .clr_sid_vld (clr_sid_vld_packed),
+    .s_clr_rdy   (),   // unused
+    .sid_buffer  (sid_buf_out)
+);
+
+// ----- Shared reorder -----
+wire [W_SID*SLV_AMT-1:0] reorder_sid_packed;
+wire [SLV_AMT-1:0]       reorder_sid_vld;
+
+genvar si_ro;
+generate
+    for(si_ro = 0; si_ro < SLV_AMT; si_ro = si_ro + 1) begin : REORDER_IN_PACK
+        assign reorder_sid_packed[W_SID*(si_ro+1)-1 -: W_SID] = slave_rid_for_reorder[si_ro];
+        assign reorder_sid_vld[si_ro] = slave_rvalid_for_reorder[si_ro];
+    end
+endgenerate
+
+reorder #(
+    .NUM    (SLV_AMT),
+    .M_ID_W ($clog2(MST_AMT)),
+    .W_ID   (TRANS_MST_ID_W),
+    .DEPTH  (4)
+) u_reorder (
+    .clk         (AXI_CLK),
+    .rstn        (AXI_RSTn),
+    .s_sid       (reorder_sid_packed),
+    .s_sid_vld   (reorder_sid_vld),
+    .rob_buffer  (sid_buf_out),
+    .order_grant (reorder_grant)
+);
+
+//=============================================================================
+// Bypass logic: external r_order_grant_i overrides internal reorder
+//=============================================================================
+assign internal_r_order_grant = reorder_grant;
 assign effective_r_order_grant = (|r_order_grant_i) ? r_order_grant_i : internal_r_order_grant;
 
 //=============================================================================
