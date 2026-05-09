@@ -203,6 +203,7 @@ wire [RESP_W-1:0]           cbar_m_rresp    [0:MST_AMT-1];
 wire                        cbar_m_rlast    [0:MST_AMT-1];
 wire                        cbar_m_rvalid   [0:MST_AMT-1];
 wire                        cbar_m_rready   [0:MST_AMT-1];
+wire                        cbar_m_rready_fifo [0:MST_AMT-1];  // R FIFO wr_rdy before clear-gate
 
 wire [W_SID*MST_AMT-1:0]    cbar_m_rsid_packed;
 wire [W_SID-1:0]            cbar_m_rsid     [0:MST_AMT-1];
@@ -603,13 +604,13 @@ generate
             .rd_dout ({m_bid[m], m_bresp[m]})
         );
 
-        // R FIFO
+        // R FIFO: wr_rdy gated by sid_buffer s_clr_rdy (clear backpressure)
         axi_fifo_sync #(
             .FDW(TRANS_MST_ID_W + DATA_WIDTH + RESP_W + 1),
             .FAW(2)
         ) u_fifo_r_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_m_rready[m]),
+            .wr_rdy (cbar_m_rready_fifo[m]),
             .wr_vld (cbar_m_rvalid[m]),
             .wr_din ({cbar_m_rid[m], cbar_m_rdata[m],
                       cbar_m_rresp[m], cbar_m_rlast[m]}),
@@ -617,6 +618,16 @@ generate
             .rd_vld (m_rvalid[m]),
             .rd_dout ({m_rid[m], m_rdata[m], m_rresp[m], m_rlast[m]})
         );
+    end
+endgenerate
+
+// Gate R ready to crossbar: use s_clr_rdy from shared sid_buffer per master
+// rf-style s_clr_rdy = ~(clr_select ^ clr_grant)
+// When master has no clear request or wins arbitration: s_clr_rdy=1 → rready passes
+// When master requests clear but loses arbitration: s_clr_rdy=0 → rready gated → retry
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : GEN_RREADY_GATE
+        assign cbar_m_rready[m] = cbar_m_rready_fifo[m] & sid_buf_s_clr_rdy[m];
     end
 endgenerate
 
@@ -662,32 +673,28 @@ generate
     end
 endgenerate
 
-// ----- Clear port packing (per master, one port per master) -----
-// Each master's R completion drives one clear port; priority_sel picks winner
-wire [SLV_AMT-1:0]       clr_last_packed;
-wire [W_SID*SLV_AMT-1:0] clr_sid_packed;
-wire [SLV_AMT-1:0]       clr_sid_vld_packed;
+// ----- Clear port packing (one port per master) -----
+// Each master's R completion drives one clear port; priority_sel_clr picks winner
+wire [MST_AMT-1:0]       clr_last_packed;
+wire [W_SID*MST_AMT-1:0] clr_sid_packed;
+wire [MST_AMT-1:0]       clr_sid_vld_packed;
+wire [MST_AMT-1:0]       sid_buf_s_clr_rdy;
 
 genvar si_clr;
 generate
-    for(si_clr = 0; si_clr < SLV_AMT; si_clr = si_clr + 1) begin : SID_BUF_CLR_PACK
-        if (si_clr < MST_AMT) begin : CLR_MASTER_PORT
-            assign clr_last_packed[si_clr]    = cbar_m_rlast[si_clr];
-            assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = cbar_m_rsid[si_clr];
-            assign clr_sid_vld_packed[si_clr] = cbar_m_rvalid[si_clr] & m_rready[si_clr];
-        end else begin : CLR_UNUSED_PORT
-            assign clr_last_packed[si_clr]    = 1'b0;
-            assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = {W_SID{1'b0}};
-            assign clr_sid_vld_packed[si_clr] = 1'b0;
-        end
+    for(si_clr = 0; si_clr < MST_AMT; si_clr = si_clr + 1) begin : SID_BUF_CLR_PACK
+        assign clr_last_packed[si_clr]    = cbar_m_rlast[si_clr];
+        assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = cbar_m_rsid[si_clr];
+        assign clr_sid_vld_packed[si_clr] = cbar_m_rvalid[si_clr] & m_rready[si_clr];
     end
 endgenerate
 
 // ----- Shared sid_buffer -----
 sid_buffer #(
-    .NUM  (SLV_AMT),
-    .W_ID (W_SID),
-    .DEPTH(4)
+    .NUM_WR (SLV_AMT),
+    .NUM_CLR(MST_AMT),
+    .W_ID   (W_SID),
+    .DEPTH  (4)
 ) u_sid_buffer (
     .clk         (AXI_CLK),
     .rstn        (AXI_RSTn),
@@ -698,7 +705,7 @@ sid_buffer #(
     .clr_last    (clr_last_packed),
     .clr_sid     (clr_sid_packed),
     .clr_sid_vld (clr_sid_vld_packed),
-    .s_clr_rdy   (),   // unused
+    .s_clr_rdy   (sid_buf_s_clr_rdy),
     .sid_buffer  (sid_buf_out)
 );
 
