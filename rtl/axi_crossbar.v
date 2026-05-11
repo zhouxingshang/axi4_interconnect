@@ -32,7 +32,8 @@ module axi_crossbar
 
     // ========== 默认从设备配置 ==========
     parameter DEFAULT_SLV_IDX       = 0,              // 默认从设备索引 (未命中地址空间的访问)
-    parameter DEFAULT_SLV_EN        = 1'b1            // 使能默认从设备路由
+    parameter DEFAULT_SLV_EN        = 1'b1,           // 使能默认从设备路由
+    parameter [SLV_AMT-1:0] SLV_DEFAULT_MASK = ((DEFAULT_SLV_EN) ? (1 << DEFAULT_SLV_IDX) : '0)  // bit[s]=1 表示 slave s 为默认设备
 )
 (
     // ========== 全局信号 ==========
@@ -329,13 +330,13 @@ endgenerate
 // 默认从设备 M2S 内部做 ~AWSELECT_IN, 实现 "未被任何其他从设备选中" 的译码
 //=============================================================================
 generate
-    if (DEFAULT_SLV_EN) begin : DEFAULT_OR
+    if (|SLV_DEFAULT_MASK) begin : DEFAULT_OR
         wire [MST_AMT-1:0] aw_chain [0:SLV_AMT];
         wire [MST_AMT-1:0] ar_chain [0:SLV_AMT];
         assign aw_chain[0] = {MST_AMT{1'b0}};
         assign ar_chain[0] = {MST_AMT{1'b0}};
         for (s = 0; s < SLV_AMT; s = s + 1) begin
-            if (s != DEFAULT_SLV_IDX) begin
+            if (!SLV_DEFAULT_MASK[s]) begin
                 assign aw_chain[s+1] = aw_chain[s] | awselect_out[s];
                 assign ar_chain[s+1] = ar_chain[s] | arselect_out[s];
             end else begin
@@ -460,7 +461,7 @@ generate
             .ALEN_W(TRANS_DATA_LEN_W),
             .ASIZE_W(TRANS_DATA_SIZE_W),
             .ABURST_W(TRANS_BURST_W),
-            .SLAVE_DEFAULT((s == DEFAULT_SLV_IDX) ? DEFAULT_SLV_EN : 1'b0)
+            .SLAVE_DEFAULT(SLV_DEFAULT_MASK[s])
         ) u_axi_m2s (
             .AXI_RSTn(AXI_RSTn),
             .AXI_CLK(AXI_CLK),
