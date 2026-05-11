@@ -280,47 +280,81 @@ endgenerate
 
 //=============================================================================
 // 端口扁平化: 从设备侧 (打包)
+// 默认从设备 (SLV_DEFAULT_MASK[s]==1) 的外部端口被 tie-off,
+// 其 s_awready / s_wready / s_arready / B / R 信号由 INST_M2S 中的
+// axi_default_slave 驱动
 //=============================================================================
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_SLAVE
-        // AW 通道
-        assign s_AWID_o[W_SID*(s+1)-1 -: W_SID]       = s_awid[s];
-        assign s_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr[s];
-        assign s_AWBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_awburst[s];
-        assign s_AWLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_awlen[s];
-        assign s_AWSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = s_awsize[s];
-        assign s_AWVALID_o[s] = s_awvalid[s];
-        assign s_awready[s]   = s_AWREADY_i[s];
-        
-        // W 通道
-        assign s_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata[s];
-        assign s_WSTRB_o[W_STRB*(s+1)-1 -: W_STRB] = s_wstrb[s];
-        assign s_WLAST_o[s] = s_wlast[s];
-        assign s_WVALID_o[s] = s_wvalid[s];
-        assign s_wready[s]   = s_WREADY_i[s];
-        
-        // B 通道
-        assign s_bid[s]      = s_BID_i[W_SID*(s+1)-1 -: W_SID];
-        assign s_bresp[s]    = s_BRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
-        assign s_bvalid[s]   = s_BVALID_i[s];
-        assign s_BREADY_o[s] = s_bready[s];
-        
-        // AR 通道
-        assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = s_arid[s];
-        assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr[s];
-        assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_arburst[s];
-        assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_arlen[s];
-        assign s_ARSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = s_arsize[s];
-        assign s_ARVALID_o[s] = s_arvalid[s];
-        assign s_arready[s]   = s_ARREADY_i[s];
-        
-        // R 通道
-        assign s_rid[s]      = s_RID_i[W_SID*(s+1)-1 -: W_SID];
-        assign s_rdata[s]    = s_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
-        assign s_rresp[s]    = s_RRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
-        assign s_rlast[s]    = s_RLAST_i[s];
-        assign s_rvalid[s]   = s_RVALID_i[s];
-        assign s_RREADY_o[s] = s_rready[s];
+        if (!SLV_DEFAULT_MASK[s]) begin : NORMAL_SLV
+            // AW 通道
+            assign s_AWID_o[W_SID*(s+1)-1 -: W_SID]       = s_awid[s];
+            assign s_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr[s];
+            assign s_AWBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_awburst[s];
+            assign s_AWLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_awlen[s];
+            assign s_AWSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = s_awsize[s];
+            assign s_AWVALID_o[s] = s_awvalid[s];
+            assign s_awready[s]   = s_AWREADY_i[s];
+
+            // W 通道
+            assign s_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata[s];
+            assign s_WSTRB_o[W_STRB*(s+1)-1 -: W_STRB] = s_wstrb[s];
+            assign s_WLAST_o[s] = s_wlast[s];
+            assign s_WVALID_o[s] = s_wvalid[s];
+            assign s_wready[s]   = s_WREADY_i[s];
+
+            // B 通道
+            assign s_bid[s]      = s_BID_i[W_SID*(s+1)-1 -: W_SID];
+            assign s_bresp[s]    = s_BRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
+            assign s_bvalid[s]   = s_BVALID_i[s];
+            assign s_BREADY_o[s] = s_bready[s];
+
+            // AR 通道
+            assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = s_arid[s];
+            assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr[s];
+            assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_arburst[s];
+            assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_arlen[s];
+            assign s_ARSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = s_arsize[s];
+            assign s_ARVALID_o[s] = s_arvalid[s];
+            assign s_arready[s]   = s_ARREADY_i[s];
+
+            // R 通道
+            assign s_rid[s]      = s_RID_i[W_SID*(s+1)-1 -: W_SID];
+            assign s_rdata[s]    = s_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
+            assign s_rresp[s]    = s_RRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
+            assign s_rlast[s]    = s_RLAST_i[s];
+            assign s_rvalid[s]   = s_RVALID_i[s];
+            assign s_RREADY_o[s] = s_rready[s];
+        end else begin : DEFAULT_SLV
+            // 默认从设备: 外部 AW/W/AR 端口 tie-off
+            assign s_AWID_o[W_SID*(s+1)-1 -: W_SID]       = {W_SID{1'b0}};
+            assign s_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = {ADDR_WIDTH{1'b0}};
+            assign s_AWBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = {TRANS_BURST_W{1'b0}};
+            assign s_AWLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = {TRANS_DATA_LEN_W{1'b0}};
+            assign s_AWSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = {TRANS_DATA_SIZE_W{1'b0}};
+            assign s_AWVALID_o[s] = 1'b0;
+            // s_awready[s] 由 INST_M2S 中的 axi_default_slave 驱动
+
+            assign s_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = {DATA_WIDTH{1'b0}};
+            assign s_WSTRB_o[W_STRB*(s+1)-1 -: W_STRB] = {W_STRB{1'b0}};
+            assign s_WLAST_o[s] = 1'b0;
+            assign s_WVALID_o[s] = 1'b0;
+            // s_wready[s] 由 INST_M2S 中的 axi_default_slave 驱动
+
+            // B 通道输入由 INST_M2S 中的 axi_default_slave 驱动
+            assign s_BREADY_o[s] = 1'b0;
+
+            assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = {W_SID{1'b0}};
+            assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = {ADDR_WIDTH{1'b0}};
+            assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = {TRANS_BURST_W{1'b0}};
+            assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = {TRANS_DATA_LEN_W{1'b0}};
+            assign s_ARSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = {TRANS_DATA_SIZE_W{1'b0}};
+            assign s_ARVALID_o[s] = 1'b0;
+            // s_arready[s] 由 INST_M2S 中的 axi_default_slave 驱动
+
+            // R 通道输入由 INST_M2S 中的 axi_default_slave 驱动
+            assign s_RREADY_o[s] = 1'b0;
+        end
     end
 endgenerate
 
@@ -517,6 +551,56 @@ generate
             .arbiter_type(arbiter_type),
             .slv_en(slv_en_i[s])
         );
+
+        // 默认从设备: 例化 axi_default_slave 驱动 ready / B / R 信号
+        if (SLV_DEFAULT_MASK[s]) begin : GEN_DEFAULT_SLV
+            axi_default_slave #(
+                .W_CID(SLV_ID_W),
+                .W_ID(TRANS_MST_ID_W),
+                .W_ADDR(ADDR_WIDTH),
+                .W_DATA(DATA_WIDTH),
+                .W_STRB(W_STRB),
+                .W_SID(W_SID)
+            ) u_axi_default_slave (
+                .AXI_RSTn(AXI_RSTn),
+                .AXI_CLK (AXI_CLK),
+
+                .AWID    (s_awid[s]),
+                .AWADDR  (s_awaddr[s]),
+                .AWLEN   (s_awlen[s]),
+                .AWSIZE  (s_awsize[s]),
+                .AWBURST (s_awburst[s]),
+                .AWVALID (s_awvalid[s]),
+                .AWREADY (s_awready[s]),
+
+                .WID     ({W_SID{1'b0}}),
+                .WDATA   (s_wdata[s]),
+                .WSTRB   (s_wstrb[s]),
+                .WLAST   (s_wlast[s]),
+                .WVALID  (s_wvalid[s]),
+                .WREADY  (s_wready[s]),
+
+                .BID     (s_bid[s]),
+                .BRESP   (s_bresp[s]),
+                .BVALID  (s_bvalid[s]),
+                .BREADY  (s_bready[s]),
+
+                .ARID    (s_arid[s]),
+                .ARADDR  (s_araddr[s]),
+                .ARLEN   (s_arlen[s]),
+                .ARSIZE  (s_arsize[s]),
+                .ARBURST (s_arburst[s]),
+                .ARVALID (s_arvalid[s]),
+                .ARREADY (s_arready[s]),
+
+                .RID     (s_rid[s]),
+                .RDATA   (s_rdata[s]),
+                .RRESP   (s_rresp[s]),
+                .RLAST   (s_rlast[s]),
+                .RVALID  (s_rvalid[s]),
+                .RREADY  (s_rready[s])
+            );
+        end
 
         assign awselect_out[s] = m2s_awsel;
         assign arselect_out[s] = m2s_arsel;

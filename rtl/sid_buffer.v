@@ -1,10 +1,4 @@
-//=============================================================================
-// Module: sid_buffer
-// Desc  : Parameterized ordered SID buffer for AXI read reorder tracking
-//         - NUM_WR write ports (one per slave, = SLV_AMT)
-//         - NUM_CLR clear ports (one per master, = MST_AMT)
-//         - Write logic (rf-style): s_axid_vld & s_fifo_rdy → push_select
-//           → priority_sel_wr → push_grant → XNOR → s_push_rdy
+c_sel_wr → push_grant → XNOR → s_push_rdy
 //         - Clear logic (rf-style): clr_last & clr_sid_vld → clr_select
 //           → priority_sel_clr → clr_grant → XNOR → s_clr_rdy
 //         - Low-index ports have higher priority in both write and clear arb

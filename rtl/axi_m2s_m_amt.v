@@ -1,10 +1,4 @@
-//=============================================================================
-// Module: axi_m2s_m_amt
-// Desc  : Parameterized AXI Master-to-Slave routing module with W-follows-AW
-//         - Supports arbitrary MST_AMT masters via flattened interface
-//         - W channel strictly follows AW handshake order using FIFO+counter
-//         - Retains axi_fifo_sync for W data buffering
-//         - Master identity encoded implicitly via array index (no m_id port)
+c      - Master identity encoded implicitly via array index (no m_id port)
 //=============================================================================
 module axi_m2s_m_amt
 #(
@@ -226,7 +220,7 @@ axi_arbiter_m2s_m_amt #(
 //=============================================================================
 // AW Handshake Capture -> Push to Order FIFO
 //=============================================================================
-wire [MST_AMT-1:0] aw_handshake = AWGRANT & {S_AWREADY{MST_AMT{1'b1}}} & {m_awvalid[MST_AMT-1:0]};
+wire [MST_AMT-1:0] aw_handshake = AWGRANT & {MST_AMT{S_AWREADY}} & {m_awvalid[MST_AMT-1:0]};
 wire [MST_ID_W-1:0] aw_grant_idx;
 
 // One-hot grant to binary index encoder (priority: low index first)
