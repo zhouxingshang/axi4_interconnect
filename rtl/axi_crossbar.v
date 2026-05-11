@@ -1,46 +1,46 @@
 module axi_crossbar
 #(
-    // ========== Interconnect Configuration ==========
-    parameter MST_AMT               = 4,              // Number of masters
-    parameter SLV_AMT               = 4,              // Number of slaves
-    parameter OUTSTANDING_AMT       = 8,              // Max outstanding transactions per master
-    
-    // ========== Transaction Configuration ==========
-    parameter TRANS_MST_ID_W        = 4,              // Master transaction ID width
-    parameter TRANS_BURST_W         = 2,              // xBURST field width
-    parameter TRANS_DATA_LEN_W      = 8,              // xLEN field width
-    parameter TRANS_DATA_SIZE_W     = 3,              // xSIZE field width
-    parameter TRANS_WR_RESP_W       = 2,              // xRESP field width
-    parameter DATA_WIDTH            = 32,             // Data bus width
-    parameter ADDR_WIDTH            = 32,             // Address bus width
-    
-    // ========== Derived Parameters ==========
-    parameter MST_ID_W              = $clog2(MST_AMT),           // Width to encode master index
-    parameter SLV_ID_W              = $clog2(SLV_AMT),           // Width to encode slave index
-    parameter W_STRB                = DATA_WIDTH / 8,            // Byte strobe width
-    parameter W_SID                 = MST_ID_W + TRANS_MST_ID_W, // Slave-side ID width (MST_IDX + ORIG_ID)
-    
-    // ========== Address Mapping Configuration ==========
-    // Default: Upper bits of address select slave
+    // ========== 互连配置 ==========
+    parameter MST_AMT               = 4,              // 主设备数量
+    parameter SLV_AMT               = 4,              // 从设备数量
+    parameter OUTSTANDING_AMT       = 8,              // 每主设备最大未完成事务数
+
+    // ========== 事务配置 ==========
+    parameter TRANS_MST_ID_W        = 4,              // 主设备事务 ID 位宽
+    parameter TRANS_BURST_W         = 2,              // xBURST 字段位宽
+    parameter TRANS_DATA_LEN_W      = 8,              // xLEN 字段位宽
+    parameter TRANS_DATA_SIZE_W     = 3,              // xSIZE 字段位宽
+    parameter TRANS_WR_RESP_W       = 2,              // xRESP 字段位宽
+    parameter DATA_WIDTH            = 32,             // 数据总线位宽
+    parameter ADDR_WIDTH            = 32,             // 地址总线位宽
+
+    // ========== 派生参数 ==========
+    parameter MST_ID_W              = $clog2(MST_AMT),           // 主设备索引编码位宽
+    parameter SLV_ID_W              = $clog2(SLV_AMT),           // 从设备索引编码位宽
+    parameter W_STRB                = DATA_WIDTH / 8,            // 字节使能位宽
+    parameter W_SID                 = MST_ID_W + TRANS_MST_ID_W, // 从设备侧 ID 位宽 (MST_IDX + ORIG_ID)
+
+    // ========== 地址映射配置 ==========
+    // 默认: 地址高位用于选择从设备
     parameter SLV_ID_MSB_IDX        = ADDR_WIDTH - 1,
     parameter SLV_ID_LSB_IDX        = ADDR_WIDTH - SLV_ID_W,
-    
-    // ========== Slave Address Base Array ==========
-    // Format: {SLV_AMT{ADDR_WIDTH{1'b0}}} - user must override per slave
+
+    // ========== 从设备地址基址数组 ==========
+    // 格式: {SLV_AMT{ADDR_WIDTH{1'b0}}} - 用户需按从设备逐一覆写
     parameter [0:(SLV_AMT*ADDR_WIDTH)-1] SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},
-    parameter [0:(SLV_AMT*8)-1]          SLV_ADDR_LEN  = {SLV_AMT{8'd12}}, // Default 12-bit decode
-    
-    // ========== Default Slave Configuration ==========
-    parameter DEFAULT_SLV_IDX       = 0,              // Index of default slave (for unmapped accesses)
-    parameter DEFAULT_SLV_EN        = 1'b1            // Enable default slave routing
+    parameter [0:(SLV_AMT*8)-1]          SLV_ADDR_LEN  = {SLV_AMT{8'd12}}, // 默认 12 位译码
+
+    // ========== 默认从设备配置 ==========
+    parameter DEFAULT_SLV_IDX       = 0,              // 默认从设备索引 (未命中地址空间的访问)
+    parameter DEFAULT_SLV_EN        = 1'b1            // 使能默认从设备路由
 )
 (
-    // ========== Global Signals ==========
+    // ========== 全局信号 ==========
     input   wire                      AXI_RSTn,
     input   wire                      AXI_CLK,
-    
-    // ========== Master Side Interface (FLATTENED) ==========
-    // -- Write Address Channel (AW)
+
+    // ========== 主设备侧接口 (扁平化) ==========
+    // -- 写地址通道 (AW)
     input   wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_AWID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1         : 0]  m_AWADDR_i,
     input   wire  [TRANS_BURST_W*MST_AMT-1      : 0]  m_AWBURST_i,
@@ -48,21 +48,21 @@ module axi_crossbar
     input   wire  [TRANS_DATA_SIZE_W*MST_AMT-1  : 0]  m_AWSIZE_i,
     input   wire  [MST_AMT-1                    : 0]  m_AWVALID_i,
     output  wire  [MST_AMT-1                    : 0]  m_AWREADY_o,
-    
-    // -- Write Data Channel (W)
+
+    // -- 写数据通道 (W)
     input   wire  [DATA_WIDTH*MST_AMT-1         : 0]  m_WDATA_i,
     input   wire  [W_STRB*MST_AMT-1             : 0]  m_WSTRB_i,
     input   wire  [MST_AMT-1                    : 0]  m_WLAST_i,
     input   wire  [MST_AMT-1                    : 0]  m_WVALID_i,
     output  wire  [MST_AMT-1                    : 0]  m_WREADY_o,
-    
-    // -- Write Response Channel (B)
+
+    // -- 写响应通道 (B)
     output  wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_BID_o,
     output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_BRESP_o,
     output  wire  [MST_AMT-1                    : 0]  m_BVALID_o,
     input   wire  [MST_AMT-1                    : 0]  m_BREADY_i,
-    
-    // -- Read Address Channel (AR)
+
+    // -- 读地址通道 (AR)
     input   wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_ARID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1         : 0]  m_ARADDR_i,
     input   wire  [TRANS_BURST_W*MST_AMT-1      : 0]  m_ARBURST_i,
@@ -70,8 +70,8 @@ module axi_crossbar
     input   wire  [TRANS_DATA_SIZE_W*MST_AMT-1  : 0]  m_ARSIZE_i,
     input   wire  [MST_AMT-1                    : 0]  m_ARVALID_i,
     output  wire  [MST_AMT-1                    : 0]  m_ARREADY_o,
-    
-    // -- Read Data Channel (R)
+
+    // -- 读数据通道 (R)
     output  wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_RID_o,
     output  wire  [DATA_WIDTH*MST_AMT-1         : 0]  m_RDATA_o,
     output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_RRESP_o,
@@ -79,11 +79,11 @@ module axi_crossbar
     output  wire  [MST_AMT-1                    : 0]  m_RVALID_o,
     input   wire  [MST_AMT-1                    : 0]  m_RREADY_i,
 
-    // -- Master-side R SID output (full W_SID, for reorder/sid_buffer)
+    // -- 主设备侧 R SID 输出 (完整 W_SID，用于 reorder/sid_buffer)
     output  wire  [W_SID*MST_AMT-1              : 0]  m_RSID_o,
-    
-    // ========== Slave Side Interface (FLATTENED) ==========
-    // -- Write Address Channel (AW)
+
+    // ========== 从设备侧接口 (扁平化) ==========
+    // -- 写地址通道 (AW)
     output  wire  [W_SID*SLV_AMT-1              : 0]  s_AWID_o,
     output  wire  [ADDR_WIDTH*SLV_AMT-1         : 0]  s_AWADDR_o,
     output  wire  [TRANS_BURST_W*SLV_AMT-1      : 0]  s_AWBURST_o,
@@ -91,21 +91,21 @@ module axi_crossbar
     output  wire  [TRANS_DATA_SIZE_W*SLV_AMT-1  : 0]  s_AWSIZE_o,
     output  wire  [SLV_AMT-1                    : 0]  s_AWVALID_o,
     input   wire  [SLV_AMT-1                    : 0]  s_AWREADY_i,
-    
-    // -- Write Data Channel (W)
+
+    // -- 写数据通道 (W)
     output  wire  [DATA_WIDTH*SLV_AMT-1         : 0]  s_WDATA_o,
     output  wire  [W_STRB*SLV_AMT-1             : 0]  s_WSTRB_o,
     output  wire  [SLV_AMT-1                    : 0]  s_WLAST_o,
     output  wire  [SLV_AMT-1                    : 0]  s_WVALID_o,
     input   wire  [SLV_AMT-1                    : 0]  s_WREADY_i,
-    
-    // -- Write Response Channel (B)
+
+    // -- 写响应通道 (B)
     input   wire  [W_SID*SLV_AMT-1              : 0]  s_BID_i,
     input   wire  [TRANS_WR_RESP_W*SLV_AMT-1    : 0]  s_BRESP_i,
     input   wire  [SLV_AMT-1                    : 0]  s_BVALID_i,
     output  wire  [SLV_AMT-1                    : 0]  s_BREADY_o,
-    
-    // -- Read Address Channel (AR)
+
+    // -- 读地址通道 (AR)
     output  wire  [W_SID*SLV_AMT-1              : 0]  s_ARID_o,
     output  wire  [ADDR_WIDTH*SLV_AMT-1         : 0]  s_ARADDR_o,
     output  wire  [TRANS_BURST_W*SLV_AMT-1      : 0]  s_ARBURST_o,
@@ -113,31 +113,31 @@ module axi_crossbar
     output  wire  [TRANS_DATA_SIZE_W*SLV_AMT-1  : 0]  s_ARSIZE_o,
     output  wire  [SLV_AMT-1                    : 0]  s_ARVALID_o,
     input   wire  [SLV_AMT-1                    : 0]  s_ARREADY_i,
-    
-    // -- Read Data Channel (R)
+
+    // -- 读数据通道 (R)
     input   wire  [W_SID*SLV_AMT-1              : 0]  s_RID_i,
     input   wire  [DATA_WIDTH*SLV_AMT-1         : 0]  s_RDATA_i,
     input   wire  [TRANS_WR_RESP_W*SLV_AMT-1    : 0]  s_RRESP_i,
     input   wire  [SLV_AMT-1                    : 0]  s_RLAST_i,
     input   wire  [SLV_AMT-1                    : 0]  s_RVALID_i,
     output  wire  [SLV_AMT-1                    : 0]  s_RREADY_o,
-    
-    // ========== Control/Status Ports ==========
-    input   wire                      arbiter_type,           // 0: Round-Robin, 1: Fixed-Priority
-    
-    // Read reorder control: per-slave grant, shared across all S2M instances
+
+    // ========== 控制 / 状态端口 ==========
+    input   wire                      arbiter_type,           // 0: 轮询 (Round-Robin), 1: 固定优先级 (Fixed-Priority)
+
+    // 读重排序控制: 每从设备 grant，所有 S2M 实例共享
     input   wire  [SLV_AMT-1              : 0]  r_order_grant_i,
-    
-    // Optional: APB-style configuration (can be tied to constants)
-    input   wire  [SLV_AMT-1          : 0]  slv_en_i            // Slave enable mask
+
+    // 可选: 从设备使能掩码
+    input   wire  [SLV_AMT-1          : 0]  slv_en_i
 );
 
 //=============================================================================
-// Local Parameters & Internal Signal Declarations
+// 本地参数与内部信号声明
 //=============================================================================
 localparam ADDR_DECODE_W = SLV_ID_MSB_IDX - SLV_ID_LSB_IDX + 1;
 
-// ========== Flattened Internal Arrays (Master Side) ==========
+// ========== 扁平化内部数组 (主设备侧) ==========
 wire [TRANS_MST_ID_W-1:0]    m_awid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]        m_awaddr    [0:MST_AMT-1];
 wire [TRANS_BURST_W-1:0]     m_awburst   [0:MST_AMT-1];
@@ -172,9 +172,9 @@ wire                         m_rlast     [0:MST_AMT-1];
 wire                         m_rvalid    [0:MST_AMT-1];
 wire                         m_rready    [0:MST_AMT-1];
 
-wire [W_SID-1:0]             m_rsid      [0:MST_AMT-1];   // Full slave-side RID from S2M
+wire [W_SID-1:0]             m_rsid      [0:MST_AMT-1];   // 来自 S2M 的完整从设备侧 RID
 
-// ========== Flattened Internal Arrays (Slave Side) ==========
+// ========== 扁平化内部数组 (从设备侧) ==========
 wire [W_SID-1:0]             s_awid      [0:SLV_AMT-1];
 wire [ADDR_WIDTH-1:0]        s_awaddr    [0:SLV_AMT-1];
 wire [TRANS_BURST_W-1:0]     s_awburst   [0:SLV_AMT-1];
@@ -209,30 +209,32 @@ wire                         s_rlast     [0:SLV_AMT-1];
 wire                         s_rvalid    [0:SLV_AMT-1];
 wire                         s_rready    [0:SLV_AMT-1];
 
-// ========== M2S Interconnect Signals ==========
-// AWSELECT/ARSELECT: per-slave decode results [MST_AMT-1:0]
+// ========== M2S 互连信号 ==========
+// AWSELECT/ARSELECT: 每从设备的地址译码结果 [MST_AMT-1:0]
 wire [MST_AMT-1:0]           awselect_out [0:SLV_AMT-1];
 wire [MST_AMT-1:0]           arselect_out [0:SLV_AMT-1];
-wire [MST_AMT-1:0]           awselect_in  [0:SLV_AMT-1];  // For default slave
-wire [MST_AMT-1:0]           arselect_in  [0:SLV_AMT-1];
 
-// Ready aggregation: M2S ready OR-reduced to master
-wire                         m_awready_agg [0:MST_AMT-1];
-wire                         m_wready_agg  [0:MST_AMT-1];
-wire                         m_arready_agg [0:MST_AMT-1];
+// 默认从设备 M2S 的 AWSELECT_IN = OR(所有非默认从设备的 awselect_out)
+wire [MST_AMT-1:0]           awselect_or_nondefault;
+wire [MST_AMT-1:0]           arselect_or_nondefault;
 
-// ========== S2M Interconnect Signals ==========
-// B/R ready aggregation: per-slave OR-reduced from all masters
-wire [SLV_AMT-1:0]           s_bready_agg;
-wire [SLV_AMT-1:0]           s_rready_agg;
+// Ready 聚合: 收集每个 (从设备, 主设备) 对的 M2S ready，然后按主设备 OR 归约
+wire                         m_awready_m2s [0:SLV_AMT-1][0:MST_AMT-1];
+wire                         m_wready_m2s  [0:SLV_AMT-1][0:MST_AMT-1];
+wire                         m_arready_m2s [0:SLV_AMT-1][0:MST_AMT-1];
+
+// ========== S2M 互连信号 ==========
+// 收集每个 (主设备, 从设备) 对的 S2M ready，然后按从设备 OR 归约
+wire                         s_bready_s2m [0:MST_AMT-1][0:SLV_AMT-1];
+wire                         s_rready_s2m [0:MST_AMT-1][0:SLV_AMT-1];
 
 //=============================================================================
-// Port Flattening: Master Side (Unpack)
+// 端口扁平化: 主设备侧 (解包)
 //=============================================================================
 genvar m, s;
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
-        // AW channel
+        // AW 通道
         assign m_awid[m]     = m_AWID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
         assign m_awaddr[m]   = m_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
         assign m_awburst[m]  = m_AWBURST_i[TRANS_BURST_W*(m+1)-1 -: TRANS_BURST_W];
@@ -241,20 +243,20 @@ generate
         assign m_awvalid[m]  = m_AWVALID_i[m];
         assign m_AWREADY_o[m] = m_awready[m];
         
-        // W channel
+        // W 通道
         assign m_wdata[m]    = m_WDATA_i[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH];
         assign m_wstrb[m]    = m_WSTRB_i[W_STRB*(m+1)-1 -: W_STRB];
         assign m_wlast[m]    = m_WLAST_i[m];
         assign m_wvalid[m]   = m_WVALID_i[m];
         assign m_WREADY_o[m] = m_wready[m];
         
-        // B channel
+        // B 通道
         assign m_BID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_bid[m];
         assign m_BRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_bresp[m];
         assign m_BVALID_o[m] = m_bvalid[m];
         assign m_bready[m]   = m_BREADY_i[m];
         
-        // AR channel
+        // AR 通道
         assign m_arid[m]     = m_ARID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
         assign m_araddr[m]   = m_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
         assign m_arburst[m]  = m_ARBURST_i[TRANS_BURST_W*(m+1)-1 -: TRANS_BURST_W];
@@ -263,8 +265,8 @@ generate
         assign m_arvalid[m]  = m_ARVALID_i[m];
         assign m_ARREADY_o[m] = m_arready[m];
         
-        // R channel
-        assign m_rid[m]    = m_rsid[m][TRANS_MST_ID_W-1:0];  // strip master-ID prefix
+        // R 通道
+        assign m_rid[m]    = m_rsid[m][TRANS_MST_ID_W-1:0];  // 剥离主设备 ID 前缀
         assign m_RSID_o[W_SID*(m+1)-1 -: W_SID] = m_rsid[m];
         assign m_RID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_rid[m];
         assign m_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
@@ -276,11 +278,11 @@ generate
 endgenerate
 
 //=============================================================================
-// Port Flattening: Slave Side (Pack)
+// 端口扁平化: 从设备侧 (打包)
 //=============================================================================
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_SLAVE
-        // AW channel
+        // AW 通道
         assign s_AWID_o[W_SID*(s+1)-1 -: W_SID]       = s_awid[s];
         assign s_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr[s];
         assign s_AWBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_awburst[s];
@@ -289,20 +291,20 @@ generate
         assign s_AWVALID_o[s] = s_awvalid[s];
         assign s_awready[s]   = s_AWREADY_i[s];
         
-        // W channel
+        // W 通道
         assign s_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata[s];
         assign s_WSTRB_o[W_STRB*(s+1)-1 -: W_STRB] = s_wstrb[s];
         assign s_WLAST_o[s] = s_wlast[s];
         assign s_WVALID_o[s] = s_wvalid[s];
         assign s_wready[s]   = s_WREADY_i[s];
         
-        // B channel
+        // B 通道
         assign s_bid[s]      = s_BID_i[W_SID*(s+1)-1 -: W_SID];
         assign s_bresp[s]    = s_BRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
         assign s_bvalid[s]   = s_BVALID_i[s];
         assign s_BREADY_o[s] = s_bready[s];
         
-        // AR channel
+        // AR 通道
         assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = s_arid[s];
         assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr[s];
         assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_arburst[s];
@@ -311,7 +313,7 @@ generate
         assign s_ARVALID_o[s] = s_arvalid[s];
         assign s_arready[s]   = s_ARREADY_i[s];
         
-        // R channel
+        // R 通道
         assign s_rid[s]      = s_RID_i[W_SID*(s+1)-1 -: W_SID];
         assign s_rdata[s]    = s_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
         assign s_rresp[s]    = s_RRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
@@ -322,58 +324,44 @@ generate
 endgenerate
 
 //=============================================================================
-// Address Decode & Default Slave Logic
+// 默认从设备 AWSELECT_IN/ARSELECT_IN 归约
+// awselect_or_nondefault = bitwise OR(所有非默认从设备的 awselect_out)
+// 默认从设备 M2S 内部做 ~AWSELECT_IN, 实现 "未被任何其他从设备选中" 的译码
 //=============================================================================
 generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : ADDR_DECODE
-        // Extract slave address base/length for this slave
-        wire [ADDR_WIDTH-1:0] slv_base = SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH];
-        wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
-        
-        // Address match: compare upper bits [ADDR_WIDTH-1:slv_len]
-        wire [MST_AMT-1:0] aw_match, ar_match;
-        for(m = 0; m < MST_AMT; m = m + 1) begin : MATCH_LOGIC
-            assign aw_match[m] = (m_awaddr[m][ADDR_WIDTH-1:slv_len] == 
-                                   slv_base[ADDR_WIDTH-1:slv_len]) & slv_en_i[s];
-            assign ar_match[m] = (m_araddr[m][ADDR_WIDTH-1:slv_len] == 
-                                   slv_base[ADDR_WIDTH-1:slv_len]) & slv_en_i[s];
-        end
-        
-        // AWSELECT_OUT/ARSELECT_OUT: match result for this slave
-        assign awselect_out[s] = aw_match;
-        assign arselect_out[s] = ar_match;
-        
-        // For default slave, generate AWSELECT_IN as NOT selected by any other slave
-        if(DEFAULT_SLV_EN && s == DEFAULT_SLV_IDX) begin : DEFAULT_SLAVE_INPUT
-            wire [MST_AMT-1:0] aw_other, ar_other;
-            for(m = 0; m < MST_AMT; m = m + 1) begin : OTHER_SLV
-                wire aw_any, ar_any;
-                for(s_ = 0; s_ < SLV_AMT; s_ = s_ + 1) begin : ANY_SLV
-                    if(s_ != DEFAULT_SLV_IDX) begin
-                        assign aw_any = |{aw_any, awselect_out[s_][m]};
-                        assign ar_any = |{ar_any, arselect_out[s_][m]};
-                    end
-                end
-                assign aw_other[m] = aw_any;
-                assign ar_other[m] = ar_any;
+    if (DEFAULT_SLV_EN) begin : DEFAULT_OR
+        wire [MST_AMT-1:0] aw_chain [0:SLV_AMT];
+        wire [MST_AMT-1:0] ar_chain [0:SLV_AMT];
+        assign aw_chain[0] = {MST_AMT{1'b0}};
+        assign ar_chain[0] = {MST_AMT{1'b0}};
+        for (s = 0; s < SLV_AMT; s = s + 1) begin
+            if (s != DEFAULT_SLV_IDX) begin
+                assign aw_chain[s+1] = aw_chain[s] | awselect_out[s];
+                assign ar_chain[s+1] = ar_chain[s] | arselect_out[s];
+            end else begin
+                assign aw_chain[s+1] = aw_chain[s];
+                assign ar_chain[s+1] = ar_chain[s];
             end
-            assign awselect_in[DEFAULT_SLV_IDX] = ~aw_other;
-            assign arselect_in[DEFAULT_SLV_IDX] = ~ar_other;
         end
+        assign awselect_or_nondefault = aw_chain[SLV_AMT];
+        assign arselect_or_nondefault = ar_chain[SLV_AMT];
+    end else begin
+        assign awselect_or_nondefault = {MST_AMT{1'b0}};
+        assign arselect_or_nondefault = {MST_AMT{1'b0}};
     end
 endgenerate
 
 //=============================================================================
-// Ready Aggregation: Master Side (M2S OR-reduce)
+// Ready 聚合: 主设备侧 (M2S OR 归约)
+// 对于每个主设备 m，只要存在任意一个从设备 s 的 M2S 返回 ready，则该主设备 ready
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : READY_AGG_M
         wire [SLV_AMT-1:0] aw_rdy_vec, w_rdy_vec, ar_rdy_vec;
         for(s = 0; s < SLV_AMT; s = s + 1) begin : AGG_SLV
-            // For simplicity, we use m_awready_agg as placeholder; actual ready from each M2S module
-            assign aw_rdy_vec[s] = m_awready_agg[m]; // Will be connected in M2S instance
-            assign w_rdy_vec[s]  = m_wready_agg[m];
-            assign ar_rdy_vec[s] = m_arready_agg[m];
+            assign aw_rdy_vec[s] = m_awready_m2s[s][m];
+            assign w_rdy_vec[s]  = m_wready_m2s[s][m];
+            assign ar_rdy_vec[s] = m_arready_m2s[s][m];
         end
         assign m_awready[m] = |aw_rdy_vec;
         assign m_wready[m]  = |w_rdy_vec;
@@ -382,14 +370,15 @@ generate
 endgenerate
 
 //=============================================================================
-// Ready Aggregation: Slave Side (S2M OR-reduce)
+// Ready 聚合: 从设备侧 (S2M OR 归约)
+// 对于每个从设备 s，只要存在任意一个主设备 m 的 S2M 返回 ready，则该从设备 ready
 //=============================================================================
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : READY_AGG_S
         wire [MST_AMT-1:0] b_rdy_vec, r_rdy_vec;
         for(m = 0; m < MST_AMT; m = m + 1) begin : AGG_MST
-            assign b_rdy_vec[m] = s_bready_agg[s];  // Will be driven by S2M module
-            assign r_rdy_vec[m] = s_rready_agg[s];
+            assign b_rdy_vec[m] = s_bready_s2m[m][s];
+            assign r_rdy_vec[m] = s_rready_s2m[m][s];
         end
         assign s_bready[s] = |b_rdy_vec;
         assign s_rready[s] = |r_rdy_vec;
@@ -397,15 +386,15 @@ generate
 endgenerate
 
 //=============================================================================
-// M2S Module Instantiation: One per Slave (axi_m2s_m_amt)
+// M2S 模块实例化: 每个从设备一个 (axi_m2s_m_amt)
 //=============================================================================
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_M2S
-        // Extract slave config
+        // 提取当前从设备的地址基址 / 译码长度
         wire [ADDR_WIDTH-1:0] slv_base = SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH];
         wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
-        
-        // Build packed master arrays for connection
+
+        // 构造打包的主设备数组以连接 M2S 模块
         wire [TRANS_MST_ID_W*MST_AMT-1:0] m_awid_packed;
         wire [ADDR_WIDTH*MST_AMT-1:0]     m_awaddr_packed;
         wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_awlen_packed;
@@ -428,7 +417,7 @@ generate
         wire [MST_AMT-1:0] m_arvalid_packed;
         wire [MST_AMT-1:0] m_arready_packed;
         
-        // Pack arrays
+        // 将内部解包数组重新打包为扁平化向量
         for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_M2S
             assign m_awid_packed[TRANS_MST_ID_W*m +: TRANS_MST_ID_W] = m_awid[m];
             assign m_awaddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_awaddr[m];
@@ -447,14 +436,17 @@ generate
             assign m_arburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_arburst[m];
             assign m_arvalid_packed[m] = m_arvalid[m];
             
-            // Ready outputs from M2S are per-master; connect to aggregated ready
-            assign m_awready[m] = m_awready_packed[m];
-            assign m_wready[m]  = m_wready_packed[m];
-            assign m_arready[m] = m_arready_packed[m];
+            // Ready 输出: 将 M2S 实例 s 对主设备 m 的 ready 写入 2D 数组
+            assign m_awready_m2s[s][m] = m_awready_packed[m];
+            assign m_wready_m2s[s][m]  = m_wready_packed[m];
+            assign m_arready_m2s[s][m] = m_arready_packed[m];
         end
-        
+
+        // M2S 输出的中间信号 (所有从设备的 awselect_out/arselect_out 均由 M2S 驱动)
+        wire [MST_AMT-1:0] m2s_awsel, m2s_arsel;
+
         axi_m2s_m_amt #(
-            .SLAVE_ID(s),
+
             .ADDR_BASE(slv_base),
             .ADDR_LENGTH(slv_len),
             .W_CID(SLV_ID_W),
@@ -472,7 +464,7 @@ generate
         ) u_axi_m2s (
             .AXI_RSTn(AXI_RSTn),
             .AXI_CLK(AXI_CLK),
-            
+
             .M_AWID(m_awid_packed),
             .M_AWADDR(m_awaddr_packed),
             .M_AWLEN(m_awlen_packed),
@@ -480,13 +472,13 @@ generate
             .M_AWBURST(m_awburst_packed),
             .M_AWVALID(m_awvalid_packed),
             .M_AWREADY(m_awready_packed),
-            
+
             .M_WDATA(m_wdata_packed),
             .M_WSTRB(m_wstrb_packed),
             .M_WLAST(m_wlast_packed),
             .M_WVALID(m_wvalid_packed),
             .M_WREADY(m_wready_packed),
-            
+
             .M_ARID(m_arid_packed),
             .M_ARADDR(m_araddr_packed),
             .M_ARLEN(m_arlen_packed),
@@ -494,7 +486,7 @@ generate
             .M_ARBURST(m_arburst_packed),
             .M_ARVALID(m_arvalid_packed),
             .M_ARREADY(m_arready_packed),
-            
+
             .S_AWID(s_awid[s]),
             .S_AWADDR(s_awaddr[s]),
             .S_AWLEN(s_awlen[s]),
@@ -502,13 +494,13 @@ generate
             .S_AWBURST(s_awburst[s]),
             .S_AWVALID(s_awvalid[s]),
             .S_AWREADY(s_awready[s]),
-            
+
             .S_WDATA(s_wdata[s]),
             .S_WSTRB(s_wstrb[s]),
             .S_WLAST(s_wlast[s]),
             .S_WVALID(s_wvalid[s]),
             .S_WREADY(s_wready[s]),
-            
+
             .S_ARID(s_arid[s]),
             .S_ARADDR(s_araddr[s]),
             .S_ARLEN(s_arlen[s]),
@@ -516,22 +508,26 @@ generate
             .S_ARBURST(s_arburst[s]),
             .S_ARVALID(s_arvalid[s]),
             .S_ARREADY(s_arready[s]),
-            
-            .AWSELECT_OUT(awselect_out[s]),
-            .ARSELECT_OUT(arselect_out[s]),
-            .AWSELECT_IN((s == DEFAULT_SLV_IDX) ? awselect_in[s] : '0),
-            .ARSELECT_IN((s == DEFAULT_SLV_IDX) ? arselect_in[s] : '0),
-            .arbiter_type(arbiter_type)
+
+            .AWSELECT_OUT(m2s_awsel),
+            .ARSELECT_OUT(m2s_arsel),
+            .AWSELECT_IN(awselect_or_nondefault),
+            .ARSELECT_IN(arselect_or_nondefault),
+            .arbiter_type(arbiter_type),
+            .slv_en(slv_en_i[s])
         );
+
+        assign awselect_out[s] = m2s_awsel;
+        assign arselect_out[s] = m2s_arsel;
     end
 endgenerate
 
 //=============================================================================
-// S2M Module Instantiation: One per Master (axi_s2m_s_amt)
+// S2M 模块实例化: 每个主设备一个 (axi_s2m_s_amt)
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_S2M
-        // Build packed slave arrays
+        // 构造打包的从设备数组以连接 S2M 模块
         wire [W_SID*SLV_AMT-1:0] s_bid_packed;
         wire [TRANS_WR_RESP_W*SLV_AMT-1:0] s_bresp_packed;
         wire [SLV_AMT-1:0] s_bvalid_packed;
@@ -554,10 +550,10 @@ generate
             assign s_rlast_packed[s] = s_rlast[s];
             assign s_rvalid_packed[s] = s_rvalid[s];
             
-            assign s_bready[s] = s_bready_packed[s];
-            assign s_rready[s] = s_rready_packed[s];
+            assign s_bready_s2m[m][s] = s_bready_packed[s];
+            assign s_rready_s2m[m][s] = s_rready_packed[s];
         end
-        
+
         axi_s2m_s_amt #(
             .MASTER_ID(m),
             .W_CID(SLV_ID_W),

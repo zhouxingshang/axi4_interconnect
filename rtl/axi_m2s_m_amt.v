@@ -8,7 +8,6 @@
 //=============================================================================
 module axi_m2s_m_amt
 #(
-    parameter SLAVE_ID        = 0,              // for reference
     parameter ADDR_BASE       = 32'h0,          // Slave address base
     parameter ADDR_LENGTH     = 12,             // Effective address bits for decode
     parameter M_ID_W           = 4,              // Channel ID width
@@ -86,7 +85,8 @@ module axi_m2s_m_amt
     output  wire  [MST_AMT-1:0]    ARSELECT_OUT,
     input   wire  [MST_AMT-1:0]    AWSELECT_IN,
     input   wire  [MST_AMT-1:0]    ARSELECT_IN,
-    input   wire                   arbiter_type
+    input   wire                   arbiter_type,
+    input   wire                   slv_en
     // ⚠️ channel_en REMOVED - not needed
 );
 
@@ -184,15 +184,15 @@ endgenerate
 always @(*) begin
     if (SLAVE_DEFAULT == 1'b0) begin
         for(int i = 0; i < MST_AMT; i++) begin
-            // Address match: compare upper bits against ADDR_BASE
-            AWSELECT[i] = (m_awaddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]);
-            ARSELECT[i] = (m_araddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]);
+            // Address match: compare upper bits against ADDR_BASE, gated by slv_en
+            AWSELECT[i] = (m_awaddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
+            ARSELECT[i] = (m_araddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
         end
         // ⚠️ WSELECT REMOVED: W routing now follows AW order FIFO, not address decode
     end else begin
-        // Default slave mode: accept any request not selected by others
-        AWSELECT = ~AWSELECT_IN & {m_awvalid[MST_AMT-1:0]};
-        ARSELECT = ~ARSELECT_IN & {m_arvalid[MST_AMT-1:0]};
+        // Default slave mode: accept any request not selected by others, gated by slv_en
+        AWSELECT = (~AWSELECT_IN & {m_awvalid[MST_AMT-1:0]}) & {MST_AMT{slv_en}};
+        ARSELECT = (~ARSELECT_IN & {m_arvalid[MST_AMT-1:0]}) & {MST_AMT{slv_en}};
     end
 end
 

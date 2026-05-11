@@ -30,75 +30,75 @@ module axi_interconnect
 
     // ========== Master Flattened Interface ==========
     // AW
-    input   wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  m_AWID_i,
-    input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  m_AWADDR_i,
-    input   wire  [LEN_W*MST_AMT-1            : 0]  m_AWLEN_i,
-    input   wire  [SIZE_W*MST_AMT-1           : 0]  m_AWSIZE_i,
-    input   wire  [BURST_W*MST_AMT-1          : 0]  m_AWBURST_i,
-    input   wire  [MST_AMT-1                  : 0]  m_AWVALID_i,
-    output  wire  [MST_AMT-1                  : 0]  m_AWREADY_o,
+    input   wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_AWID_i,
+    input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  M_AXI_AWADDR_i,
+    input   wire  [LEN_W*MST_AMT-1            : 0]  M_AXI_AWLEN_i,
+    input   wire  [SIZE_W*MST_AMT-1           : 0]  M_AXI_AWSIZE_i,
+    input   wire  [BURST_W*MST_AMT-1          : 0]  M_AXI_AWBURST_i,
+    input   wire  [MST_AMT-1                  : 0]  M_AXI_AWVALID_i,
+    output  wire  [MST_AMT-1                  : 0]  M_AXI_AWREADY_o,
     // W
-    input   wire  [DATA_WIDTH*MST_AMT-1       : 0]  m_WDATA_i,
-    input   wire  [W_STRB*MST_AMT-1           : 0]  m_WSTRB_i,
-    input   wire  [MST_AMT-1                  : 0]  m_WLAST_i,
-    input   wire  [MST_AMT-1                  : 0]  m_WVALID_i,
-    output  wire  [MST_AMT-1                  : 0]  m_WREADY_o,
+    input   wire  [DATA_WIDTH*MST_AMT-1       : 0]  M_AXI_WDATA_i,
+    input   wire  [W_STRB*MST_AMT-1           : 0]  M_AXI_WSTRB_i,
+    input   wire  [MST_AMT-1                  : 0]  M_AXI_WLAST_i,
+    input   wire  [MST_AMT-1                  : 0]  M_AXI_WVALID_i,
+    output  wire  [MST_AMT-1                  : 0]  M_AXI_WREADY_o,
     // B
-    output  wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  m_BID_o,
-    output  wire  [RESP_W*MST_AMT-1           : 0]  m_BRESP_o,
-    output  wire  [MST_AMT-1                  : 0]  m_BVALID_o,
-    input   wire  [MST_AMT-1                  : 0]  m_BREADY_i,
+    output  wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_BID_o,
+    output  wire  [RESP_W*MST_AMT-1           : 0]  M_AXI_BRESP_o,
+    output  wire  [MST_AMT-1                  : 0]  M_AXI_BVALID_o,
+    input   wire  [MST_AMT-1                  : 0]  M_AXI_BREADY_i,
     // AR
-    input   wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  m_ARID_i,
-    input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  m_ARADDR_i,
-    input   wire  [LEN_W*MST_AMT-1            : 0]  m_ARLEN_i,
-    input   wire  [SIZE_W*MST_AMT-1           : 0]  m_ARSIZE_i,
-    input   wire  [BURST_W*MST_AMT-1          : 0]  m_ARBURST_i,
-    input   wire  [MST_AMT-1                  : 0]  m_ARVALID_i,
-    output  wire  [MST_AMT-1                  : 0]  m_ARREADY_o,
+    input   wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_ARID_i,
+    input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  M_AXI_ARADDR_i,
+    input   wire  [LEN_W*MST_AMT-1            : 0]  M_AXI_ARLEN_i,
+    input   wire  [SIZE_W*MST_AMT-1           : 0]  M_AXI_ARSIZE_i,
+    input   wire  [BURST_W*MST_AMT-1          : 0]  M_AXI_ARBURST_i,
+    input   wire  [MST_AMT-1                  : 0]  M_AXI_ARVALID_i,
+    output  wire  [MST_AMT-1                  : 0]  M_AXI_ARREADY_o,
     // R
-    output  wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  m_RID_o,
-    output  wire  [DATA_WIDTH*MST_AMT-1       : 0]  m_RDATA_o,
-    output  wire  [RESP_W*MST_AMT-1           : 0]  m_RRESP_o,
-    output  wire  [MST_AMT-1                  : 0]  m_RLAST_o,
-    output  wire  [MST_AMT-1                  : 0]  m_RVALID_o,
-    input   wire  [MST_AMT-1                  : 0]  m_RREADY_i,
+    output  wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_RID_o,
+    output  wire  [DATA_WIDTH*MST_AMT-1       : 0]  M_AXI_RDATA_o,
+    output  wire  [RESP_W*MST_AMT-1           : 0]  M_AXI_RRESP_o,
+    output  wire  [MST_AMT-1                  : 0]  M_AXI_RLAST_o,
+    output  wire  [MST_AMT-1                  : 0]  M_AXI_RVALID_o,
+    input   wire  [MST_AMT-1                  : 0]  M_AXI_RREADY_i,
 
     // ========== Slave Flattened Interface ==========
     // AW
-    output  wire  [W_SID*SLV_AMT-1            : 0]  s_AWID_o,
-    output  wire  [ADDR_WIDTH*SLV_AMT-1       : 0]  s_AWADDR_o,
-    output  wire  [LEN_W*SLV_AMT-1            : 0]  s_AWLEN_o,
-    output  wire  [SIZE_W*SLV_AMT-1           : 0]  s_AWSIZE_o,
-    output  wire  [BURST_W*SLV_AMT-1          : 0]  s_AWBURST_o,
-    output  wire  [SLV_AMT-1                  : 0]  s_AWVALID_o,
-    input   wire  [SLV_AMT-1                  : 0]  s_AWREADY_i,
+    output  wire  [W_SID*SLV_AMT-1            : 0]  S_AXI_AWID_o,
+    output  wire  [ADDR_WIDTH*SLV_AMT-1       : 0]  S_AXI_AWADDR_o,
+    output  wire  [LEN_W*SLV_AMT-1            : 0]  S_AXI_AWLEN_o,
+    output  wire  [SIZE_W*SLV_AMT-1           : 0]  S_AXI_AWSIZE_o,
+    output  wire  [BURST_W*SLV_AMT-1          : 0]  S_AXI_AWBURST_o,
+    output  wire  [SLV_AMT-1                  : 0]  S_AXI_AWVALID_o,
+    input   wire  [SLV_AMT-1                  : 0]  S_AXI_AWREADY_i,
     // W
-    output  wire  [DATA_WIDTH*SLV_AMT-1       : 0]  s_WDATA_o,
-    output  wire  [W_STRB*SLV_AMT-1           : 0]  s_WSTRB_o,
-    output  wire  [SLV_AMT-1                  : 0]  s_WLAST_o,
-    output  wire  [SLV_AMT-1                  : 0]  s_WVALID_o,
-    input   wire  [SLV_AMT-1                  : 0]  s_WREADY_i,
+    output  wire  [DATA_WIDTH*SLV_AMT-1       : 0]  S_AXI_WDATA_o,
+    output  wire  [W_STRB*SLV_AMT-1           : 0]  S_AXI_WSTRB_o,
+    output  wire  [SLV_AMT-1                  : 0]  S_AXI_WLAST_o,
+    output  wire  [SLV_AMT-1                  : 0]  S_AXI_WVALID_o,
+    input   wire  [SLV_AMT-1                  : 0]  S_AXI_WREADY_i,
     // B
-    input   wire  [W_SID*SLV_AMT-1            : 0]  s_BID_i,
-    input   wire  [RESP_W*SLV_AMT-1           : 0]  s_BRESP_i,
-    input   wire  [SLV_AMT-1                  : 0]  s_BVALID_i,
-    output  wire  [SLV_AMT-1                  : 0]  s_BREADY_o,
+    input   wire  [W_SID*SLV_AMT-1            : 0]  S_AXI_BID_i,
+    input   wire  [RESP_W*SLV_AMT-1           : 0]  S_AXI_BRESP_i,
+    input   wire  [SLV_AMT-1                  : 0]  S_AXI_BVALID_i,
+    output  wire  [SLV_AMT-1                  : 0]  S_AXI_BREADY_o,
     // AR
-    output  wire  [W_SID*SLV_AMT-1            : 0]  s_ARID_o,
-    output  wire  [ADDR_WIDTH*SLV_AMT-1       : 0]  s_ARADDR_o,
-    output  wire  [LEN_W*SLV_AMT-1            : 0]  s_ARLEN_o,
-    output  wire  [SIZE_W*SLV_AMT-1           : 0]  s_ARSIZE_o,
-    output  wire  [BURST_W*SLV_AMT-1          : 0]  s_ARBURST_o,
-    output  wire  [SLV_AMT-1                  : 0]  s_ARVALID_o,
-    input   wire  [SLV_AMT-1                  : 0]  s_ARREADY_i,
+    output  wire  [W_SID*SLV_AMT-1            : 0]  S_AXI_ARID_o,
+    output  wire  [ADDR_WIDTH*SLV_AMT-1       : 0]  S_AXI_ARADDR_o,
+    output  wire  [LEN_W*SLV_AMT-1            : 0]  S_AXI_ARLEN_o,
+    output  wire  [SIZE_W*SLV_AMT-1           : 0]  S_AXI_ARSIZE_o,
+    output  wire  [BURST_W*SLV_AMT-1          : 0]  S_AXI_ARBURST_o,
+    output  wire  [SLV_AMT-1                  : 0]  S_AXI_ARVALID_o,
+    input   wire  [SLV_AMT-1                  : 0]  S_AXI_ARREADY_i,
     // R
-    input   wire  [W_SID*SLV_AMT-1            : 0]  s_RID_i,
-    input   wire  [DATA_WIDTH*SLV_AMT-1       : 0]  s_RDATA_i,
-    input   wire  [RESP_W*SLV_AMT-1           : 0]  s_RRESP_i,
-    input   wire  [SLV_AMT-1                  : 0]  s_RLAST_i,
-    input   wire  [SLV_AMT-1                  : 0]  s_RVALID_i,
-    output  wire  [SLV_AMT-1                  : 0]  s_RREADY_o,
+    input   wire  [W_SID*SLV_AMT-1            : 0]  S_AXI_RID_i,
+    input   wire  [DATA_WIDTH*SLV_AMT-1       : 0]  S_AXI_RDATA_i,
+    input   wire  [RESP_W*SLV_AMT-1           : 0]  S_AXI_RRESP_i,
+    input   wire  [SLV_AMT-1                  : 0]  S_AXI_RLAST_i,
+    input   wire  [SLV_AMT-1                  : 0]  S_AXI_RVALID_i,
+    output  wire  [SLV_AMT-1                  : 0]  S_AXI_RREADY_o,
 
     // ========== Control Ports ==========
     input   wire                      arbiter_type,
@@ -145,93 +145,87 @@ wire                        m_rready    [0:MST_AMT-1];
 //=============================================================================
 // Pre-FIFO buses: between cross_4k_if (or master for W) and pre-FIFO input
 //=============================================================================
-wire [TRANS_MST_ID_W-1:0]   pre_awid    [0:MST_AMT-1];
-wire [ADDR_WIDTH-1:0]       pre_awaddr  [0:MST_AMT-1];
-wire [LEN_W-1:0]            pre_awlen   [0:MST_AMT-1];
-wire [SIZE_W-1:0]           pre_awsize  [0:MST_AMT-1];
-wire [BURST_W-1:0]          pre_awburst [0:MST_AMT-1];
-wire                        pre_awvalid [0:MST_AMT-1];
-wire                        pre_awready [0:MST_AMT-1];
+wire [TRANS_MST_ID_W-1:0]   c4k_awid    [0:MST_AMT-1];
+wire [ADDR_WIDTH-1:0]       c4k_awaddr  [0:MST_AMT-1];
+wire [LEN_W-1:0]            c4k_awlen   [0:MST_AMT-1];
+wire [SIZE_W-1:0]           c4k_awsize  [0:MST_AMT-1];
+wire [BURST_W-1:0]          c4k_awburst [0:MST_AMT-1];
+wire                        c4k_awvalid [0:MST_AMT-1];
+wire                        c4k_awready [0:MST_AMT-1];
 
-wire [DATA_WIDTH-1:0]       pre_wdata   [0:MST_AMT-1];
-wire [W_STRB-1:0]           pre_wstrb   [0:MST_AMT-1];
-wire                        pre_wlast   [0:MST_AMT-1];
-wire                        pre_wvalid  [0:MST_AMT-1];
-wire                        pre_wready  [0:MST_AMT-1];
-
-wire [TRANS_MST_ID_W-1:0]   pre_arid    [0:MST_AMT-1];
-wire [ADDR_WIDTH-1:0]       pre_araddr  [0:MST_AMT-1];
-wire [LEN_W-1:0]            pre_arlen   [0:MST_AMT-1];
-wire [SIZE_W-1:0]           pre_arsize  [0:MST_AMT-1];
-wire [BURST_W-1:0]          pre_arburst [0:MST_AMT-1];
-wire                        pre_arvalid [0:MST_AMT-1];
-wire                        pre_arready [0:MST_AMT-1];
+wire [TRANS_MST_ID_W-1:0]   c4k_arid    [0:MST_AMT-1];
+wire [ADDR_WIDTH-1:0]       c4k_araddr  [0:MST_AMT-1];
+wire [LEN_W-1:0]            c4k_arlen   [0:MST_AMT-1];
+wire [SIZE_W-1:0]           c4k_arsize  [0:MST_AMT-1];
+wire [BURST_W-1:0]          c4k_arburst [0:MST_AMT-1];
+wire                        c4k_arvalid [0:MST_AMT-1];
+wire                        c4k_arready [0:MST_AMT-1];
 
 //=============================================================================
 // Post-FIFO buses (Master side): between crossbar output and FIFO → master
 //=============================================================================
-wire [TRANS_MST_ID_W-1:0]   cbar_m_awid     [0:MST_AMT-1];
-wire [ADDR_WIDTH-1:0]       cbar_m_awaddr   [0:MST_AMT-1];
-wire [LEN_W-1:0]            cbar_m_awlen    [0:MST_AMT-1];
-wire [SIZE_W-1:0]           cbar_m_awsize   [0:MST_AMT-1];
-wire [BURST_W-1:0]          cbar_m_awburst  [0:MST_AMT-1];
-wire                        cbar_m_awvalid  [0:MST_AMT-1];
-wire                        cbar_m_awready  [0:MST_AMT-1];
+wire [TRANS_MST_ID_W-1:0]   M_AWID     [0:MST_AMT-1];
+wire [ADDR_WIDTH-1:0]       M_AWADDR   [0:MST_AMT-1];
+wire [LEN_W-1:0]            M_AWLEN    [0:MST_AMT-1];
+wire [SIZE_W-1:0]           M_AWSIZE   [0:MST_AMT-1];
+wire [BURST_W-1:0]          M_AWBURST  [0:MST_AMT-1];
+wire                        M_AWVALID  [0:MST_AMT-1];
+wire                        M_AWREADY  [0:MST_AMT-1];
 
-wire [DATA_WIDTH-1:0]       cbar_m_wdata    [0:MST_AMT-1];
-wire [W_STRB-1:0]           cbar_m_wstrb    [0:MST_AMT-1];
-wire                        cbar_m_wlast    [0:MST_AMT-1];
-wire                        cbar_m_wvalid   [0:MST_AMT-1];
-wire                        cbar_m_wready   [0:MST_AMT-1];
+wire [DATA_WIDTH-1:0]       M_WDATA    [0:MST_AMT-1];
+wire [W_STRB-1:0]           M_WSTRB    [0:MST_AMT-1];
+wire                        M_WLAST    [0:MST_AMT-1];
+wire                        M_WVALID   [0:MST_AMT-1];
+wire                        M_WREADY   [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   cbar_m_bid      [0:MST_AMT-1];
-wire [RESP_W-1:0]           cbar_m_bresp    [0:MST_AMT-1];
-wire                        cbar_m_bvalid   [0:MST_AMT-1];
-wire                        cbar_m_bready   [0:MST_AMT-1];
+wire [TRANS_MST_ID_W-1:0]   M_BID      [0:MST_AMT-1];
+wire [RESP_W-1:0]           M_BRESP    [0:MST_AMT-1];
+wire                        M_BVALID   [0:MST_AMT-1];
+wire                        M_BREADY   [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   cbar_m_arid     [0:MST_AMT-1];
-wire [ADDR_WIDTH-1:0]       cbar_m_araddr   [0:MST_AMT-1];
-wire [LEN_W-1:0]            cbar_m_arlen    [0:MST_AMT-1];
-wire [SIZE_W-1:0]           cbar_m_arsize   [0:MST_AMT-1];
-wire [BURST_W-1:0]          cbar_m_arburst  [0:MST_AMT-1];
-wire                        cbar_m_arvalid  [0:MST_AMT-1];
-wire                        cbar_m_arready  [0:MST_AMT-1];
+wire [TRANS_MST_ID_W-1:0]   M_ARID     [0:MST_AMT-1];
+wire [ADDR_WIDTH-1:0]       M_ARADDR   [0:MST_AMT-1];
+wire [LEN_W-1:0]            M_ARLEN    [0:MST_AMT-1];
+wire [SIZE_W-1:0]           M_ARSIZE   [0:MST_AMT-1];
+wire [BURST_W-1:0]          M_ARBURST  [0:MST_AMT-1];
+wire                        M_ARVALID  [0:MST_AMT-1];
+wire                        M_ARREADY  [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   cbar_m_rid      [0:MST_AMT-1];
-wire [DATA_WIDTH-1:0]       cbar_m_rdata    [0:MST_AMT-1];
-wire [RESP_W-1:0]           cbar_m_rresp    [0:MST_AMT-1];
-wire                        cbar_m_rlast    [0:MST_AMT-1];
-wire                        cbar_m_rvalid   [0:MST_AMT-1];
-wire                        cbar_m_rready   [0:MST_AMT-1];
-wire                        cbar_m_rready_fifo [0:MST_AMT-1];  // R FIFO wr_rdy before clear-gate
+wire [TRANS_MST_ID_W-1:0]   M_RID      [0:MST_AMT-1];
+wire [DATA_WIDTH-1:0]       M_RDATA    [0:MST_AMT-1];
+wire [RESP_W-1:0]           M_RRESP    [0:MST_AMT-1];
+wire                        M_RLAST    [0:MST_AMT-1];
+wire                        M_RVALID   [0:MST_AMT-1];
+wire                        M_RREADY   [0:MST_AMT-1];
+wire                        M_RREADY_FIFO [0:MST_AMT-1];  // R FIFO wr_rdy before clear-gate
 
-wire [W_SID*MST_AMT-1:0]    cbar_m_rsid_packed;
-wire [W_SID-1:0]            cbar_m_rsid     [0:MST_AMT-1];
+wire [W_SID*MST_AMT-1:0]    M_RSID_PACKED;
+wire [W_SID-1:0]            M_RSID     [0:MST_AMT-1];
 
 //=============================================================================
 // NEW: Slave side internal signals (crossbar output → slave FIFO input)
 //=============================================================================
-wire [W_SID-1:0]            cbar_s_awid     [0:SLV_AMT-1];
-wire [ADDR_WIDTH-1:0]       cbar_s_awaddr   [0:SLV_AMT-1];
-wire [LEN_W-1:0]            cbar_s_awlen    [0:SLV_AMT-1];
-wire [SIZE_W-1:0]           cbar_s_awsize   [0:SLV_AMT-1];
-wire [BURST_W-1:0]          cbar_s_awburst  [0:SLV_AMT-1];
-wire                        cbar_s_awvalid  [0:SLV_AMT-1];
-wire                        cbar_s_awready  [0:SLV_AMT-1];
+wire [W_SID-1:0]            S_AWID     [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]       S_AWADDR   [0:SLV_AMT-1];
+wire [LEN_W-1:0]            S_AWLEN    [0:SLV_AMT-1];
+wire [SIZE_W-1:0]           S_AWSIZE   [0:SLV_AMT-1];
+wire [BURST_W-1:0]          S_AWBURST  [0:SLV_AMT-1];
+wire                        S_AWVALID  [0:SLV_AMT-1];
+wire                        S_AWREADY  [0:SLV_AMT-1];
 
-wire [DATA_WIDTH-1:0]       cbar_s_wdata    [0:SLV_AMT-1];
-wire [W_STRB-1:0]           cbar_s_wstrb    [0:SLV_AMT-1];
-wire                        cbar_s_wlast    [0:SLV_AMT-1];
-wire                        cbar_s_wvalid   [0:SLV_AMT-1];
-wire                        cbar_s_wready   [0:SLV_AMT-1];
+wire [DATA_WIDTH-1:0]       S_WDATA    [0:SLV_AMT-1];
+wire [W_STRB-1:0]           S_WSTRB    [0:SLV_AMT-1];
+wire                        S_WLAST    [0:SLV_AMT-1];
+wire                        S_WVALID   [0:SLV_AMT-1];
+wire                        S_WREADY   [0:SLV_AMT-1];
 
-wire [W_SID-1:0]            cbar_s_arid     [0:SLV_AMT-1];
-wire [ADDR_WIDTH-1:0]       cbar_s_araddr   [0:SLV_AMT-1];
-wire [LEN_W-1:0]            cbar_s_arlen    [0:SLV_AMT-1];
-wire [SIZE_W-1:0]           cbar_s_arsize   [0:SLV_AMT-1];
-wire [BURST_W-1:0]          cbar_s_arburst  [0:SLV_AMT-1];
-wire                        cbar_s_arvalid  [0:SLV_AMT-1];
-wire                        cbar_s_arready  [0:SLV_AMT-1];
+wire [W_SID-1:0]            S_ARID     [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]       S_ARADDR   [0:SLV_AMT-1];
+wire [LEN_W-1:0]            S_ARLEN    [0:SLV_AMT-1];
+wire [SIZE_W-1:0]           S_ARSIZE   [0:SLV_AMT-1];
+wire [BURST_W-1:0]          S_ARBURST  [0:SLV_AMT-1];
+wire                        S_ARVALID  [0:SLV_AMT-1];
+wire                        S_ARREADY  [0:SLV_AMT-1];
 
 // Slave side B/R pre-FIFO (slave → crossbar)
 wire [W_SID-1:0]            s_bid_fifo      [0:SLV_AMT-1];
@@ -292,7 +286,7 @@ wire [SLV_AMT-1:0]          effective_r_order_grant;
 
 // sid_buffer backpressure: s_push_rdy per slave, gated AR ready
 wire [SLV_AMT-1:0]          sid_buf_push_rdy;                   // per-slave
-wire [SLV_AMT-1:0]          cbar_s_arready_fifo;                // AR FIFO wr_rdy before gate
+wire [SLV_AMT-1:0]          S_ARREADY_FIFO;                // AR FIFO wr_rdy before gate
 
 //=============================================================================
 // Port Flattening (Unpack Master Inputs / Pack Master Outputs)
@@ -300,46 +294,40 @@ wire [SLV_AMT-1:0]          cbar_s_arready_fifo;                // AR FIFO wr_rd
 genvar m, s;
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MST
-        assign m_awid[m]    = m_AWID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
-        assign m_awaddr[m]  = m_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
-        assign m_awlen[m]   = m_AWLEN_i[LEN_W*(m+1)-1 -: LEN_W];
-        assign m_awsize[m]  = m_AWSIZE_i[SIZE_W*(m+1)-1 -: SIZE_W];
-        assign m_awburst[m] = m_AWBURST_i[BURST_W*(m+1)-1 -: BURST_W];
-        assign m_awvalid[m] = m_AWVALID_i[m];
-        assign m_AWREADY_o[m] = m_awready[m];
+        assign m_awid[m]    = M_AXI_AWID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
+        assign m_awaddr[m]  = M_AXI_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
+        assign m_awlen[m]   = M_AXI_AWLEN_i[LEN_W*(m+1)-1 -: LEN_W];
+        assign m_awsize[m]  = M_AXI_AWSIZE_i[SIZE_W*(m+1)-1 -: SIZE_W];
+        assign m_awburst[m] = M_AXI_AWBURST_i[BURST_W*(m+1)-1 -: BURST_W];
+        assign m_awvalid[m] = M_AXI_AWVALID_i[m];
+        assign M_AXI_AWREADY_o[m] = m_awready[m];
 
-        assign m_wdata[m]   = m_WDATA_i[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH];
-        assign m_wstrb[m]   = m_WSTRB_i[W_STRB*(m+1)-1 -: W_STRB];
-        assign m_wlast[m]   = m_WLAST_i[m];
-        assign m_wvalid[m]  = m_WVALID_i[m];
-        assign m_WREADY_o[m] = m_wready[m];
+        assign m_wdata[m]   = M_AXI_WDATA_i[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH];
+        assign m_wstrb[m]   = M_AXI_WSTRB_i[W_STRB*(m+1)-1 -: W_STRB];
+        assign m_wlast[m]   = M_AXI_WLAST_i[m];
+        assign m_wvalid[m]  = M_AXI_WVALID_i[m];
+        assign M_AXI_WREADY_o[m] = m_wready[m];
 
-        assign m_bready[m]  = m_BREADY_i[m];
-        assign m_BID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_bid[m];
-        assign m_BRESP_o[RESP_W*(m+1)-1 -: RESP_W] = m_bresp[m];
-        assign m_BVALID_o[m] = m_bvalid[m];
+        assign m_bready[m]  = M_AXI_BREADY_i[m];
+        assign M_AXI_BID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_bid[m];
+        assign M_AXI_BRESP_o[RESP_W*(m+1)-1 -: RESP_W] = m_bresp[m];
+        assign M_AXI_BVALID_o[m] = m_bvalid[m];
 
-        assign m_arid[m]    = m_ARID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
-        assign m_araddr[m]  = m_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
-        assign m_arlen[m]   = m_ARLEN_i[LEN_W*(m+1)-1 -: LEN_W];
-        assign m_arsize[m]  = m_ARSIZE_i[SIZE_W*(m+1)-1 -: SIZE_W];
-        assign m_arburst[m] = m_ARBURST_i[BURST_W*(m+1)-1 -: BURST_W];
-        assign m_arvalid[m] = m_ARVALID_i[m];
-        assign m_ARREADY_o[m] = m_arready[m];
+        assign m_arid[m]    = M_AXI_ARID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
+        assign m_araddr[m]  = M_AXI_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
+        assign m_arlen[m]   = M_AXI_ARLEN_i[LEN_W*(m+1)-1 -: LEN_W];
+        assign m_arsize[m]  = M_AXI_ARSIZE_i[SIZE_W*(m+1)-1 -: SIZE_W];
+        assign m_arburst[m] = M_AXI_ARBURST_i[BURST_W*(m+1)-1 -: BURST_W];
+        assign m_arvalid[m] = M_AXI_ARVALID_i[m];
+        assign M_AXI_ARREADY_o[m] = m_arready[m];
 
-        assign m_rready[m]  = m_RREADY_i[m];
-        assign m_RID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_rid[m];
-        assign m_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
-        assign m_RRESP_o[RESP_W*(m+1)-1 -: RESP_W] = m_rresp[m];
-        assign m_RLAST_o[m] = m_rlast[m];
-        assign m_RVALID_o[m] = m_rvalid[m];
+        assign m_rready[m]  = M_AXI_RREADY_i[m];
+        assign M_AXI_RID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_rid[m];
+        assign M_AXI_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
+        assign M_AXI_RRESP_o[RESP_W*(m+1)-1 -: RESP_W] = m_rresp[m];
+        assign M_AXI_RLAST_o[m] = m_rlast[m];
+        assign M_AXI_RVALID_o[m] = m_rvalid[m];
 
-        // W channel: direct from master to pre-FIFO
-        assign pre_wdata[m]  = m_wdata[m];
-        assign pre_wstrb[m]  = m_wstrb[m];
-        assign pre_wlast[m]  = m_wlast[m];
-        assign pre_wvalid[m] = m_wvalid[m];
-        assign m_wready[m]   = pre_wready[m];
     end
 endgenerate
 
@@ -349,40 +337,40 @@ endgenerate
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : UNPACK_SLV
         // Outputs (from slave FIFO to top)
-        assign s_AWID_o   [W_SID*(s+1)-1 -: W_SID]   = s_awid_out[s];
-        assign s_AWADDR_o [ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr_out[s];
-        assign s_AWLEN_o  [LEN_W*(s+1)-1 -: LEN_W]   = s_awlen_out[s];
-        assign s_AWSIZE_o [SIZE_W*(s+1)-1 -: SIZE_W] = s_awsize_out[s];
-        assign s_AWBURST_o[BURST_W*(s+1)-1 -: BURST_W] = s_awburst_out[s];
-        assign s_AWVALID_o[s] = s_awvalid_out[s];
-        assign s_awready_out[s] = s_AWREADY_i[s];
+        assign S_AXI_AWID_o   [W_SID*(s+1)-1 -: W_SID]   = s_awid_out[s];
+        assign S_AXI_AWADDR_o [ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr_out[s];
+        assign S_AXI_AWLEN_o  [LEN_W*(s+1)-1 -: LEN_W]   = s_awlen_out[s];
+        assign S_AXI_AWSIZE_o [SIZE_W*(s+1)-1 -: SIZE_W] = s_awsize_out[s];
+        assign S_AXI_AWBURST_o[BURST_W*(s+1)-1 -: BURST_W] = s_awburst_out[s];
+        assign S_AXI_AWVALID_o[s] = s_awvalid_out[s];
+        assign s_awready_out[s] = S_AXI_AWREADY_i[s];
 
-        assign s_WDATA_o [DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata_out[s];
-        assign s_WSTRB_o [W_STRB*(s+1)-1 -: W_STRB] = s_wstrb_out[s];
-        assign s_WLAST_o [s] = s_wlast_out[s];
-        assign s_WVALID_o[s] = s_wvalid_out[s];
-        assign s_wready_out[s] = s_WREADY_i[s];
+        assign S_AXI_WDATA_o [DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata_out[s];
+        assign S_AXI_WSTRB_o [W_STRB*(s+1)-1 -: W_STRB] = s_wstrb_out[s];
+        assign S_AXI_WLAST_o [s] = s_wlast_out[s];
+        assign S_AXI_WVALID_o[s] = s_wvalid_out[s];
+        assign s_wready_out[s] = S_AXI_WREADY_i[s];
 
-        assign s_ARID_o    [W_SID*(s+1)-1 -: W_SID]   = s_arid_out[s];
-        assign s_ARADDR_o  [ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr_out[s];
-        assign s_ARLEN_o   [LEN_W*(s+1)-1 -: LEN_W]   = s_arlen_out[s];
-        assign s_ARSIZE_o  [SIZE_W*(s+1)-1 -: SIZE_W] = s_arsize_out[s];
-        assign s_ARBURST_o [BURST_W*(s+1)-1 -: BURST_W] = s_arburst_out[s];
-        assign s_ARVALID_o [s] = s_arvalid_out[s];
-        assign s_arready_out[s] = s_ARREADY_i[s];
+        assign S_AXI_ARID_o    [W_SID*(s+1)-1 -: W_SID]   = s_arid_out[s];
+        assign S_AXI_ARADDR_o  [ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr_out[s];
+        assign S_AXI_ARLEN_o   [LEN_W*(s+1)-1 -: LEN_W]   = s_arlen_out[s];
+        assign S_AXI_ARSIZE_o  [SIZE_W*(s+1)-1 -: SIZE_W] = s_arsize_out[s];
+        assign S_AXI_ARBURST_o [BURST_W*(s+1)-1 -: BURST_W] = s_arburst_out[s];
+        assign S_AXI_ARVALID_o [s] = s_arvalid_out[s];
+        assign s_arready_out[s] = S_AXI_ARREADY_i[s];
 
         // Inputs (from top to slave pre-FIFO)
-        assign s_bid_in[s]   = s_BID_i[W_SID*(s+1)-1 -: W_SID];
-        assign s_bresp_in[s] = s_BRESP_i[RESP_W*(s+1)-1 -: RESP_W];
-        assign s_bvalid_in[s]= s_BVALID_i[s];
-        assign s_BREADY_o[s] = s_bready_in[s];
+        assign s_bid_in[s]   = S_AXI_BID_i[W_SID*(s+1)-1 -: W_SID];
+        assign s_bresp_in[s] = S_AXI_BRESP_i[RESP_W*(s+1)-1 -: RESP_W];
+        assign s_bvalid_in[s]= S_AXI_BVALID_i[s];
+        assign S_AXI_BREADY_o[s] = s_bready_in[s];
 
-        assign s_rid_in[s]   = s_RID_i[W_SID*(s+1)-1 -: W_SID];
-        assign s_rdata_in[s] = s_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
-        assign s_rresp_in[s] = s_RRESP_i[RESP_W*(s+1)-1 -: RESP_W];
-        assign s_rlast_in[s] = s_RLAST_i[s];
-        assign s_rvalid_in[s]= s_RVALID_i[s];
-        assign s_RREADY_o[s] = s_rready_in[s];
+        assign s_rid_in[s]   = S_AXI_RID_i[W_SID*(s+1)-1 -: W_SID];
+        assign s_rdata_in[s] = S_AXI_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
+        assign s_rresp_in[s] = S_AXI_RRESP_i[RESP_W*(s+1)-1 -: RESP_W];
+        assign s_rlast_in[s] = S_AXI_RLAST_i[s];
+        assign s_rvalid_in[s]= S_AXI_RVALID_i[s];
+        assign S_AXI_RREADY_o[s] = s_rready_in[s];
     end
 endgenerate
 
@@ -416,20 +404,20 @@ generate
             .m_axi_awburst   (m_awburst[m]),
             .m_axi_awvalid   (m_awvalid[m]),
             .m_axi_awready   (m_awready[m]),
-            .s_axi_arid      (pre_arid[m]),
-            .s_axi_araddr    (pre_araddr[m]),
-            .s_axi_arlen     (pre_arlen[m]),
-            .s_axi_arsize    (pre_arsize[m]),
-            .s_axi_arburst   (pre_arburst[m]),
-            .s_axi_arvalid   (pre_arvalid[m]),
-            .s_axi_arready   (pre_arready[m]),
-            .s_axi_awid      (pre_awid[m]),
-            .s_axi_awaddr    (pre_awaddr[m]),
-            .s_axi_awlen     (pre_awlen[m]),
-            .s_axi_awsize    (pre_awsize[m]),
-            .s_axi_awburst   (pre_awburst[m]),
-            .s_axi_awvalid   (pre_awvalid[m]),
-            .s_axi_awready   (pre_awready[m])
+            .s_axi_arid      (c4k_arid[m]),
+            .s_axi_araddr    (c4k_araddr[m]),
+            .s_axi_arlen     (c4k_arlen[m]),
+            .s_axi_arsize    (c4k_arsize[m]),
+            .s_axi_arburst   (c4k_arburst[m]),
+            .s_axi_arvalid   (c4k_arvalid[m]),
+            .s_axi_arready   (c4k_arready[m]),
+            .s_axi_awid      (c4k_awid[m]),
+            .s_axi_awaddr    (c4k_awaddr[m]),
+            .s_axi_awlen     (c4k_awlen[m]),
+            .s_axi_awsize    (c4k_awsize[m]),
+            .s_axi_awburst   (c4k_awburst[m]),
+            .s_axi_awvalid   (c4k_awvalid[m]),
+            .s_axi_awready   (c4k_awready[m])
         );
     end
 endgenerate
@@ -445,14 +433,14 @@ generate
             .FAW(2)
         ) u_fifo_aw (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (pre_awready[m]),
-            .wr_vld (pre_awvalid[m]),
-            .wr_din ({pre_awid[m], pre_awaddr[m], pre_awlen[m],
-                      pre_awsize[m], pre_awburst[m]}),
-            .rd_rdy (cbar_m_awready[m]),
-            .rd_vld (cbar_m_awvalid[m]),
-            .rd_dout ({cbar_m_awid[m], cbar_m_awaddr[m], cbar_m_awlen[m],
-                       cbar_m_awsize[m], cbar_m_awburst[m]})
+            .wr_rdy (c4k_awready[m]),
+            .wr_vld (c4k_awvalid[m]),
+            .wr_din ({c4k_awid[m], c4k_awaddr[m], c4k_awlen[m],
+                      c4k_awsize[m], c4k_awburst[m]}),
+            .rd_rdy (M_AWREADY[m]),
+            .rd_vld (M_AWVALID[m]),
+            .rd_dout ({M_AWID[m], M_AWADDR[m], M_AWLEN[m],
+                       M_AWSIZE[m], M_AWBURST[m]})
         );
 
         // W FIFO
@@ -461,12 +449,12 @@ generate
             .FAW(2)
         ) u_fifo_w (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (pre_wready[m]),
-            .wr_vld (pre_wvalid[m]),
-            .wr_din ({pre_wdata[m], pre_wstrb[m], pre_wlast[m]}),
-            .rd_rdy (cbar_m_wready[m]),
-            .rd_vld (cbar_m_wvalid[m]),
-            .rd_dout ({cbar_m_wdata[m], cbar_m_wstrb[m], cbar_m_wlast[m]})
+            .wr_rdy (m_wready[m]),
+            .wr_vld (m_wvalid[m]),
+            .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
+            .rd_rdy (M_WREADY[m]),
+            .rd_vld (M_WVALID[m]),
+            .rd_dout ({M_WDATA[m], M_WSTRB[m], M_WLAST[m]})
         );
 
         // AR FIFO: valid from rd_vld only (not stored in data)
@@ -475,14 +463,14 @@ generate
             .FAW(2)
         ) u_fifo_ar (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (pre_arready[m]),
-            .wr_vld (pre_arvalid[m]),
-            .wr_din ({pre_arid[m], pre_araddr[m], pre_arlen[m],
-                      pre_arsize[m], pre_arburst[m]}),
-            .rd_rdy (cbar_m_arready[m]),
-            .rd_vld (cbar_m_arvalid[m]),
-            .rd_dout ({cbar_m_arid[m], cbar_m_araddr[m], cbar_m_arlen[m],
-                       cbar_m_arsize[m], cbar_m_arburst[m]})
+            .wr_rdy (c4k_arready[m]),
+            .wr_vld (c4k_arvalid[m]),
+            .wr_din ({c4k_arid[m], c4k_araddr[m], c4k_arlen[m],
+                      c4k_arsize[m], c4k_arburst[m]}),
+            .rd_rdy (M_ARREADY[m]),
+            .rd_vld (M_ARVALID[m]),
+            .rd_dout ({M_ARID[m], M_ARADDR[m], M_ARLEN[m],
+                       M_ARSIZE[m], M_ARBURST[m]})
         );
     end
 endgenerate
@@ -498,10 +486,10 @@ generate
             .FAW(2)
         ) u_fifo_aw_slv (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_s_awready[s]),
-            .wr_vld (cbar_s_awvalid[s]),
-            .wr_din ({cbar_s_awid[s], cbar_s_awaddr[s], cbar_s_awlen[s],
-                      cbar_s_awsize[s], cbar_s_awburst[s]}),
+            .wr_rdy (S_AWREADY[s]),
+            .wr_vld (S_AWVALID[s]),
+            .wr_din ({S_AWID[s], S_AWADDR[s], S_AWLEN[s],
+                      S_AWSIZE[s], S_AWBURST[s]}),
             .rd_rdy (s_awready_out[s]),
             .rd_vld (s_awvalid_out[s]),
             .rd_dout ({s_awid_out[s], s_awaddr_out[s], s_awlen_out[s],
@@ -514,9 +502,9 @@ generate
             .FAW(2)
         ) u_fifo_w_slv (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_s_wready[s]),
-            .wr_vld (cbar_s_wvalid[s]),
-            .wr_din ({cbar_s_wdata[s], cbar_s_wstrb[s], cbar_s_wlast[s]}),
+            .wr_rdy (S_WREADY[s]),
+            .wr_vld (S_WVALID[s]),
+            .wr_din ({S_WDATA[s], S_WSTRB[s], S_WLAST[s]}),
             .rd_rdy (s_wready_out[s]),
             .rd_vld (s_wvalid_out[s]),
             .rd_dout ({s_wdata_out[s], s_wstrb_out[s], s_wlast_out[s]})
@@ -528,10 +516,10 @@ generate
             .FAW(2)
         ) u_fifo_ar_slv (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_s_arready_fifo[s]),
-            .wr_vld (cbar_s_arvalid[s]),
-            .wr_din ({cbar_s_arid[s], cbar_s_araddr[s], cbar_s_arlen[s],
-                      cbar_s_arsize[s], cbar_s_arburst[s]}),
+            .wr_rdy (S_ARREADY_FIFO[s]),
+            .wr_vld (S_ARVALID[s]),
+            .wr_din ({S_ARID[s], S_ARADDR[s], S_ARLEN[s],
+                      S_ARSIZE[s], S_ARBURST[s]}),
             .rd_rdy (s_arready_out[s]),
             .rd_vld (s_arvalid_out[s]),
             .rd_dout ({s_arid_out[s], s_araddr_out[s], s_arlen_out[s],
@@ -546,7 +534,7 @@ endgenerate
 // When buffer full or clearing: push_rdy[s]=0 → arready gated
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : GEN_ARREADY_GATE
-        assign cbar_s_arready[s] = cbar_s_arready_fifo[s] & sid_buf_push_rdy[s];
+        assign S_ARREADY[s] = S_ARREADY_FIFO[s] & sid_buf_push_rdy[s];
     end
 endgenerate
 
@@ -596,9 +584,9 @@ generate
             .FAW(2)
         ) u_fifo_b_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_m_bready[m]),
-            .wr_vld (cbar_m_bvalid[m]),
-            .wr_din ({cbar_m_bid[m], cbar_m_bresp[m]}),
+            .wr_rdy (M_BREADY[m]),
+            .wr_vld (M_BVALID[m]),
+            .wr_din ({M_BID[m], M_BRESP[m]}),
             .rd_rdy (m_bready[m]),
             .rd_vld (m_bvalid[m]),
             .rd_dout ({m_bid[m], m_bresp[m]})
@@ -610,10 +598,10 @@ generate
             .FAW(2)
         ) u_fifo_r_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (cbar_m_rready_fifo[m]),
-            .wr_vld (cbar_m_rvalid[m]),
-            .wr_din ({cbar_m_rid[m], cbar_m_rdata[m],
-                      cbar_m_rresp[m], cbar_m_rlast[m]}),
+            .wr_rdy (M_RREADY_FIFO[m]),
+            .wr_vld (M_RVALID[m]),
+            .wr_din ({M_RID[m], M_RDATA[m],
+                      M_RRESP[m], M_RLAST[m]}),
             .rd_rdy (m_rready[m]),
             .rd_vld (m_rvalid[m]),
             .rd_dout ({m_rid[m], m_rdata[m], m_rresp[m], m_rlast[m]})
@@ -627,29 +615,13 @@ endgenerate
 // When master requests clear but loses arbitration: s_clr_rdy=0 → rready gated → retry
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : GEN_RREADY_GATE
-        assign cbar_m_rready[m] = cbar_m_rready_fifo[m] & sid_buf_s_clr_rdy[m];
+        assign M_RREADY[m] = M_RREADY_FIFO[m] & sid_buf_s_clr_rdy[m];
     end
 endgenerate
 
 //=============================================================================
-// 6. Read Reorder Logic (unchanged, but note slave AR/R now come from FIFOs)
+// 6. Read Reorder Logic (sid_buffer write/clear + reorder)
 //=============================================================================
-// Slave side signals for reorder (use FIFO outputs, not direct top)
-wire [W_SID-1:0]   slave_arid_for_reorder  [0:SLV_AMT-1];
-wire               slave_arvalid_for_reorder[0:SLV_AMT-1];
-wire               slave_arready_for_reorder[0:SLV_AMT-1];
-wire [W_SID-1:0]   slave_rid_for_reorder   [0:SLV_AMT-1];
-wire               slave_rvalid_for_reorder[0:SLV_AMT-1];
-
-generate
-    for(s = 0; s < SLV_AMT; s = s + 1) begin : REORDER_SLV_SIGNALS
-        assign slave_arid_for_reorder[s]   = s_arid_out[s];
-        assign slave_arvalid_for_reorder[s]= s_arvalid_out[s];
-        assign slave_arready_for_reorder[s]= s_arready_out[s];
-        assign slave_rid_for_reorder[s]    = s_rid_fifo[s];
-        assign slave_rvalid_for_reorder[s] = s_rvalid_fifo[s];
-    end
-endgenerate
 
 //=============================================================================
 // 7. Single shared sid_buffer + reorder (not per-master)
@@ -667,9 +639,9 @@ wire [SLV_AMT-1:0]       sid_buf_wr_rdy;
 genvar si_wr;
 generate
     for(si_wr = 0; si_wr < SLV_AMT; si_wr = si_wr + 1) begin : SID_BUF_WR_PACK
-        assign sid_buf_wr_id_packed[W_SID*(si_wr+1)-1 -: W_SID] = slave_arid_for_reorder[si_wr];
-        assign sid_buf_wr_vld[si_wr] = slave_arvalid_for_reorder[si_wr] & slave_arready_for_reorder[si_wr];
-        assign sid_buf_wr_rdy[si_wr] = 1'b1;
+        assign sid_buf_wr_id_packed[W_SID*(si_wr+1)-1 -: W_SID] = s_arid_out[si_wr];
+        assign sid_buf_wr_vld[si_wr] = s_arvalid_out[si_wr];
+        assign sid_buf_wr_rdy[si_wr] = s_arready_out[si_wr];
     end
 endgenerate
 
@@ -683,9 +655,9 @@ wire [MST_AMT-1:0]       sid_buf_s_clr_rdy;
 genvar si_clr;
 generate
     for(si_clr = 0; si_clr < MST_AMT; si_clr = si_clr + 1) begin : SID_BUF_CLR_PACK
-        assign clr_last_packed[si_clr]    = cbar_m_rlast[si_clr];
-        assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = cbar_m_rsid[si_clr];
-        assign clr_sid_vld_packed[si_clr] = cbar_m_rvalid[si_clr] & m_rready[si_clr];
+        assign clr_last_packed[si_clr]    = M_RLAST[si_clr];
+        assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = M_RSID[si_clr];
+        assign clr_sid_vld_packed[si_clr] = M_RVALID[si_clr] & m_rready[si_clr];
     end
 endgenerate
 
@@ -716,8 +688,8 @@ wire [SLV_AMT-1:0]       reorder_sid_vld;
 genvar si_ro;
 generate
     for(si_ro = 0; si_ro < SLV_AMT; si_ro = si_ro + 1) begin : REORDER_IN_PACK
-        assign reorder_sid_packed[W_SID*(si_ro+1)-1 -: W_SID] = slave_rid_for_reorder[si_ro];
-        assign reorder_sid_vld[si_ro] = slave_rvalid_for_reorder[si_ro];
+        assign reorder_sid_packed[W_SID*(si_ro+1)-1 -: W_SID] = s_rid_fifo[si_ro];
+        assign reorder_sid_vld[si_ro] = s_rvalid_fifo[si_ro];
     end
 endgenerate
 
@@ -746,7 +718,7 @@ assign effective_r_order_grant = (|r_order_grant_i) ? r_order_grant_i : internal
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_RSID
-        assign cbar_m_rsid[m] = cbar_m_rsid_packed[W_SID*(m+1)-1 -: W_SID];
+        assign M_RSID[m] = M_RSID_PACKED[W_SID*(m+1)-1 -: W_SID];
     end
 endgenerate
 
@@ -773,61 +745,61 @@ axi_crossbar #(
     .AXI_RSTn(AXI_RSTn),
 
     // Master Ports (connected to pre-FIFO outputs)
-    .m_AWID_i({cbar_m_awid[MST_AMT-1:0]}),
-    .m_AWADDR_i({cbar_m_awaddr[MST_AMT-1:0]}),
-    .m_AWLEN_i({cbar_m_awlen[MST_AMT-1:0]}),
-    .m_AWSIZE_i({cbar_m_awsize[MST_AMT-1:0]}),
-    .m_AWBURST_i({cbar_m_awburst[MST_AMT-1:0]}),
-    .m_AWVALID_i({cbar_m_awvalid[MST_AMT-1:0]}),
-    .m_AWREADY_o({cbar_m_awready[MST_AMT-1:0]}),
-    .m_WDATA_i({cbar_m_wdata[MST_AMT-1:0]}),
-    .m_WSTRB_i({cbar_m_wstrb[MST_AMT-1:0]}),
-    .m_WLAST_i({cbar_m_wlast[MST_AMT-1:0]}),
-    .m_WVALID_i({cbar_m_wvalid[MST_AMT-1:0]}),
-    .m_WREADY_o({cbar_m_wready[MST_AMT-1:0]}),
-    .m_BID_o({cbar_m_bid[MST_AMT-1:0]}),
-    .m_BRESP_o({cbar_m_bresp[MST_AMT-1:0]}),
-    .m_BVALID_o({cbar_m_bvalid[MST_AMT-1:0]}),
-    .m_BREADY_i({cbar_m_bready[MST_AMT-1:0]}),
-    .m_ARID_i({cbar_m_arid[MST_AMT-1:0]}),
-    .m_ARADDR_i({cbar_m_araddr[MST_AMT-1:0]}),
-    .m_ARLEN_i({cbar_m_arlen[MST_AMT-1:0]}),
-    .m_ARSIZE_i({cbar_m_arsize[MST_AMT-1:0]}),
-    .m_ARBURST_i({cbar_m_arburst[MST_AMT-1:0]}),
-    .m_ARVALID_i({cbar_m_arvalid[MST_AMT-1:0]}),
-    .m_ARREADY_o({cbar_m_arready[MST_AMT-1:0]}),
-    .m_RID_o({cbar_m_rid[MST_AMT-1:0]}),
-    .m_RDATA_o({cbar_m_rdata[MST_AMT-1:0]}),
-    .m_RRESP_o({cbar_m_rresp[MST_AMT-1:0]}),
-    .m_RLAST_o({cbar_m_rlast[MST_AMT-1:0]}),
-    .m_RVALID_o({cbar_m_rvalid[MST_AMT-1:0]}),
-    .m_RREADY_i({cbar_m_rready[MST_AMT-1:0]}),
-    .m_RSID_o(cbar_m_rsid_packed),
+    .m_AWID_i({M_AWID[MST_AMT-1:0]}),
+    .m_AWADDR_i({M_AWADDR[MST_AMT-1:0]}),
+    .m_AWLEN_i({M_AWLEN[MST_AMT-1:0]}),
+    .m_AWSIZE_i({M_AWSIZE[MST_AMT-1:0]}),
+    .m_AWBURST_i({M_AWBURST[MST_AMT-1:0]}),
+    .m_AWVALID_i({M_AWVALID[MST_AMT-1:0]}),
+    .m_AWREADY_o({M_AWREADY[MST_AMT-1:0]}),
+    .m_WDATA_i({M_WDATA[MST_AMT-1:0]}),
+    .m_WSTRB_i({M_WSTRB[MST_AMT-1:0]}),
+    .m_WLAST_i({M_WLAST[MST_AMT-1:0]}),
+    .m_WVALID_i({M_WVALID[MST_AMT-1:0]}),
+    .m_WREADY_o({M_WREADY[MST_AMT-1:0]}),
+    .m_BID_o({M_BID[MST_AMT-1:0]}),
+    .m_BRESP_o({M_BRESP[MST_AMT-1:0]}),
+    .m_BVALID_o({M_BVALID[MST_AMT-1:0]}),
+    .m_BREADY_i({M_BREADY[MST_AMT-1:0]}),
+    .m_ARID_i({M_ARID[MST_AMT-1:0]}),
+    .m_ARADDR_i({M_ARADDR[MST_AMT-1:0]}),
+    .m_ARLEN_i({M_ARLEN[MST_AMT-1:0]}),
+    .m_ARSIZE_i({M_ARSIZE[MST_AMT-1:0]}),
+    .m_ARBURST_i({M_ARBURST[MST_AMT-1:0]}),
+    .m_ARVALID_i({M_ARVALID[MST_AMT-1:0]}),
+    .m_ARREADY_o({M_ARREADY[MST_AMT-1:0]}),
+    .m_RID_o({M_RID[MST_AMT-1:0]}),
+    .m_RDATA_o({M_RDATA[MST_AMT-1:0]}),
+    .m_RRESP_o({M_RRESP[MST_AMT-1:0]}),
+    .m_RLAST_o({M_RLAST[MST_AMT-1:0]}),
+    .m_RVALID_o({M_RVALID[MST_AMT-1:0]}),
+    .m_RREADY_i({M_RREADY[MST_AMT-1:0]}),
+    .m_RSID_o(M_RSID_PACKED),
 
     // Slave Ports (connected to new slave-side FIFOs)
-    .s_AWID_o({cbar_s_awid[SLV_AMT-1:0]}),
-    .s_AWADDR_o({cbar_s_awaddr[SLV_AMT-1:0]}),
-    .s_AWLEN_o({cbar_s_awlen[SLV_AMT-1:0]}),
-    .s_AWSIZE_o({cbar_s_awsize[SLV_AMT-1:0]}),
-    .s_AWBURST_o({cbar_s_awburst[SLV_AMT-1:0]}),
-    .s_AWVALID_o({cbar_s_awvalid[SLV_AMT-1:0]}),
-    .s_AWREADY_i({cbar_s_awready[SLV_AMT-1:0]}),
-    .s_WDATA_o({cbar_s_wdata[SLV_AMT-1:0]}),
-    .s_WSTRB_o({cbar_s_wstrb[SLV_AMT-1:0]}),
-    .s_WLAST_o({cbar_s_wlast[SLV_AMT-1:0]}),
-    .s_WVALID_o({cbar_s_wvalid[SLV_AMT-1:0]}),
-    .s_WREADY_i({cbar_s_wready[SLV_AMT-1:0]}),
+    .s_AWID_o({S_AWID[SLV_AMT-1:0]}),
+    .s_AWADDR_o({S_AWADDR[SLV_AMT-1:0]}),
+    .s_AWLEN_o({S_AWLEN[SLV_AMT-1:0]}),
+    .s_AWSIZE_o({S_AWSIZE[SLV_AMT-1:0]}),
+    .s_AWBURST_o({S_AWBURST[SLV_AMT-1:0]}),
+    .s_AWVALID_o({S_AWVALID[SLV_AMT-1:0]}),
+    .s_AWREADY_i({S_AWREADY[SLV_AMT-1:0]}),
+    .s_WDATA_o({S_WDATA[SLV_AMT-1:0]}),
+    .s_WSTRB_o({S_WSTRB[SLV_AMT-1:0]}),
+    .s_WLAST_o({S_WLAST[SLV_AMT-1:0]}),
+    .s_WVALID_o({S_WVALID[SLV_AMT-1:0]}),
+    .s_WREADY_i({S_WREADY[SLV_AMT-1:0]}),
     .s_BID_i({s_bid_fifo[SLV_AMT-1:0]}),
     .s_BRESP_i({s_bresp_fifo[SLV_AMT-1:0]}),
     .s_BVALID_i({s_bvalid_fifo[SLV_AMT-1:0]}),
     .s_BREADY_o({s_bready_fifo[SLV_AMT-1:0]}),
-    .s_ARID_o({cbar_s_arid[SLV_AMT-1:0]}),
-    .s_ARADDR_o({cbar_s_araddr[SLV_AMT-1:0]}),
-    .s_ARLEN_o({cbar_s_arlen[SLV_AMT-1:0]}),
-    .s_ARSIZE_o({cbar_s_arsize[SLV_AMT-1:0]}),
-    .s_ARBURST_o({cbar_s_arburst[SLV_AMT-1:0]}),
-    .s_ARVALID_o({cbar_s_arvalid[SLV_AMT-1:0]}),
-    .s_ARREADY_i({cbar_s_arready[SLV_AMT-1:0]}),
+    .s_ARID_o({S_ARID[SLV_AMT-1:0]}),
+    .s_ARADDR_o({S_ARADDR[SLV_AMT-1:0]}),
+    .s_ARLEN_o({S_ARLEN[SLV_AMT-1:0]}),
+    .s_ARSIZE_o({S_ARSIZE[SLV_AMT-1:0]}),
+    .s_ARBURST_o({S_ARBURST[SLV_AMT-1:0]}),
+    .s_ARVALID_o({S_ARVALID[SLV_AMT-1:0]}),
+    .s_ARREADY_i({S_ARREADY[SLV_AMT-1:0]}),
     .s_RID_i({s_rid_fifo[SLV_AMT-1:0]}),
     .s_RDATA_i({s_rdata_fifo[SLV_AMT-1:0]}),
     .s_RRESP_i({s_rresp_fifo[SLV_AMT-1:0]}),
