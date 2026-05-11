@@ -274,22 +274,25 @@ always @(posedge AXI_CLK) begin
         w_beat_cnt   <= 0;
         cur_w_mst_id <= 0;
     end else begin
-        // Case 1: AW handshake occurs -> load counter from granted master
-        if(|aw_handshake) begin
+        // AW / W beat counter state machine
+        // 优先级: 新 AW 直达 > W 传输递减 > FIFO 取出下一笔
+        // Case 1: AW handshake while W idle -> direct load (bypass FIFO latency)
+        if(|aw_handshake && !w_transaction_active) begin
             w_beat_cnt   <= m_awlen[aw_grant_idx] + 1'b1;  // beats = LEN+1
             cur_w_mst_id <= aw_grant_idx;
         end
         // Case 2: W handshake occurs -> decrement counter
         else if(w_transaction_active && S_WREADY && S_WVALID) begin
             if(w_beat_cnt == 1'b1 && S_WLAST) begin
-                w_beat_cnt <= 0;  // Transaction complete, will trigger FIFO pop next cycle
+                w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered
             end else begin
                 w_beat_cnt <= w_beat_cnt - 1'b1;
             end
         end
-        // Case 3: Counter expired & FIFO not empty -> load next master from FIFO
-        if(!w_transaction_active && !aw_fifo_empty) begin
+        // Case 3: W idle, FIFO has pending AW -> load next transaction
+        else if(!w_transaction_active && !aw_fifo_empty) begin
             cur_w_mst_id <= fifo_mst_idx;
+            w_beat_cnt   <= fifo_awlen + 1'b1;
         end
     end
 end
