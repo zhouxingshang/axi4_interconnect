@@ -161,6 +161,17 @@ wire [BURST_W-1:0]          c4k_arburst [0:MST_AMT-1];
 wire                        c4k_arvalid [0:MST_AMT-1];
 wire                        c4k_arready [0:MST_AMT-1];
 
+wire [DATA_WIDTH-1:0]       c4k_wdata   [0:MST_AMT-1];
+wire [W_STRB-1:0]           c4k_wstrb   [0:MST_AMT-1];
+wire                        c4k_wlast   [0:MST_AMT-1];
+wire                        c4k_wvalid  [0:MST_AMT-1];
+wire                        c4k_wready  [0:MST_AMT-1];
+
+wire [TRANS_MST_ID_W-1:0]   c4k_bid     [0:MST_AMT-1];
+wire [RESP_W-1:0]           c4k_bresp   [0:MST_AMT-1];
+wire                        c4k_bvalid  [0:MST_AMT-1];
+wire                        c4k_bready  [0:MST_AMT-1];
+
 //=============================================================================
 // Post-FIFO buses (Master side): between crossbar output and FIFO → master
 //=============================================================================
@@ -390,6 +401,7 @@ generate
         ) u_cross_4k (
             .clk             (AXI_CLK),
             .rst_n           (AXI_RSTn),
+            // AR channel
             .m_axi_arid      (m_arid[m]),
             .m_axi_araddr    (m_araddr[m]),
             .m_axi_arlen     (m_arlen[m]),
@@ -397,6 +409,7 @@ generate
             .m_axi_arburst   (m_arburst[m]),
             .m_axi_arvalid   (m_arvalid[m]),
             .m_axi_arready   (m_arready[m]),
+            // AW channel
             .m_axi_awid      (m_awid[m]),
             .m_axi_awaddr    (m_awaddr[m]),
             .m_axi_awlen     (m_awlen[m]),
@@ -404,6 +417,27 @@ generate
             .m_axi_awburst   (m_awburst[m]),
             .m_axi_awvalid   (m_awvalid[m]),
             .m_axi_awready   (m_awready[m]),
+            // W channel (WLAST insertion for split transactions)
+            .m_axi_wdata     (m_wdata[m]),
+            .m_axi_wstrb     (m_wstrb[m]),
+            .m_axi_wlast     (m_wlast[m]),
+            .m_axi_wvalid    (m_wvalid[m]),
+            .m_axi_wready    (m_wready[m]),
+            .s_axi_wdata     (c4k_wdata[m]),
+            .s_axi_wstrb     (c4k_wstrb[m]),
+            .s_axi_wlast     (c4k_wlast[m]),
+            .s_axi_wvalid    (c4k_wvalid[m]),
+            .s_axi_wready    (c4k_wready[m]),
+            // B channel (response merging for split writes)
+            .s_axi_bid       (c4k_bid[m]),
+            .s_axi_bresp     (c4k_bresp[m]),
+            .s_axi_bvalid    (c4k_bvalid[m]),
+            .s_axi_bready    (c4k_bready[m]),
+            .m_axi_bid       (m_bid[m]),
+            .m_axi_bresp     (m_bresp[m]),
+            .m_axi_bvalid    (m_bvalid[m]),
+            .m_axi_bready    (m_bready[m]),
+            // AR slave side
             .s_axi_arid      (c4k_arid[m]),
             .s_axi_araddr    (c4k_araddr[m]),
             .s_axi_arlen     (c4k_arlen[m]),
@@ -411,6 +445,7 @@ generate
             .s_axi_arburst   (c4k_arburst[m]),
             .s_axi_arvalid   (c4k_arvalid[m]),
             .s_axi_arready   (c4k_arready[m]),
+            // AW slave side
             .s_axi_awid      (c4k_awid[m]),
             .s_axi_awaddr    (c4k_awaddr[m]),
             .s_axi_awlen     (c4k_awlen[m]),
@@ -443,15 +478,15 @@ generate
                        M_AWSIZE[m], M_AWBURST[m]})
         );
 
-        // W FIFO
+        // W FIFO (from cross_4k_if output)
         axi_fifo_sync #(
             .FDW(DATA_WIDTH + W_STRB + 1),
             .FAW(2)
         ) u_fifo_w (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
-            .wr_rdy (m_wready[m]),
-            .wr_vld (m_wvalid[m]),
-            .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
+            .wr_rdy (c4k_wready[m]),
+            .wr_vld (c4k_wvalid[m]),
+            .wr_din ({c4k_wdata[m], c4k_wstrb[m], c4k_wlast[m]}),
             .rd_rdy (M_WREADY[m]),
             .rd_vld (M_WVALID[m]),
             .rd_dout ({M_WDATA[m], M_WSTRB[m], M_WLAST[m]})
@@ -587,9 +622,9 @@ generate
             .wr_rdy (M_BREADY[m]),
             .wr_vld (M_BVALID[m]),
             .wr_din ({M_BID[m], M_BRESP[m]}),
-            .rd_rdy (m_bready[m]),
-            .rd_vld (m_bvalid[m]),
-            .rd_dout ({m_bid[m], m_bresp[m]})
+            .rd_rdy (c4k_bready[m]),
+            .rd_vld (c4k_bvalid[m]),
+            .rd_dout ({c4k_bid[m], c4k_bresp[m]})
         );
 
         // R FIFO: wr_rdy gated by sid_buffer s_clr_rdy (clear backpressure)

@@ -76,14 +76,36 @@ module cross_4k_if #(
 
 );
 
-wire [W_ADDR-1 : 0]    m_araddr_end  ;
-wire [W_ADDR-1 : 0]    m_awaddr_end  ;
+// ---- address calculation helpers ----
+// Total bytes = (LEN + 1) << SIZE; end_addr = start + total_bytes - 1
+wire [W_ADDR-1:0]    m_araddr_end;
+wire [W_ADDR-1:0]    m_awaddr_end;
 
-assign m_araddr_end = m_axi_araddr + (m_axi_arlen << 2); //m_axi_arlen*4, 4*8=32
-assign m_awaddr_end = m_axi_awaddr + (m_axi_awlen << 2);
+wire [W_ADDR:0] ar_total_bytes = ({1'b0, m_axi_arlen} + 1'b1) << m_axi_arsize;
+wire [W_ADDR:0] aw_total_bytes = ({1'b0, m_axi_awlen} + 1'b1) << m_axi_awsize;
 
+assign m_araddr_end = m_axi_araddr + ar_total_bytes[W_ADDR-1:0] - 1'b1;
+assign m_awaddr_end = m_axi_awaddr + aw_total_bytes[W_ADDR-1:0] - 1'b1;
+
+// 4KB boundary: bit 12 differs → transaction crosses a 4KB page
 assign ar_cross4k_flag = m_axi_araddr[12] ^ m_araddr_end[12];
 assign aw_cross4k_flag = m_axi_awaddr[12] ^ m_awaddr_end[12];
+
+// bytes per beat: 1 << SIZE
+wire [7:0] ar_bpb = 8'd1 << m_axi_arsize;   // AR bytes per beat
+wire [7:0] aw_bpb = 8'd1 << m_axi_awsize;   // AW bytes per beat
+
+// total beats in the original transaction
+wire [W_LEN:0] ar_total_beats = m_axi_arlen + 1'b1;
+wire [W_LEN:0] aw_total_beats = m_axi_awlen + 1'b1;
+
+// bytes from start to next 4KB boundary
+wire [12:0] ar_bytes_to_bnd = 13'h1000 - {1'b0, m_axi_araddr[11:0]};
+wire [12:0] aw_bytes_to_bnd = 13'h1000 - {1'b0, m_axi_awaddr[11:0]};
+
+// beats that fit entirely within the first 4KB page (ceil division)
+wire [W_LEN:0] ar_beats_page1 = (ar_bytes_to_bnd + {5'b0, ar_bpb} - 1'b1) >> m_axi_arsize;
+wire [W_LEN:0] aw_beats_page1 = (aw_bytes_to_bnd + {5'b0, aw_bpb} - 1'b1) >> m_axi_awsize;
 
 //signal for split to 2-transactions
 reg [W_ID-1:0]      trans_arid    ; 
@@ -111,9 +133,9 @@ always @(*) begin
         trans_arsize  = m_axi_arsize ;
         trans_arburst = m_axi_arburst;
         trans1_araddr = m_axi_araddr ;
-        trans1_arlen  = ({m_axi_araddr[29:12], 12'hfff} - m_axi_araddr + 1'b1) >> 2;
-        trans2_araddr = {m_axi_araddr[29:12] + 1'b1, 12'h0};
-        trans2_arlen  = (m_araddr_end - {m_axi_araddr[29:12] + 1'b1, 12'h0} + 1'b1) >> 2;
+        trans1_arlen  = ar_beats_page1 - 1'b1;      // AWLEN = beats_in_page1 - 1
+        trans2_araddr = {m_axi_araddr[W_ADDR-1:12] + 1'b1, 12'h0};
+        trans2_arlen  = ar_total_beats - ar_beats_page1 - 1'b1;
         trans_arvalid = m_axi_arvalid;
     end
     if (m_axi_awvalid & aw_cross4k_flag) begin
@@ -121,9 +143,9 @@ always @(*) begin
         trans_awsize  = m_axi_awsize ;
         trans_awburst = m_axi_awburst;
         trans1_awaddr = m_axi_awaddr ;
-        trans1_awlen  = ({m_axi_awaddr[29:12], 12'hfff} - m_axi_awaddr + 1'b1) >> 2;
-        trans2_awaddr = {m_axi_awaddr[29:12] + 1'b1, 12'h0};
-        trans2_awlen  = (m_awaddr_end - {m_axi_awaddr[29:12] + 1'b1, 12'h0} + 1'b1) >> 2;
+        trans1_awlen  = aw_beats_page1 - 1'b1;      // AWLEN = beats_in_page1 - 1
+        trans2_awaddr = {m_axi_awaddr[W_ADDR-1:12] + 1'b1, 12'h0};
+        trans2_awlen  = aw_total_beats - aw_beats_page1 - 1'b1;
         trans_awvalid = m_axi_awvalid;
     end
 end
@@ -231,7 +253,7 @@ always @(*) begin
         m_axi_awready = 0;
     end
     else if (ST_AW_C4K == TRANS2) begin
-        s_axi_awid    = {(trans_awid[3:2] + 2'b1), trans_awid[1:0]};
+        s_axi_awid    = trans_awid + 1'b1;   // increment ID for sub-transaction 2
         s_axi_awaddr  = trans2_awaddr ;
         s_axi_awlen   = trans2_awlen  ;
         s_axi_awsize  = trans_awsize ;
@@ -326,55 +348,75 @@ assign m_axi_wready = s_axi_wready && !w_stall;
 //=============================================================================
 // B Channel: merge two B responses → one for split write transactions
 //=============================================================================
-// When aw_cross4k_flag=1, the slave sends 2 B responses. The first is absorbed;
-// the second is forwarded to the master (with original ID restored).
-// When aw_cross4k_flag=0, B channel is pure passthrough.
+// Sub-transaction 1 uses original AWID; sub-transaction 2 uses AWID+1.
+// Both B responses must be received before forwarding a single merged B to
+// the master.  Final BRESP = bitwise OR of both sub-transactions' BRESP:
+// if either fails the whole transaction fails.
+// BID-keyed tracking handles either arrival order.
 //=============================================================================
-reg             b_split_active;     // expecting 2 B responses
-reg             b_first_done;       // first B response already absorbed
+reg             b_split_active;     // armed: split write B merging in progress
+reg             b_got_trans1;       // sub-transaction 1's B received
+reg             b_got_trans2;       // sub-transaction 2's B received
+reg [1:0]       b_resp_merged;      // accumulated BRESP = BRESP_trans1 | BRESP_trans2
+reg [W_ID-1:0]  b_orig_awid;       // original AWID (before +1 for sub-transaction 2)
 
 always @(posedge clk) begin
     if (!rst_n) begin
         b_split_active <= 0;
-        b_first_done   <= 0;
+        b_got_trans1   <= 0;
+        b_got_trans2   <= 0;
+        b_resp_merged  <= 2'b00;
+        b_orig_awid    <= 0;
     end else begin
-        // Arm B split detection on split AW acceptance (master side)
+        // Arm on split AW acceptance (master side)
         if (m_axi_awvalid && m_axi_awready && aw_cross4k_flag) begin
             b_split_active <= 1;
-            b_first_done   <= 0;
+            b_got_trans1   <= 0;
+            b_got_trans2   <= 0;
+            b_resp_merged  <= 2'b00;
+            b_orig_awid    <= m_axi_awid;
         end
 
-        // B handshake tracking
+        // B handshake: accumulate BRESP by OR, track by BID
         if (b_split_active && s_axi_bvalid && s_axi_bready) begin
-            if (!b_first_done) begin
-                b_first_done <= 1;          // absorbed first response
-            end else begin
-                b_split_active <= 0;        // forwarded second response, done
-                b_first_done   <= 0;
+            if (s_axi_bid == b_orig_awid) begin
+                b_got_trans1  <= 1;
+                b_resp_merged <= b_resp_merged | s_axi_bresp;
+            end else if (s_axi_bid == b_orig_awid + 1'b1) begin
+                b_got_trans2  <= 1;
+                b_resp_merged <= b_resp_merged | s_axi_bresp;
             end
+        end
+
+        // Both received and merged B accepted by master → done
+        if (b_split_active && b_got_trans1 && b_got_trans2 && m_axi_bready) begin
+            b_split_active <= 0;
+            b_got_trans1   <= 0;
+            b_got_trans2   <= 0;
         end
     end
 end
 
-// B ready to slave: always ready when tracking split, otherwise passthrough
-assign s_axi_bready = b_split_active ? 1'b1 : m_axi_bready;
+// B ready to slave: accept until both sub-transaction responses received
+assign s_axi_bready = (b_split_active && !(b_got_trans1 && b_got_trans2))
+                      ? 1'b1 : m_axi_bready;
 
 // B response to master
 always @(*) begin
-    if (b_split_active && b_first_done && s_axi_bvalid) begin
-        // Forward second B response: restore original ID
-        // (TRANS2 AW modified bits [3:2] = +1, so subtract to restore)
-        m_axi_bid   = {s_axi_bid[W_ID-1:2] - 2'b1, s_axi_bid[1:0]};
-        m_axi_bresp = s_axi_bresp;
+    if (b_split_active && b_got_trans1 && b_got_trans2) begin
+        // Both sub-transactions done → forward merged B
+        m_axi_bid    = b_orig_awid;
+        m_axi_bresp  = b_resp_merged;
         m_axi_bvalid = 1'b1;
-    end else if (!b_split_active && !b_first_done) begin
-        // Passthrough mode (no split, or split not active)
-        m_axi_bid   = s_axi_bid;
-        m_axi_bresp = s_axi_bresp;
-        m_axi_bvalid = b_split_active ? 1'b0 : s_axi_bvalid;
+    end else if (!b_split_active) begin
+        // Passthrough mode (no split, or merge complete)
+        m_axi_bid    = s_axi_bid;
+        m_axi_bresp  = s_axi_bresp;
+        m_axi_bvalid = s_axi_bvalid;
     end else begin
-        m_axi_bid   = 0;
-        m_axi_bresp = 0;
+        // Still waiting for both B responses
+        m_axi_bid    = 0;
+        m_axi_bresp  = 0;
         m_axi_bvalid = 0;
     end
 end
