@@ -1,4 +1,7 @@
 // INCR BURST ONLY
+// 4KB boundary splitter: splits AW/AR when transaction crosses 4KB
+// W channel: forces WLAST=1 on last beat of sub-transaction 1
+// B channel: merges two B responses back into one for the master
 module cross_4k_if #(
       parameter W_ID   = 4           // ID width
               , W_CID  = 4
@@ -8,41 +11,67 @@ module cross_4k_if #(
               , W_STRB = (W_DATA/8)  // data strobe width
               , W_SID  = (W_CID+W_ID)// slave ID
 ) (
-      input                          clk        
-    , input                          rst_n      
+      input                          clk
+    , input                          rst_n
 
-    // input
-    , input  wire    [W_ID-1 :0]     m_axi_arid    
-    , input  wire    [W_ADDR-1:0]    m_axi_araddr  
-    , input  wire    [W_LEN-1 :0]    m_axi_arlen   
-    , input  wire    [2 :0]          m_axi_arsize  
-    , input  wire    [1 :0]          m_axi_arburst 
-    , input  wire                    m_axi_arvalid 
-    , output reg                     m_axi_arready 
+    // ---- AR channel ----
+    , input  wire    [W_ID-1 :0]     m_axi_arid
+    , input  wire    [W_ADDR-1:0]    m_axi_araddr
+    , input  wire    [W_LEN-1 :0]    m_axi_arlen
+    , input  wire    [2 :0]          m_axi_arsize
+    , input  wire    [1 :0]          m_axi_arburst
+    , input  wire                    m_axi_arvalid
+    , output reg                     m_axi_arready
 
-    , input  wire    [W_ID-1 :0]     m_axi_awid    
-    , input  wire    [W_ADDR-1:0]    m_axi_awaddr  
-    , input  wire    [W_LEN-1 :0]    m_axi_awlen   
-    , input  wire    [2 :0]          m_axi_awsize  
-    , input  wire    [1 :0]          m_axi_awburst 
-    , input  wire                    m_axi_awvalid 
-    , output reg                     m_axi_awready 
+    // ---- AW channel ----
+    , input  wire    [W_ID-1 :0]     m_axi_awid
+    , input  wire    [W_ADDR-1:0]    m_axi_awaddr
+    , input  wire    [W_LEN-1 :0]    m_axi_awlen
+    , input  wire    [2 :0]          m_axi_awsize
+    , input  wire    [1 :0]          m_axi_awburst
+    , input  wire                    m_axi_awvalid
+    , output reg                     m_axi_awready
 
-    // output
-    , output  reg    [W_ID-1:0]      s_axi_arid    
-    , output  reg    [W_ADDR-1:0]    s_axi_araddr  
-    , output  reg    [W_LEN-1:0]     s_axi_arlen   
-    , output  reg    [2:0]           s_axi_arsize  
-    , output  reg    [1:0]           s_axi_arburst 
-    , output  reg                    s_axi_arvalid 
+    // ---- W channel (passthrough + WLAST insertion) ----
+    , input  wire    [W_DATA-1:0]    m_axi_wdata
+    , input  wire    [W_STRB-1:0]    m_axi_wstrb
+    , input  wire                    m_axi_wlast
+    , input  wire                    m_axi_wvalid
+    , output wire                    m_axi_wready
+
+    , output wire    [W_DATA-1:0]    s_axi_wdata
+    , output wire    [W_STRB-1:0]    s_axi_wstrb
+    , output wire                    s_axi_wlast
+    , output wire                    s_axi_wvalid
+    , input  wire                    s_axi_wready
+
+    // ---- B channel (response merging for split writes) ----
+    , input  wire    [W_ID-1:0]      s_axi_bid
+    , input  wire    [1:0]           s_axi_bresp
+    , input  wire                    s_axi_bvalid
+    , output wire                    s_axi_bready
+
+    , output reg     [W_ID-1:0]      m_axi_bid
+    , output reg     [1:0]           m_axi_bresp
+    , output reg                     m_axi_bvalid
+    , input  wire                    m_axi_bready
+
+    // ---- AR slave side ----
+    , output  reg    [W_ID-1:0]      s_axi_arid
+    , output  reg    [W_ADDR-1:0]    s_axi_araddr
+    , output  reg    [W_LEN-1:0]     s_axi_arlen
+    , output  reg    [2:0]           s_axi_arsize
+    , output  reg    [1:0]           s_axi_arburst
+    , output  reg                    s_axi_arvalid
     , input   wire                   s_axi_arready
 
-    , output  reg    [W_ID-1:0]      s_axi_awid    
-    , output  reg    [W_ADDR-1:0]    s_axi_awaddr  
-    , output  reg    [W_LEN-1:0]     s_axi_awlen   
-    , output  reg    [2:0]           s_axi_awsize  
-    , output  reg    [1:0]           s_axi_awburst 
-    , output  reg                    s_axi_awvalid 
+    // ---- AW slave side ----
+    , output  reg    [W_ID-1:0]      s_axi_awid
+    , output  reg    [W_ADDR-1:0]    s_axi_awaddr
+    , output  reg    [W_LEN-1:0]     s_axi_awlen
+    , output  reg    [2:0]           s_axi_awsize
+    , output  reg    [1:0]           s_axi_awburst
+    , output  reg                    s_axi_awvalid
     , input   wire                   s_axi_awready
 
 );
@@ -229,6 +258,124 @@ always @(*) begin
             s_axi_awvalid = 0;
             m_axi_awready = 0;
         end
+    end
+end
+
+//=============================================================================
+// W Channel: WLAST insertion for split sub-transaction 1
+//=============================================================================
+// WLAST is forced to 1 on the last beat of sub-transaction 1 (beat trans1_awlen).
+// After that, the counter continues and WLAST passes through from the master
+// on the last beat of the original transaction (which is sub-transaction 2's last).
+//=============================================================================
+reg [W_LEN-1:0] w_beat_cnt;        // beat index within the original transaction
+reg             w_trans1_done;      // sub-transaction 1 W phase completed
+reg             w_aw_split;         // current write transaction was split
+reg [W_LEN-1:0] orig_awlen_reg;    // original AWLEN (from master, before split)
+
+// Capture original AWLEN when AW handshake completes on master side
+always @(posedge clk) begin
+    if (!rst_n) begin
+        orig_awlen_reg <= 0;
+        w_aw_split     <= 0;
+    end else begin
+        if (m_axi_awvalid && m_axi_awready) begin
+            orig_awlen_reg <= m_axi_awlen;
+            w_aw_split     <= aw_cross4k_flag;
+        end
+    end
+end
+
+// W beat counter: starts counting when sub-transaction 1 AW is accepted
+always @(posedge clk) begin
+    if (!rst_n) begin
+        w_beat_cnt    <= 0;
+        w_trans1_done <= 0;
+    end else begin
+        // Load / start on TRANS1 AW handshake
+        if (ST_AW_C4K == TRANS1 && s_axi_awvalid && s_axi_awready && aw_cross4k_flag) begin
+            w_beat_cnt    <= 0;
+            w_trans1_done <= 0;
+        end
+
+        // W handshake: increment counter
+        if (m_axi_wvalid && m_axi_wready) begin
+            if (!w_trans1_done && w_aw_split && w_beat_cnt == trans1_awlen) begin
+                // Last beat of sub-transaction 1 → force WLAST, move to sub-transaction 2
+                w_trans1_done <= 1;
+            end
+            w_beat_cnt <= w_beat_cnt + 1'b1;
+        end
+    end
+end
+
+// W channel routing
+// Stalling: between TRANS1 W done and TRANS2 AW accepted, stall W to prevent
+// sub-transaction 2 data from reaching the slave before its AW is sent.
+wire w_stall = w_trans1_done && w_aw_split &&
+               !(ST_AW_C4K == TRANS2 && s_axi_awvalid && s_axi_awready);
+
+assign s_axi_wdata  = m_axi_wdata;
+assign s_axi_wstrb  = m_axi_wstrb;
+assign s_axi_wvalid = m_axi_wvalid && !w_stall;
+assign s_axi_wlast  = (!w_trans1_done && w_aw_split && w_beat_cnt == trans1_awlen)
+                      ? 1'b1              // force WLAST on last beat of sub-transaction 1
+                      : m_axi_wlast;      // passthrough otherwise
+assign m_axi_wready = s_axi_wready && !w_stall;
+
+//=============================================================================
+// B Channel: merge two B responses → one for split write transactions
+//=============================================================================
+// When aw_cross4k_flag=1, the slave sends 2 B responses. The first is absorbed;
+// the second is forwarded to the master (with original ID restored).
+// When aw_cross4k_flag=0, B channel is pure passthrough.
+//=============================================================================
+reg             b_split_active;     // expecting 2 B responses
+reg             b_first_done;       // first B response already absorbed
+
+always @(posedge clk) begin
+    if (!rst_n) begin
+        b_split_active <= 0;
+        b_first_done   <= 0;
+    end else begin
+        // Arm B split detection on split AW acceptance (master side)
+        if (m_axi_awvalid && m_axi_awready && aw_cross4k_flag) begin
+            b_split_active <= 1;
+            b_first_done   <= 0;
+        end
+
+        // B handshake tracking
+        if (b_split_active && s_axi_bvalid && s_axi_bready) begin
+            if (!b_first_done) begin
+                b_first_done <= 1;          // absorbed first response
+            end else begin
+                b_split_active <= 0;        // forwarded second response, done
+                b_first_done   <= 0;
+            end
+        end
+    end
+end
+
+// B ready to slave: always ready when tracking split, otherwise passthrough
+assign s_axi_bready = b_split_active ? 1'b1 : m_axi_bready;
+
+// B response to master
+always @(*) begin
+    if (b_split_active && b_first_done && s_axi_bvalid) begin
+        // Forward second B response: restore original ID
+        // (TRANS2 AW modified bits [3:2] = +1, so subtract to restore)
+        m_axi_bid   = {s_axi_bid[W_ID-1:2] - 2'b1, s_axi_bid[1:0]};
+        m_axi_bresp = s_axi_bresp;
+        m_axi_bvalid = 1'b1;
+    end else if (!b_split_active && !b_first_done) begin
+        // Passthrough mode (no split, or split not active)
+        m_axi_bid   = s_axi_bid;
+        m_axi_bresp = s_axi_bresp;
+        m_axi_bvalid = b_split_active ? 1'b0 : s_axi_bvalid;
+    end else begin
+        m_axi_bid   = 0;
+        m_axi_bresp = 0;
+        m_axi_bvalid = 0;
     end
 end
 
