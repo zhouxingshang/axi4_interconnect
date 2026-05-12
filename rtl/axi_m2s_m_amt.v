@@ -195,7 +195,7 @@ end
 //=============================================================================
 // Note: axi_arbiter_m2s_m_amt handles both AW and AR internally
 axi_arbiter_m2s_m_amt #(
-    .W_CID(W_CID), 
+    .W_CID(M_ID_W), 
     .W_ID(W_ID), 
     .NUM(MST_AMT)
 ) u_axi_arbiter_aw_ar (

@@ -2,7 +2,7 @@ module axi_s2m_s_amt
 #(
     parameter MASTER_ID       = 0,
     parameter W_CID           = 4,
-    parameter W_ID            = 4,
+    parameter W_ID            = 6,
     parameter W_ADDR          = 32,
     parameter W_DATA          = 32,
     parameter W_STRB          = (W_DATA/8),

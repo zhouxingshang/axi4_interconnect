@@ -6,7 +6,7 @@ module axi_crossbar
     parameter OUTSTANDING_AMT       = 8,              // 每主设备最大未完成事务数
 
     // ========== 事务配置 ==========
-    parameter TRANS_MST_ID_W        = 4,              // 主设备事务 ID 位宽
+    parameter W_ID        = 4,              // 主设备事务 ID 位宽
     parameter TRANS_BURST_W         = 2,              // xBURST 字段位宽
     parameter TRANS_DATA_LEN_W      = 8,              // xLEN 字段位宽
     parameter TRANS_DATA_SIZE_W     = 3,              // xSIZE 字段位宽
@@ -16,9 +16,10 @@ module axi_crossbar
 
     // ========== 派生参数 ==========
     parameter MST_ID_W              = $clog2(MST_AMT),           // 主设备索引编码位宽
-    parameter SLV_ID_W              = $clog2(SLV_AMT),           // 从设备索引编码位宽
+    parameter SLV_ID_W              = 2,           // 从设备索引编码位宽
     parameter W_STRB                = DATA_WIDTH / 8,            // 字节使能位宽
-    parameter W_SID                 = MST_ID_W + TRANS_MST_ID_W, // 从设备侧 ID 位宽 (MST_IDX + ORIG_ID)
+    parameter W_MID                 = SLV_ID_W + W_ID, // master-side ID width after cross_4k_if extension
+    parameter W_SID                 = MST_ID_W + SLV_ID_W + W_ID, // 从设备侧 ID 位宽 (MST_IDX + C4K_PREFIX + ORIG_ID)
 
     // ========== 地址映射配置 ==========
     // 默认: 地址高位用于选择从设备
@@ -42,7 +43,7 @@ module axi_crossbar
 
     // ========== 主设备侧接口 (扁平化) ==========
     // -- 写地址通道 (AW)
-    input   wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_AWID_i,
+    input   wire  [W_MID*MST_AMT-1              : 0]  m_AWID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1         : 0]  m_AWADDR_i,
     input   wire  [TRANS_BURST_W*MST_AMT-1      : 0]  m_AWBURST_i,
     input   wire  [TRANS_DATA_LEN_W*MST_AMT-1   : 0]  m_AWLEN_i,
@@ -58,13 +59,13 @@ module axi_crossbar
     output  wire  [MST_AMT-1                    : 0]  m_WREADY_o,
 
     // -- 写响应通道 (B)
-    output  wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_BID_o,
+    output  wire  [W_MID*MST_AMT-1              : 0]  m_BID_o,
     output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_BRESP_o,
     output  wire  [MST_AMT-1                    : 0]  m_BVALID_o,
     input   wire  [MST_AMT-1                    : 0]  m_BREADY_i,
 
     // -- 读地址通道 (AR)
-    input   wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_ARID_i,
+    input   wire  [W_MID*MST_AMT-1              : 0]  m_ARID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1         : 0]  m_ARADDR_i,
     input   wire  [TRANS_BURST_W*MST_AMT-1      : 0]  m_ARBURST_i,
     input   wire  [TRANS_DATA_LEN_W*MST_AMT-1   : 0]  m_ARLEN_i,
@@ -73,7 +74,7 @@ module axi_crossbar
     output  wire  [MST_AMT-1                    : 0]  m_ARREADY_o,
 
     // -- 读数据通道 (R)
-    output  wire  [TRANS_MST_ID_W*MST_AMT-1     : 0]  m_RID_o,
+    output  wire  [W_ID*MST_AMT-1     : 0]  m_RID_o,
     output  wire  [DATA_WIDTH*MST_AMT-1         : 0]  m_RDATA_o,
     output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_RRESP_o,
     output  wire  [MST_AMT-1                    : 0]  m_RLAST_o,
@@ -139,7 +140,7 @@ module axi_crossbar
 localparam ADDR_DECODE_W = SLV_ID_MSB_IDX - SLV_ID_LSB_IDX + 1;
 
 // ========== 扁平化内部数组 (主设备侧) ==========
-wire [TRANS_MST_ID_W-1:0]    m_awid      [0:MST_AMT-1];
+wire [W_MID-1:0]             m_awid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]        m_awaddr    [0:MST_AMT-1];
 wire [TRANS_BURST_W-1:0]     m_awburst   [0:MST_AMT-1];
 wire [TRANS_DATA_LEN_W-1:0]  m_awlen     [0:MST_AMT-1];
@@ -153,12 +154,12 @@ wire                         m_wlast     [0:MST_AMT-1];
 wire                         m_wvalid    [0:MST_AMT-1];
 wire                         m_wready    [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]    m_bid       [0:MST_AMT-1];
+wire [W_MID-1:0]              m_bid       [0:MST_AMT-1];
 wire [TRANS_WR_RESP_W-1:0]   m_bresp     [0:MST_AMT-1];
 wire                         m_bvalid    [0:MST_AMT-1];
 wire                         m_bready    [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]    m_arid      [0:MST_AMT-1];
+wire [W_MID-1:0]             m_arid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]        m_araddr    [0:MST_AMT-1];
 wire [TRANS_BURST_W-1:0]     m_arburst   [0:MST_AMT-1];
 wire [TRANS_DATA_LEN_W-1:0]  m_arlen     [0:MST_AMT-1];
@@ -166,7 +167,7 @@ wire [TRANS_DATA_SIZE_W-1:0] m_arsize    [0:MST_AMT-1];
 wire                         m_arvalid   [0:MST_AMT-1];
 wire                         m_arready   [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]    m_rid       [0:MST_AMT-1];
+wire [W_ID-1:0]    m_rid       [0:MST_AMT-1];
 wire [DATA_WIDTH-1:0]        m_rdata     [0:MST_AMT-1];
 wire [TRANS_WR_RESP_W-1:0]   m_rresp     [0:MST_AMT-1];
 wire                         m_rlast     [0:MST_AMT-1];
@@ -236,7 +237,7 @@ genvar m, s;
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
         // AW 通道
-        assign m_awid[m]     = m_AWID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
+        assign m_awid[m]     = m_AWID_i[W_MID*(m+1)-1 -: W_MID];
         assign m_awaddr[m]   = m_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
         assign m_awburst[m]  = m_AWBURST_i[TRANS_BURST_W*(m+1)-1 -: TRANS_BURST_W];
         assign m_awlen[m]    = m_AWLEN_i[TRANS_DATA_LEN_W*(m+1)-1 -: TRANS_DATA_LEN_W];
@@ -252,13 +253,13 @@ generate
         assign m_WREADY_o[m] = m_wready[m];
         
         // B 通道
-        assign m_BID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_bid[m];
+        assign m_BID_o[W_MID*(m+1)-1 -: W_MID] = m_bid[m];
         assign m_BRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_bresp[m];
         assign m_BVALID_o[m] = m_bvalid[m];
         assign m_bready[m]   = m_BREADY_i[m];
         
         // AR 通道
-        assign m_arid[m]     = m_ARID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
+        assign m_arid[m]     = m_ARID_i[W_MID*(m+1)-1 -: W_MID];
         assign m_araddr[m]   = m_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
         assign m_arburst[m]  = m_ARBURST_i[TRANS_BURST_W*(m+1)-1 -: TRANS_BURST_W];
         assign m_arlen[m]    = m_ARLEN_i[TRANS_DATA_LEN_W*(m+1)-1 -: TRANS_DATA_LEN_W];
@@ -267,9 +268,9 @@ generate
         assign m_ARREADY_o[m] = m_arready[m];
         
         // R 通道
-        assign m_rid[m]    = m_rsid[m][TRANS_MST_ID_W-1:0];  // 剥离主设备 ID 前缀
+        assign m_rid[m]    = m_rsid[m][W_ID-1:0];  // 剥离主设备 ID 前缀
         assign m_RSID_o[W_SID*(m+1)-1 -: W_SID] = m_rsid[m];
-        assign m_RID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_rid[m];
+        assign m_RID_o[W_ID*(m+1)-1 -: W_ID] = m_rid[m];
         assign m_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
         assign m_RRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_rresp[m];
         assign m_RLAST_o[m] = m_rlast[m];
@@ -430,7 +431,7 @@ generate
         wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
 
         // 构造打包的主设备数组以连接 M2S 模块
-        wire [TRANS_MST_ID_W*MST_AMT-1:0] m_awid_packed;
+        wire [W_MID*MST_AMT-1:0] m_awid_packed;
         wire [ADDR_WIDTH*MST_AMT-1:0]     m_awaddr_packed;
         wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_awlen_packed;
         wire [TRANS_DATA_SIZE_W*MST_AMT-1:0] m_awsize_packed;
@@ -444,7 +445,7 @@ generate
         wire [MST_AMT-1:0] m_wvalid_packed;
         wire [MST_AMT-1:0] m_wready_packed;
         
-        wire [TRANS_MST_ID_W*MST_AMT-1:0] m_arid_packed;
+        wire [W_MID*MST_AMT-1:0] m_arid_packed;
         wire [ADDR_WIDTH*MST_AMT-1:0]     m_araddr_packed;
         wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_arlen_packed;
         wire [TRANS_DATA_SIZE_W*MST_AMT-1:0] m_arsize_packed;
@@ -454,7 +455,7 @@ generate
         
         // 将内部解包数组重新打包为扁平化向量
         for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_M2S
-            assign m_awid_packed[TRANS_MST_ID_W*m +: TRANS_MST_ID_W] = m_awid[m];
+            assign m_awid_packed[W_MID*m +: W_MID] = m_awid[m];
             assign m_awaddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_awaddr[m];
             assign m_awlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_awlen[m];
             assign m_awsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_awsize[m];
@@ -464,7 +465,7 @@ generate
             assign m_wstrb_packed[W_STRB*m +: W_STRB] = m_wstrb[m];
             assign m_wlast_packed[m] = m_wlast[m];
             assign m_wvalid_packed[m] = m_wvalid[m];
-            assign m_arid_packed[TRANS_MST_ID_W*m +: TRANS_MST_ID_W] = m_arid[m];
+            assign m_arid_packed[W_MID*m +: W_MID] = m_arid[m];
             assign m_araddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_araddr[m];
             assign m_arlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_arlen[m];
             assign m_arsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_arsize[m];
@@ -481,11 +482,10 @@ generate
         wire [MST_AMT-1:0] m2s_awsel, m2s_arsel;
 
         axi_m2s_m_amt #(
-
             .ADDR_BASE(slv_base),
             .ADDR_LENGTH(slv_len),
-            .W_CID(SLV_ID_W),
-            .W_ID(TRANS_MST_ID_W),
+            .M_ID_W(MST_ID_W),
+            .W_ID(W_MID),
             .W_ADDR(ADDR_WIDTH),
             .W_DATA(DATA_WIDTH),
             .W_STRB(W_STRB),
@@ -556,7 +556,7 @@ generate
         if (SLV_DEFAULT_MASK[s]) begin : GEN_DEFAULT_SLV
             axi_default_slave #(
                 .W_CID(SLV_ID_W),
-                .W_ID(TRANS_MST_ID_W),
+                .W_ID(W_MID),
                 .W_ADDR(ADDR_WIDTH),
                 .W_DATA(DATA_WIDTH),
                 .W_STRB(W_STRB),
@@ -641,15 +641,15 @@ generate
 
         axi_s2m_s_amt #(
             .MASTER_ID(m),
-            .W_CID(SLV_ID_W),
-            .W_ID(TRANS_MST_ID_W),
+            .W_CID(MST_ID_W),
+            .W_ID(W_MID),
             .W_ADDR(ADDR_WIDTH),
             .W_DATA(DATA_WIDTH),
             .W_STRB(W_STRB),
             .W_SID(W_SID),
             .SLV_AMT(SLV_AMT),
-            .MST_ID_FIELD_MSB(MST_ID_W + TRANS_MST_ID_W - 1),
-            .MST_ID_FIELD_LSB(TRANS_MST_ID_W)
+            .MST_ID_FIELD_MSB(MST_ID_W + W_MID - 1),
+            .MST_ID_FIELD_LSB(W_MID)
         ) u_axi_s2m (
             .AXI_RSTn(AXI_RSTn),
             .AXI_CLK(AXI_CLK),

@@ -4,12 +4,10 @@
 // B channel: merges two B responses back into one for the master
 module cross_4k_if #(
       parameter W_ID   = 4           // ID width
-              , W_CID  = 4
               , W_ADDR = 32          // address width
               , W_LEN  = 8
               , W_DATA = 32          // data width
               , W_STRB = (W_DATA/8)  // data strobe width
-              , W_SID  = (W_CID+W_ID)// slave ID
 ) (
       input                          clk
     , input                          rst_n

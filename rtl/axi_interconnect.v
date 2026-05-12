@@ -10,7 +10,7 @@ module axi_interconnect
     parameter MST_AMT           = 4,
     parameter SLV_AMT           = 4,
     parameter OUTSTANDING_AMT   = 8,
-    parameter TRANS_MST_ID_W    = 4,
+    parameter W_ID              = 4,
     parameter DATA_WIDTH        = 32,
     parameter ADDR_WIDTH        = 32,
     parameter LEN_W             = 8,
@@ -18,7 +18,9 @@ module axi_interconnect
     parameter BURST_W           = 2,
     parameter RESP_W            = 2,
     parameter W_STRB            = DATA_WIDTH / 8,
-    parameter W_SID             = $clog2(MST_AMT) + TRANS_MST_ID_W,
+    parameter W_CID             = 2,               // cross_4k_if ID extension width
+    parameter W_MID             = W_CID + W_ID,          // master-side ID width after cross_4k_if
+    parameter W_SID             = $clog2(MST_AMT) + W_CID + W_ID,  // slave-side ID width
 
     // Address mapping (default: upper bits select slave)
     parameter [0:(SLV_AMT*ADDR_WIDTH)-1]  SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},
@@ -30,7 +32,7 @@ module axi_interconnect
 
     // ========== Master Flattened Interface ==========
     // AW
-    input   wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_AWID_i,
+    input   wire  [W_ID*MST_AMT-1   : 0]  M_AXI_AWID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  M_AXI_AWADDR_i,
     input   wire  [LEN_W*MST_AMT-1            : 0]  M_AXI_AWLEN_i,
     input   wire  [SIZE_W*MST_AMT-1           : 0]  M_AXI_AWSIZE_i,
@@ -44,12 +46,12 @@ module axi_interconnect
     input   wire  [MST_AMT-1                  : 0]  M_AXI_WVALID_i,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_WREADY_o,
     // B
-    output  wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_BID_o,
+    output  wire  [W_ID*MST_AMT-1   : 0]  M_AXI_BID_o,
     output  wire  [RESP_W*MST_AMT-1           : 0]  M_AXI_BRESP_o,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_BVALID_o,
     input   wire  [MST_AMT-1                  : 0]  M_AXI_BREADY_i,
     // AR
-    input   wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_ARID_i,
+    input   wire  [W_ID*MST_AMT-1   : 0]  M_AXI_ARID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  M_AXI_ARADDR_i,
     input   wire  [LEN_W*MST_AMT-1            : 0]  M_AXI_ARLEN_i,
     input   wire  [SIZE_W*MST_AMT-1           : 0]  M_AXI_ARSIZE_i,
@@ -57,7 +59,7 @@ module axi_interconnect
     input   wire  [MST_AMT-1                  : 0]  M_AXI_ARVALID_i,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_ARREADY_o,
     // R
-    output  wire  [TRANS_MST_ID_W*MST_AMT-1   : 0]  M_AXI_RID_o,
+    output  wire  [W_ID*MST_AMT-1   : 0]  M_AXI_RID_o,
     output  wire  [DATA_WIDTH*MST_AMT-1       : 0]  M_AXI_RDATA_o,
     output  wire  [RESP_W*MST_AMT-1           : 0]  M_AXI_RRESP_o,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_RLAST_o,
@@ -108,7 +110,7 @@ module axi_interconnect
 //=============================================================================
 // Internal Arrays: Unpacked per Master
 //=============================================================================
-wire [TRANS_MST_ID_W-1:0]   m_awid      [0:MST_AMT-1];
+wire [W_ID-1:0]   m_awid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       m_awaddr    [0:MST_AMT-1];
 wire [LEN_W-1:0]            m_awlen     [0:MST_AMT-1];
 wire [SIZE_W-1:0]           m_awsize    [0:MST_AMT-1];
@@ -122,12 +124,12 @@ wire                        m_wlast     [0:MST_AMT-1];
 wire                        m_wvalid    [0:MST_AMT-1];
 wire                        m_wready    [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   m_bid       [0:MST_AMT-1];
+wire [W_ID-1:0]   m_bid       [0:MST_AMT-1];
 wire [RESP_W-1:0]           m_bresp     [0:MST_AMT-1];
 wire                        m_bvalid    [0:MST_AMT-1];
 wire                        m_bready    [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   m_arid      [0:MST_AMT-1];
+wire [W_ID-1:0]   m_arid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       m_araddr    [0:MST_AMT-1];
 wire [LEN_W-1:0]            m_arlen     [0:MST_AMT-1];
 wire [SIZE_W-1:0]           m_arsize    [0:MST_AMT-1];
@@ -135,7 +137,7 @@ wire [BURST_W-1:0]          m_arburst   [0:MST_AMT-1];
 wire                        m_arvalid   [0:MST_AMT-1];
 wire                        m_arready   [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   m_rid       [0:MST_AMT-1];
+wire [W_ID-1:0]   m_rid       [0:MST_AMT-1];
 wire [DATA_WIDTH-1:0]       m_rdata     [0:MST_AMT-1];
 wire [RESP_W-1:0]           m_rresp     [0:MST_AMT-1];
 wire                        m_rlast     [0:MST_AMT-1];
@@ -145,7 +147,7 @@ wire                        m_rready    [0:MST_AMT-1];
 //=============================================================================
 // Pre-FIFO buses: between cross_4k_if (or master for W) and pre-FIFO input
 //=============================================================================
-wire [TRANS_MST_ID_W-1:0]   c4k_awid    [0:MST_AMT-1];
+wire [W_MID-1:0]            c4k_awid    [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       c4k_awaddr  [0:MST_AMT-1];
 wire [LEN_W-1:0]            c4k_awlen   [0:MST_AMT-1];
 wire [SIZE_W-1:0]           c4k_awsize  [0:MST_AMT-1];
@@ -153,7 +155,7 @@ wire [BURST_W-1:0]          c4k_awburst [0:MST_AMT-1];
 wire                        c4k_awvalid [0:MST_AMT-1];
 wire                        c4k_awready [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   c4k_arid    [0:MST_AMT-1];
+wire [W_MID-1:0]            c4k_arid    [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       c4k_araddr  [0:MST_AMT-1];
 wire [LEN_W-1:0]            c4k_arlen   [0:MST_AMT-1];
 wire [SIZE_W-1:0]           c4k_arsize  [0:MST_AMT-1];
@@ -167,7 +169,7 @@ wire                        c4k_wlast   [0:MST_AMT-1];
 wire                        c4k_wvalid  [0:MST_AMT-1];
 wire                        c4k_wready  [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   c4k_bid     [0:MST_AMT-1];
+wire [W_MID-1:0]            c4k_bid     [0:MST_AMT-1];
 wire [RESP_W-1:0]           c4k_bresp   [0:MST_AMT-1];
 wire                        c4k_bvalid  [0:MST_AMT-1];
 wire                        c4k_bready  [0:MST_AMT-1];
@@ -175,7 +177,7 @@ wire                        c4k_bready  [0:MST_AMT-1];
 //=============================================================================
 // Post-FIFO buses (Master side): between crossbar output and FIFO → master
 //=============================================================================
-wire [TRANS_MST_ID_W-1:0]   M_AWID     [0:MST_AMT-1];
+wire [W_MID-1:0]            M_AWID     [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       M_AWADDR   [0:MST_AMT-1];
 wire [LEN_W-1:0]            M_AWLEN    [0:MST_AMT-1];
 wire [SIZE_W-1:0]           M_AWSIZE   [0:MST_AMT-1];
@@ -189,12 +191,12 @@ wire                        M_WLAST    [0:MST_AMT-1];
 wire                        M_WVALID   [0:MST_AMT-1];
 wire                        M_WREADY   [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   M_BID      [0:MST_AMT-1];
+wire [W_MID-1:0]            M_BID      [0:MST_AMT-1];
 wire [RESP_W-1:0]           M_BRESP    [0:MST_AMT-1];
 wire                        M_BVALID   [0:MST_AMT-1];
 wire                        M_BREADY   [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   M_ARID     [0:MST_AMT-1];
+wire [W_MID-1:0]            M_ARID     [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       M_ARADDR   [0:MST_AMT-1];
 wire [LEN_W-1:0]            M_ARLEN    [0:MST_AMT-1];
 wire [SIZE_W-1:0]           M_ARSIZE   [0:MST_AMT-1];
@@ -202,7 +204,7 @@ wire [BURST_W-1:0]          M_ARBURST  [0:MST_AMT-1];
 wire                        M_ARVALID  [0:MST_AMT-1];
 wire                        M_ARREADY  [0:MST_AMT-1];
 
-wire [TRANS_MST_ID_W-1:0]   M_RID      [0:MST_AMT-1];
+wire [W_ID-1:0]   M_RID      [0:MST_AMT-1];
 wire [DATA_WIDTH-1:0]       M_RDATA    [0:MST_AMT-1];
 wire [RESP_W-1:0]           M_RRESP    [0:MST_AMT-1];
 wire                        M_RLAST    [0:MST_AMT-1];
@@ -305,7 +307,7 @@ wire [SLV_AMT-1:0]          S_ARREADY_FIFO;                // AR FIFO wr_rdy bef
 genvar m, s;
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MST
-        assign m_awid[m]    = M_AXI_AWID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
+        assign m_awid[m]    = M_AXI_AWID_i[W_ID*(m+1)-1 -: W_ID];
         assign m_awaddr[m]  = M_AXI_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
         assign m_awlen[m]   = M_AXI_AWLEN_i[LEN_W*(m+1)-1 -: LEN_W];
         assign m_awsize[m]  = M_AXI_AWSIZE_i[SIZE_W*(m+1)-1 -: SIZE_W];
@@ -320,11 +322,11 @@ generate
         assign M_AXI_WREADY_o[m] = m_wready[m];
 
         assign m_bready[m]  = M_AXI_BREADY_i[m];
-        assign M_AXI_BID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_bid[m];
+        assign M_AXI_BID_o[W_ID*(m+1)-1 -: W_ID] = m_bid[m];
         assign M_AXI_BRESP_o[RESP_W*(m+1)-1 -: RESP_W] = m_bresp[m];
         assign M_AXI_BVALID_o[m] = m_bvalid[m];
 
-        assign m_arid[m]    = M_AXI_ARID_i[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W];
+        assign m_arid[m]    = M_AXI_ARID_i[W_ID*(m+1)-1 -: W_ID];
         assign m_araddr[m]  = M_AXI_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
         assign m_arlen[m]   = M_AXI_ARLEN_i[LEN_W*(m+1)-1 -: LEN_W];
         assign m_arsize[m]  = M_AXI_ARSIZE_i[SIZE_W*(m+1)-1 -: SIZE_W];
@@ -333,7 +335,7 @@ generate
         assign M_AXI_ARREADY_o[m] = m_arready[m];
 
         assign m_rready[m]  = M_AXI_RREADY_i[m];
-        assign M_AXI_RID_o[TRANS_MST_ID_W*(m+1)-1 -: TRANS_MST_ID_W] = m_rid[m];
+        assign M_AXI_RID_o[W_ID*(m+1)-1 -: W_ID] = m_rid[m];
         assign M_AXI_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
         assign M_AXI_RRESP_o[RESP_W*(m+1)-1 -: RESP_W] = m_rresp[m];
         assign M_AXI_RLAST_o[m] = m_rlast[m];
@@ -391,13 +393,11 @@ endgenerate
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_CROSS_4K
         cross_4k_if #(
-            .W_ID   (TRANS_MST_ID_W),
-            .W_CID  ($clog2(SLV_AMT)),
+            .W_ID   (W_MID),
             .W_ADDR (ADDR_WIDTH),
             .W_LEN  (LEN_W),
             .W_DATA (DATA_WIDTH),
-            .W_STRB (W_STRB),
-            .W_SID  (W_SID)
+            .W_STRB (W_STRB)
         ) u_cross_4k (
             .clk             (AXI_CLK),
             .rst_n           (AXI_RSTn),
@@ -464,7 +464,7 @@ generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_FIFO_AW_W_AR
         // AW FIFO: valid from rd_vld only (not stored in data)
         axi_fifo_sync #(
-            .FDW(TRANS_MST_ID_W + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
+            .FDW(W_MID + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
             .FAW(2)
         ) u_fifo_aw (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
@@ -494,7 +494,7 @@ generate
 
         // AR FIFO: valid from rd_vld only (not stored in data)
         axi_fifo_sync #(
-            .FDW(TRANS_MST_ID_W + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
+            .FDW(W_MID + ADDR_WIDTH + LEN_W + SIZE_W + BURST_W),
             .FAW(2)
         ) u_fifo_ar (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
@@ -615,7 +615,7 @@ generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_FIFO_B_R_MST
         // B FIFO
         axi_fifo_sync #(
-            .FDW(TRANS_MST_ID_W + RESP_W),
+            .FDW(W_MID + RESP_W),
             .FAW(2)
         ) u_fifo_b_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
@@ -629,7 +629,7 @@ generate
 
         // R FIFO: wr_rdy gated by sid_buffer s_clr_rdy (clear backpressure)
         axi_fifo_sync #(
-            .FDW(TRANS_MST_ID_W + DATA_WIDTH + RESP_W + 1),
+            .FDW(W_ID + DATA_WIDTH + RESP_W + 1),
             .FAW(2)
         ) u_fifo_r_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
@@ -731,7 +731,7 @@ endgenerate
 reorder #(
     .NUM    (SLV_AMT),
     .M_ID_W ($clog2(MST_AMT)),
-    .W_ID   (TRANS_MST_ID_W),
+    .W_ID   (W_MID),
     .DEPTH  (4)
 ) u_reorder (
     .clk         (AXI_CLK),
@@ -764,7 +764,7 @@ axi_crossbar #(
     .MST_AMT(MST_AMT),
     .SLV_AMT(SLV_AMT),
     .OUTSTANDING_AMT(OUTSTANDING_AMT),
-    .TRANS_MST_ID_W(TRANS_MST_ID_W),
+    .W_ID(W_ID),
     .TRANS_BURST_W(BURST_W),
     .TRANS_DATA_LEN_W(LEN_W),
     .TRANS_DATA_SIZE_W(SIZE_W),
