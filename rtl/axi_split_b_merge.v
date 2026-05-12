@@ -1,47 +1,52 @@
 //=============================================================================
 // axi_split_b_merge — B-channel response merger for 4KB-split write transactions
 //=============================================================================
-// Each split write produces two sub-transactions with AWIDs {orig_id, orig_id+1}.
-// Their B responses may arrive in any order (different slaves).  This module
-// tracks outstanding split transactions in a register table, accumulates BRESP
-// by bitwise OR, and forwards a single merged B after both sub-responses arrive.
+// BID = {prefix[1:0], orig_id[W_ID-1:0]}  (set by cross_4k_if)
+//   2'b00 — non-split transaction  → passthrough (strip prefix, forward)
+//   2'b01 — split sub-transaction 1 → absorb, accumulate BRESP
+//   2'b10 — split sub-transaction 2 → absorb, accumulate BRESP
 //
-// Non-split B responses (BID not in table) pass through transparently.
-// AW-side decoupling: cross_4k_if pushes {orig_id} via split_info_* and
-// immediately continues — no waiting for B completion.
+// Both sub-transactions share the same lower W_ID bits.  Table entries are
+// allocated on first split B arrival (demand-driven, no AW-side push needed).
+// Final BRESP = bitwise OR of both sub-responses:
+//   either fails → whole transaction fails.
 //=============================================================================
 module axi_split_b_merge #(
-    parameter W_ID       = 4,             // transaction ID width
+    parameter W_ID       = 4,             // original transaction ID width
     parameter MAX_SPLIT  = 4              // max concurrent split transactions
 ) (
     input  wire                 clk,
     input  wire                 rst_n,
 
-    // ---- split info push (from cross_4k_if AW side) ----
-    input  wire                 split_info_valid,
-    output wire                 split_info_ready,
-    input  wire [W_ID-1:0]      split_info_orig_id,
-
     // ---- B channel slave side (from crossbar / S2M) ----
     input  wire                 s_axi_bvalid,
-    input  wire [W_ID-1:0]      s_axi_bid,
+    input  wire [W_ID+1:0]      s_axi_bid,       // {prefix[1:0], orig_id}
     input  wire [1:0]           s_axi_bresp,
     output wire                 s_axi_bready,
 
     // ---- B channel master side (to master) ----
     output reg                  m_axi_bvalid,
-    output reg  [W_ID-1:0]      m_axi_bid,
+    output reg  [W_ID-1:0]      m_axi_bid,       // prefix stripped
     output reg  [1:0]           m_axi_bresp,
     input  wire                 m_axi_bready
 );
 
     //=========================================================================
+    // BID field extraction
+    //=========================================================================
+    wire [1:0]      b_prefix   = s_axi_bid[W_ID+1:W_ID];
+    wire [W_ID-1:0] b_strip_id = s_axi_bid[W_ID-1:0];
+    wire            b_is_trans1 = (b_prefix == 2'b01);
+    wire            b_is_trans2 = (b_prefix == 2'b10);
+    wire            b_is_split  = b_is_trans1 || b_is_trans2;
+
+    //=========================================================================
     // Table entry registers
-    //   entry_valid[i]     — slot occupied
-    //   entry_orig_id[i]   — original AWID  (sub-t1 = orig_id, sub-t2 = orig_id+1)
-    //   entry_got_t1[i]    — sub-transaction 1 B received
-    //   entry_got_t2[i]    — sub-transaction 2 B received
-    //   entry_resp[i]      — accumulated BRESP (bitwise OR)
+    //   entry_valid[i]    — slot occupied
+    //   entry_orig_id[i]  — original AWID (lower W_ID bits, shared by both subs)
+    //   entry_got_t1[i]   — sub-transaction 1 B received (prefix = 01)
+    //   entry_got_t2[i]   — sub-transaction 2 B received (prefix = 10)
+    //   entry_resp[i]     — accumulated BRESP (bitwise OR)
     //=========================================================================
     reg  [MAX_SPLIT-1:0]        entry_valid;
     reg  [MAX_SPLIT-1:0]        entry_got_t1;
@@ -50,31 +55,30 @@ module axi_split_b_merge #(
     reg  [1:0]                  entry_resp    [0:MAX_SPLIT-1];
 
     //=========================================================================
-    // Combinational: BID matching against all table entries
+    // Combinational: key match against all table entries
+    //   Both sub-transactions share the same lower W_ID bits, so a single
+    //   key_match per entry covers both trans1 and trans2.
     //=========================================================================
-    wire [MAX_SPLIT-1:0] b_match_t1;   // s_axi_bid == orig_id
-    wire [MAX_SPLIT-1:0] b_match_t2;   // s_axi_bid == orig_id + 1
-    wire [MAX_SPLIT-1:0] b_match_any;
-    wire [MAX_SPLIT-1:0] entry_done;   // got_t1 && got_t2 → ready to forward
+    wire [MAX_SPLIT-1:0] key_match;    // entry_orig_id == b_strip_id
+    wire [MAX_SPLIT-1:0] entry_done;   // got_t1 && got_t2 → ready to merge
 
     genvar gi;
     generate
         for (gi = 0; gi < MAX_SPLIT; gi = gi + 1) begin : GEN_MATCH
-            assign b_match_t1[gi] = entry_valid[gi] &&
-                                    (entry_orig_id[gi] == s_axi_bid);
-            assign b_match_t2[gi] = entry_valid[gi] &&
-                                    (entry_orig_id[gi] + 1'b1 == s_axi_bid);
+            assign key_match[gi]  = entry_valid[gi] &&
+                                    (entry_orig_id[gi] == b_strip_id);
             assign entry_done[gi] = entry_valid[gi] &&
                                     entry_got_t1[gi] && entry_got_t2[gi];
         end
     endgenerate
 
-    assign b_match_any = b_match_t1 | b_match_t2;
+    wire has_key_match = |key_match;
+    wire has_pending   = |entry_done;
 
     //=========================================================================
     // Combinational: index finders (priority: lowest index wins)
-    //   alloc_idx    — first free slot
-    //   done_idx     — first complete entry (both B received)
+    //   alloc_idx — first free slot (for new split B)
+    //   done_idx  — first complete entry (both B received, ready to forward)
     //=========================================================================
     integer alloc_idx;
     integer done_idx;
@@ -95,28 +99,28 @@ module axi_split_b_merge #(
         end
     end
 
-    wire has_free    = ~(&entry_valid);
-    wire has_pending = |entry_done;
-
-    assign split_info_ready = has_free;
+    wire has_free = ~(&entry_valid);
 
     //=========================================================================
     // B channel outputs (combinational)
     //=========================================================================
     // Priority:
-    //   1. Forward merged B when any entry has both responses
-    //   2. Passthrough non-split B when BID doesn't match any entry
-    //   3. Absorb (m_axi_bvalid = 0) when BID matches a pending entry
+    //   1. Forward merged B when any entry is complete (got_t1 && got_t2)
+    //   2. Absorb split B when key matches (update table, hide from master)
+    //   3. Passthrough non-split B (prefix = 00)
     //
     // s_axi_bready:
     //   - backpressure during merged B presentation
-    //   - always ready when absorbing a matching entry
-    //   - passthrough of m_axi_bready otherwise
+    //   - always ready when absorbing a matching split B
+    //   - always ready when allocating a new split B (has_free)
+    //   - passthrough of m_axi_bready for non-split B
     //=========================================================================
 
-    assign s_axi_bready = has_pending      ? 1'b0             // wait, merged B first
-                        : (|b_match_any)   ? 1'b1             // absorb
-                        :                    m_axi_bready;    // passthrough
+    wire can_accept = b_is_split && (has_key_match || has_free);
+
+    assign s_axi_bready = has_pending      ? 1'b0             // wait: merged B first
+                        : can_accept       ? 1'b1             // absorb / allocate
+                        :                    m_axi_bready;    // non-split passthrough
 
     always @(*) begin
         if (has_pending) begin
@@ -124,13 +128,13 @@ module axi_split_b_merge #(
             m_axi_bid    = entry_orig_id[done_idx];
             m_axi_bresp  = entry_resp[done_idx];
             m_axi_bvalid = 1'b1;
-        end else if (!(|b_match_any)) begin
-            // Passthrough: BID not in table → not a split transaction
-            m_axi_bid    = s_axi_bid;
+        end else if (!b_is_split) begin
+            // Non-split B: strip prefix, passthrough
+            m_axi_bid    = b_strip_id;
             m_axi_bresp  = s_axi_bresp;
             m_axi_bvalid = s_axi_bvalid;
         end else begin
-            // Absorbing: BID matches, update table, hide from master
+            // Split B: absorbing / allocating, hide from master
             m_axi_bid    = {W_ID{1'b0}};
             m_axi_bresp  = 2'b00;
             m_axi_bvalid = 1'b0;
@@ -146,32 +150,37 @@ module axi_split_b_merge #(
             entry_got_t1 <= {MAX_SPLIT{1'b0}};
             entry_got_t2 <= {MAX_SPLIT{1'b0}};
         end else begin
-            // —— allocation ——
-            if (split_info_valid && split_info_ready) begin
-                entry_valid[alloc_idx]   <= 1'b1;
-                entry_orig_id[alloc_idx] <= split_info_orig_id;
-                entry_got_t1[alloc_idx]  <= 1'b0;
-                entry_got_t2[alloc_idx]  <= 1'b0;
-                entry_resp[alloc_idx]    <= 2'b00;
+            // —— deallocation: merged B accepted by master ——
+            if (has_pending && m_axi_bready) begin
+                entry_valid[done_idx] <= 1'b0;
             end
 
-            // —— absorption: BID matches an active entry ——
-            if (s_axi_bvalid && s_axi_bready && |b_match_any) begin
-                for (int i = 0; i < MAX_SPLIT; i++) begin
-                    if (b_match_t1[i]) begin
-                        entry_got_t1[i] <= 1'b1;
-                        entry_resp[i]   <= entry_resp[i] | s_axi_bresp;
-                    end
-                    if (b_match_t2[i]) begin
-                        entry_got_t2[i] <= 1'b1;
-                        entry_resp[i]   <= entry_resp[i] | s_axi_bresp;
+            // —— absorption / allocation: split B handshake ——
+            if (s_axi_bvalid && s_axi_bready && b_is_split) begin
+                if (!has_key_match && has_free) begin
+                    // First split B seen for this orig_id → allocate new entry
+                    entry_valid[alloc_idx]   <= 1'b1;
+                    entry_orig_id[alloc_idx] <= b_strip_id;
+                    entry_got_t1[alloc_idx]  <= b_is_trans1;
+                    entry_got_t2[alloc_idx]  <= b_is_trans2;
+                    entry_resp[alloc_idx]    <= s_axi_bresp;
+                end else if (has_key_match) begin
+                    // Update existing entry
+                    for (int i = 0; i < MAX_SPLIT; i++) begin
+                        if (key_match[i]) begin
+                            if (b_is_trans1) begin
+                                entry_got_t1[i] <= 1'b1;
+                                entry_resp[i]   <= entry_resp[i] | s_axi_bresp;
+                            end
+                            if (b_is_trans2) begin
+                                entry_got_t2[i] <= 1'b1;
+                                entry_resp[i]   <= entry_resp[i] | s_axi_bresp;
+                            end
+                        end
                     end
                 end
-            end
-
-            // —— deallocation: merged B accepted by master ——
-            if (has_pending && m_axi_bvalid && m_axi_bready) begin
-                entry_valid[done_idx] <= 1'b0;
+                // else: key not found & no free slot → drop (should not happen
+                //       if MAX_SPLIT ≥ outstanding split transactions)
             end
         end
     end

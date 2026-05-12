@@ -46,18 +46,18 @@ module cross_4k_if #(
     , input  wire                    s_axi_wready
 
     // ---- B channel (response merging for split writes) ----
-    , input  wire    [W_ID-1:0]      s_axi_bid
+    , input  wire    [W_ID+1:0]      s_axi_bid          // prefix[1:0] + orig_id
     , input  wire    [1:0]           s_axi_bresp
     , input  wire                    s_axi_bvalid
     , output wire                    s_axi_bready
 
-    , output reg     [W_ID-1:0]      m_axi_bid
+    , output reg     [W_ID-1:0]      m_axi_bid           // prefix stripped
     , output reg     [1:0]           m_axi_bresp
     , output reg                     m_axi_bvalid
     , input  wire                    m_axi_bready
 
     // ---- AR slave side ----
-    , output  reg    [W_ID-1:0]      s_axi_arid
+    , output  reg    [W_ID+1:0]      s_axi_arid          // prefix[1:0] + orig_id
     , output  reg    [W_ADDR-1:0]    s_axi_araddr
     , output  reg    [W_LEN-1:0]     s_axi_arlen
     , output  reg    [2:0]           s_axi_arsize
@@ -66,7 +66,7 @@ module cross_4k_if #(
     , input   wire                   s_axi_arready
 
     // ---- AW slave side ----
-    , output  reg    [W_ID-1:0]      s_axi_awid
+    , output  reg    [W_ID+1:0]      s_axi_awid          // prefix[1:0] + orig_id
     , output  reg    [W_ADDR-1:0]    s_axi_awaddr
     , output  reg    [W_LEN-1:0]     s_axi_awlen
     , output  reg    [2:0]           s_axi_awsize
@@ -180,7 +180,7 @@ end
 
 always @(*) begin
     if (ST_AR_C4K==TRANS1) begin
-        s_axi_arid    = trans_arid   ;
+        s_axi_arid    = {2'b01, trans_arid};     // split sub-transaction 1
         s_axi_araddr  = trans1_araddr ;
         s_axi_arlen   = trans1_arlen  ;
         s_axi_arsize  = trans_arsize ;
@@ -189,7 +189,7 @@ always @(*) begin
         m_axi_arready = 0;
     end
     else if (ST_AR_C4K==TRANS2) begin
-        s_axi_arid    = trans_arid   ;
+        s_axi_arid    = {2'b10, trans_arid};     // split sub-transaction 2
         s_axi_araddr  = trans2_araddr ;
         s_axi_arlen   = trans2_arlen  ;
         s_axi_arsize  = trans_arsize ;
@@ -199,7 +199,7 @@ always @(*) begin
     end
     else if(ST_AR_C4K==IDLE) begin
         if(!ar_cross4k_flag && s_axi_arready) begin
-            s_axi_arid    = m_axi_arid   ;
+            s_axi_arid    = {2'b00, m_axi_arid};  // non-split passthrough
             s_axi_araddr  = m_axi_araddr ;
             s_axi_arlen   = m_axi_arlen  ;
             s_axi_arsize  = m_axi_arsize ;
@@ -244,7 +244,7 @@ end
 
 always @(*) begin
     if (ST_AW_C4K == TRANS1) begin
-        s_axi_awid    = trans_awid   ;
+        s_axi_awid    = {2'b01, trans_awid};     // split sub-transaction 1
         s_axi_awaddr  = trans1_awaddr ;
         s_axi_awlen   = trans1_awlen  ;
         s_axi_awsize  = trans_awsize ;
@@ -253,7 +253,7 @@ always @(*) begin
         m_axi_awready = 0;
     end
     else if (ST_AW_C4K == TRANS2) begin
-        s_axi_awid    = trans_awid + 1'b1;   // increment ID for sub-transaction 2
+        s_axi_awid    = {2'b10, trans_awid};     // split sub-transaction 2
         s_axi_awaddr  = trans2_awaddr ;
         s_axi_awlen   = trans2_awlen  ;
         s_axi_awsize  = trans_awsize ;
@@ -263,7 +263,7 @@ always @(*) begin
     end
     else if(ST_AW_C4K == IDLE) begin
         if(!aw_cross4k_flag && s_axi_awready) begin
-            s_axi_awid    = m_axi_awid   ;
+            s_axi_awid    = {2'b00, m_axi_awid};  // non-split passthrough
             s_axi_awaddr  = m_axi_awaddr ;
             s_axi_awlen   = m_axi_awlen  ;
             s_axi_awsize  = m_axi_awsize ;
@@ -348,17 +348,23 @@ assign m_axi_wready = s_axi_wready && !w_stall;
 //=============================================================================
 // B Channel: merge two B responses → one for split write transactions
 //=============================================================================
-// Sub-transaction 1 uses original AWID; sub-transaction 2 uses AWID+1.
-// Both B responses must be received before forwarding a single merged B to
-// the master.  Final BRESP = bitwise OR of both sub-transactions' BRESP:
-// if either fails the whole transaction fails.
-// BID-keyed tracking handles either arrival order.
+// BID = {prefix[1:0], orig_id[W_ID-1:0]}
+//   2'b00 — non-split transaction  → passthrough
+//   2'b01 — split sub-transaction 1 → absorb, accumulate BRESP
+//   2'b10 — split sub-transaction 2 → absorb, accumulate BRESP
+//   BRESP = bitwise OR of both sub-transactions: either fails → whole fails.
 //=============================================================================
+wire [1:0]      b_prefix    = s_axi_bid[W_ID+1:W_ID];
+wire [W_ID-1:0] b_strip_id  = s_axi_bid[W_ID-1:0];
+wire            b_is_trans1 = (b_prefix == 2'b01);
+wire            b_is_trans2 = (b_prefix == 2'b10);
+wire            b_is_split  = b_is_trans1 || b_is_trans2;
+
 reg             b_split_active;     // armed: split write B merging in progress
 reg             b_got_trans1;       // sub-transaction 1's B received
 reg             b_got_trans2;       // sub-transaction 2's B received
-reg [1:0]       b_resp_merged;      // accumulated BRESP = BRESP_trans1 | BRESP_trans2
-reg [W_ID-1:0]  b_orig_awid;       // original AWID (before +1 for sub-transaction 2)
+reg [1:0]       b_resp_merged;      // accumulated BRESP = BRESP_t1 | BRESP_t2
+reg [W_ID-1:0]  b_orig_awid;       // original AWID (lower bits from BID)
 
 always @(posedge clk) begin
     if (!rst_n) begin
@@ -377,12 +383,12 @@ always @(posedge clk) begin
             b_orig_awid    <= m_axi_awid;
         end
 
-        // B handshake: accumulate BRESP by OR, track by BID
-        if (b_split_active && s_axi_bvalid && s_axi_bready) begin
-            if (s_axi_bid == b_orig_awid) begin
+        // B handshake: accumulate BRESP, track by BID prefix
+        if (b_split_active && s_axi_bvalid && s_axi_bready && b_is_split) begin
+            if (b_is_trans1) begin
                 b_got_trans1  <= 1;
                 b_resp_merged <= b_resp_merged | s_axi_bresp;
-            end else if (s_axi_bid == b_orig_awid + 1'b1) begin
+            end else if (b_is_trans2) begin
                 b_got_trans2  <= 1;
                 b_resp_merged <= b_resp_merged | s_axi_bresp;
             end
@@ -397,24 +403,24 @@ always @(posedge clk) begin
     end
 end
 
-// B ready to slave: accept until both sub-transaction responses received
-assign s_axi_bready = (b_split_active && !(b_got_trans1 && b_got_trans2))
+// B ready to slave: accept split B during merge; non-split B when master ready
+assign s_axi_bready = (b_split_active && b_is_split && !(b_got_trans1 && b_got_trans2))
                       ? 1'b1 : m_axi_bready;
 
 // B response to master
 always @(*) begin
     if (b_split_active && b_got_trans1 && b_got_trans2) begin
-        // Both sub-transactions done → forward merged B
+        // Both sub-transactions done → forward merged B (strip prefix)
         m_axi_bid    = b_orig_awid;
         m_axi_bresp  = b_resp_merged;
         m_axi_bvalid = 1'b1;
-    end else if (!b_split_active) begin
-        // Passthrough mode (no split, or merge complete)
-        m_axi_bid    = s_axi_bid;
+    end else if (!b_split_active || !b_is_split) begin
+        // Passthrough mode (no split, or non-split B): strip prefix
+        m_axi_bid    = b_strip_id;
         m_axi_bresp  = s_axi_bresp;
         m_axi_bvalid = s_axi_bvalid;
     end else begin
-        // Still waiting for both B responses
+        // Absorbing split B (waiting for the other sub-transaction)
         m_axi_bid    = 0;
         m_axi_bresp  = 0;
         m_axi_bvalid = 0;
