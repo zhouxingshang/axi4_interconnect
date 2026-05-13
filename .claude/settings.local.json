@@ -11,7 +11,8 @@
       "Bash(sed -i 's/m_awid_packed\\\\[TRANS_MST_ID_W\\\\*m +: TRANS_MST_ID_W\\\\] = m_awid\\\\[m\\\\]/m_awid_packed[W_MID*m +: W_MID] = m_awid[m]/g' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")",
       "Bash(sed -i 's/m_arid_packed\\\\[TRANS_MST_ID_W\\\\*m +: TRANS_MST_ID_W\\\\] = m_arid\\\\[m\\\\]/m_arid_packed[W_MID*m +: W_MID] = m_arid[m]/g' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")",
       "Bash(sed -i '559s/\\\\.M_ID_W\\(SLV_ID_W\\)/.W_CID\\(SLV_ID_W\\)/' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")",
-      "Bash(sed -i '645s/\\\\.M_ID_W\\(SLV_ID_W\\)/.W_CID\\(SLV_ID_W\\)/' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")"
+      "Bash(sed -i '645s/\\\\.M_ID_W\\(SLV_ID_W\\)/.W_CID\\(SLV_ID_W\\)/' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")",
+      "Bash(grep -n '// 7\\\\.\\\\|// 8\\\\.\\\\|//========================================================================' \"c:/Users/22612/Desktop/AXI4/rtl/axi_interconnect.v\")"
     ]
   }
 }

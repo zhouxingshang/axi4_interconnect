@@ -17,7 +17,7 @@ module axi_s2m_s_amt
     input  wire                      AXI_CLK,
     
     // Master side ports (single master)
-    output reg   [W_ID-1:0]          M_BID,
+    output reg   [W_SID-1:0]         M_BID,
     output reg   [1:0]               M_BRESP,
     output reg                       M_BVALID,
     input  wire                      M_BREADY,
@@ -112,18 +112,18 @@ axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
 );
 
 // Pack bus for muxing
-localparam NUM_B_WIDTH = W_ID + 2 + 1;
+localparam NUM_B_WIDTH = W_SID + 2 + 1;
 localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;
 wire [NUM_B_WIDTH-1:0] bus_b [0:SLV_AMT-1];
 wire [NUM_R_WIDTH-1:0] bus_r [0:SLV_AMT-1];
 generate
     for(si = 0; si < SLV_AMT; si = si + 1) begin : PACK
-        assign bus_b[si] = {s_bid[si][W_ID-1:0], s_bresp[si], s_bvalid[si]};
+        assign bus_b[si] = {s_bid[si], s_bresp[si], s_bvalid[si]};
         assign bus_r[si] = {s_rid[si], s_rdata[si], s_rresp[si], s_rlast[si], s_rvalid[si]};
     end
 endgenerate
 
-`define M_BBUS {M_BID[W_ID-1:0], M_BRESP, M_BVALID}
+`define M_BBUS {M_BID[W_SID-1:0], M_BRESP, M_BVALID}
 always @(*) begin
     `M_BBUS = 0;
     for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];

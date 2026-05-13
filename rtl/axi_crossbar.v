@@ -59,7 +59,7 @@ module axi_crossbar
     output  wire  [MST_AMT-1                    : 0]  m_WREADY_o,
 
     // -- 写响应通道 (B)
-    output  wire  [W_MID*MST_AMT-1              : 0]  m_BID_o,
+    output  wire  [W_SID*MST_AMT-1              : 0]  m_BID_o,
     output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_BRESP_o,
     output  wire  [MST_AMT-1                    : 0]  m_BVALID_o,
     input   wire  [MST_AMT-1                    : 0]  m_BREADY_i,
@@ -74,7 +74,7 @@ module axi_crossbar
     output  wire  [MST_AMT-1                    : 0]  m_ARREADY_o,
 
     // -- 读数据通道 (R)
-    output  wire  [W_ID*MST_AMT-1     : 0]  m_RID_o,
+    output  wire  [W_SID*MST_AMT-1              : 0]  m_RID_o,
     output  wire  [DATA_WIDTH*MST_AMT-1         : 0]  m_RDATA_o,
     output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_RRESP_o,
     output  wire  [MST_AMT-1                    : 0]  m_RLAST_o,
@@ -154,7 +154,7 @@ wire                         m_wlast     [0:MST_AMT-1];
 wire                         m_wvalid    [0:MST_AMT-1];
 wire                         m_wready    [0:MST_AMT-1];
 
-wire [W_MID-1:0]              m_bid       [0:MST_AMT-1];
+wire [W_SID-1:0]              m_bid       [0:MST_AMT-1];
 wire [TRANS_WR_RESP_W-1:0]   m_bresp     [0:MST_AMT-1];
 wire                         m_bvalid    [0:MST_AMT-1];
 wire                         m_bready    [0:MST_AMT-1];
@@ -167,7 +167,7 @@ wire [TRANS_DATA_SIZE_W-1:0] m_arsize    [0:MST_AMT-1];
 wire                         m_arvalid   [0:MST_AMT-1];
 wire                         m_arready   [0:MST_AMT-1];
 
-wire [W_ID-1:0]    m_rid       [0:MST_AMT-1];
+wire [W_SID-1:0]             m_rid       [0:MST_AMT-1];
 wire [DATA_WIDTH-1:0]        m_rdata     [0:MST_AMT-1];
 wire [TRANS_WR_RESP_W-1:0]   m_rresp     [0:MST_AMT-1];
 wire                         m_rlast     [0:MST_AMT-1];
@@ -253,7 +253,7 @@ generate
         assign m_WREADY_o[m] = m_wready[m];
         
         // B 通道
-        assign m_BID_o[W_MID*(m+1)-1 -: W_MID] = m_bid[m];
+        assign m_BID_o[W_SID*(m+1)-1 -: W_SID] = m_bid[m];
         assign m_BRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_bresp[m];
         assign m_BVALID_o[m] = m_bvalid[m];
         assign m_bready[m]   = m_BREADY_i[m];
@@ -268,9 +268,9 @@ generate
         assign m_ARREADY_o[m] = m_arready[m];
         
         // R 通道
-        assign m_rid[m]    = m_rsid[m][W_ID-1:0];  // 剥离主设备 ID 前缀
+        assign m_rid[m]    = m_rsid[m];                // pass full W_SID, no stripping
         assign m_RSID_o[W_SID*(m+1)-1 -: W_SID] = m_rsid[m];
-        assign m_RID_o[W_ID*(m+1)-1 -: W_ID] = m_rid[m];
+        assign m_RID_o[W_SID*(m+1)-1 -: W_SID] = m_rid[m];
         assign m_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
         assign m_RRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_rresp[m];
         assign m_RLAST_o[m] = m_rlast[m];

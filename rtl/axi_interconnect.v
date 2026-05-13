@@ -144,6 +144,14 @@ wire                        m_rlast     [0:MST_AMT-1];
 wire                        m_rvalid    [0:MST_AMT-1];
 wire                        m_rready    [0:MST_AMT-1];
 
+// R channel: between R post-FIFO and axi_split_r_merge
+wire [W_SID-1:0]            r_fifo_rid   [0:MST_AMT-1];
+wire [DATA_WIDTH-1:0]       r_fifo_rdata [0:MST_AMT-1];
+wire [RESP_W-1:0]           r_fifo_rresp [0:MST_AMT-1];
+wire                        r_fifo_rlast [0:MST_AMT-1];
+wire                        r_fifo_rvalid [0:MST_AMT-1];
+wire                        r_fifo_rready [0:MST_AMT-1];
+
 //=============================================================================
 // Pre-FIFO buses: between cross_4k_if (or master for W) and pre-FIFO input
 //=============================================================================
@@ -169,7 +177,7 @@ wire                        c4k_wlast   [0:MST_AMT-1];
 wire                        c4k_wvalid  [0:MST_AMT-1];
 wire                        c4k_wready  [0:MST_AMT-1];
 
-wire [W_MID-1:0]            c4k_bid     [0:MST_AMT-1];
+wire [W_SID-1:0]            c4k_bid     [0:MST_AMT-1];
 wire [RESP_W-1:0]           c4k_bresp   [0:MST_AMT-1];
 wire                        c4k_bvalid  [0:MST_AMT-1];
 wire                        c4k_bready  [0:MST_AMT-1];
@@ -191,7 +199,7 @@ wire                        M_WLAST    [0:MST_AMT-1];
 wire                        M_WVALID   [0:MST_AMT-1];
 wire                        M_WREADY   [0:MST_AMT-1];
 
-wire [W_MID-1:0]            M_BID      [0:MST_AMT-1];
+wire [W_SID-1:0]            M_BID      [0:MST_AMT-1];
 wire [RESP_W-1:0]           M_BRESP    [0:MST_AMT-1];
 wire                        M_BVALID   [0:MST_AMT-1];
 wire                        M_BREADY   [0:MST_AMT-1];
@@ -204,7 +212,7 @@ wire [BURST_W-1:0]          M_ARBURST  [0:MST_AMT-1];
 wire                        M_ARVALID  [0:MST_AMT-1];
 wire                        M_ARREADY  [0:MST_AMT-1];
 
-wire [W_ID-1:0]   M_RID      [0:MST_AMT-1];
+wire [W_SID-1:0]            M_RID      [0:MST_AMT-1];
 wire [DATA_WIDTH-1:0]       M_RDATA    [0:MST_AMT-1];
 wire [RESP_W-1:0]           M_RRESP    [0:MST_AMT-1];
 wire                        M_RLAST    [0:MST_AMT-1];
@@ -393,7 +401,7 @@ endgenerate
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_CROSS_4K
         cross_4k_if #(
-            .W_ID   (W_MID),
+            .W_ID   (W_ID),
             .W_ADDR (ADDR_WIDTH),
             .W_LEN  (LEN_W),
             .W_DATA (DATA_WIDTH),
@@ -428,15 +436,15 @@ generate
             .s_axi_wlast     (c4k_wlast[m]),
             .s_axi_wvalid    (c4k_wvalid[m]),
             .s_axi_wready    (c4k_wready[m]),
-            // B channel (response merging for split writes)
-            .s_axi_bid       (c4k_bid[m]),
-            .s_axi_bresp     (c4k_bresp[m]),
-            .s_axi_bvalid    (c4k_bvalid[m]),
-            .s_axi_bready    (c4k_bready[m]),
-            .m_axi_bid       (m_bid[m]),
-            .m_axi_bresp     (m_bresp[m]),
-            .m_axi_bvalid    (m_bvalid[m]),
-            .m_axi_bready    (m_bready[m]),
+            // B channel (merged externally by axi_split_b_merge)
+            .s_axi_bid       ({W_MID{1'b0}}),
+            .s_axi_bresp     (2'b00),
+            .s_axi_bvalid    (1'b0),
+            .s_axi_bready    (),
+            .m_axi_bid       (),
+            .m_axi_bresp     (),
+            .m_axi_bvalid    (),
+            .m_axi_bready    (1'b0),
             // AR slave side
             .s_axi_arid      (c4k_arid[m]),
             .s_axi_araddr    (c4k_araddr[m]),
@@ -609,13 +617,13 @@ generate
 endgenerate
 
 //=============================================================================
-// 5. Post-Crossbar FIFOs: Crossbar -> Master (B/R) – unchanged
+// 5. Post-Crossbar FIFOs: Crossbar -> Master (B/R)
 //=============================================================================
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : INST_FIFO_B_R_MST
-        // B FIFO
+        // B FIFO: output to c4k_bid/bresp, then routed to axi_split_b_merge
         axi_fifo_sync #(
-            .FDW(W_MID + RESP_W),
+            .FDW(W_SID + RESP_W),
             .FAW(2)
         ) u_fifo_b_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
@@ -627,9 +635,9 @@ generate
             .rd_dout ({c4k_bid[m], c4k_bresp[m]})
         );
 
-        // R FIFO: wr_rdy gated by sid_buffer s_clr_rdy (clear backpressure)
+        // R FIFO: widened to carry W_SID RID (includes mst_idx + split_st for r_merge)
         axi_fifo_sync #(
-            .FDW(W_ID + DATA_WIDTH + RESP_W + 1),
+            .FDW(W_SID + DATA_WIDTH + RESP_W + 1),
             .FAW(2)
         ) u_fifo_r_mst (
             .rstn   (AXI_RSTn), .clr(1'b0), .clk(AXI_CLK),
@@ -637,9 +645,9 @@ generate
             .wr_vld (M_RVALID[m]),
             .wr_din ({M_RID[m], M_RDATA[m],
                       M_RRESP[m], M_RLAST[m]}),
-            .rd_rdy (m_rready[m]),
-            .rd_vld (m_rvalid[m]),
-            .rd_dout ({m_rid[m], m_rdata[m], m_rresp[m], m_rlast[m]})
+            .rd_rdy (r_fifo_rready[m]),
+            .rd_vld (r_fifo_rvalid[m]),
+            .rd_dout ({r_fifo_rid[m], r_fifo_rdata[m], r_fifo_rresp[m], r_fifo_rlast[m]})
         );
     end
 endgenerate
@@ -655,7 +663,57 @@ generate
 endgenerate
 
 //=============================================================================
-// 6. Read Reorder Logic (sid_buffer write/clear + reorder)
+// 6. B/R Merge Modules: axi_split_b_merge / axi_split_r_merge (per Master)
+//    Placed on master side after S2M has stripped mst_idx.
+//    BID/RID format: {split_st[1:0], orig_id[W_ID-1:0]} → M_ID_W=0.
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : INST_SPLIT_MERGE
+        // B merge: replaces cross_4k_if built-in B merge
+        axi_split_b_merge #(
+            .W_ID     (W_ID),
+            .M_ID_W   ($clog2(MST_AMT)),
+            .MAX_SPLIT(4)
+        ) u_b_merge (
+            .clk            (AXI_CLK),
+            .rst_n          (AXI_RSTn),
+            .s_axi_bvalid   (c4k_bvalid[m]),
+            .s_axi_bid      (c4k_bid[m]),
+            .s_axi_bresp    (c4k_bresp[m]),
+            .s_axi_bready   (c4k_bready[m]),
+            .m_axi_bvalid   (m_bvalid[m]),
+            .m_axi_bid      (m_bid[m]),
+            .m_axi_bresp    (m_bresp[m]),
+            .m_axi_bready   (m_bready[m])
+        );
+
+        // R merge: handles split read response merging
+        axi_split_r_merge #(
+            .W_ID     (W_ID),
+            .M_ID_W   ($clog2(MST_AMT)),
+            .W_DATA   (DATA_WIDTH),
+            .MAX_SPLIT(4)
+        ) u_r_merge (
+            .clk            (AXI_CLK),
+            .rst_n          (AXI_RSTn),
+            .s_axi_rvalid   (r_fifo_rvalid[m]),
+            .s_axi_rid      (r_fifo_rid[m]),
+            .s_axi_rdata    (r_fifo_rdata[m]),
+            .s_axi_rresp    (r_fifo_rresp[m]),
+            .s_axi_rlast    (r_fifo_rlast[m]),
+            .s_axi_rready   (r_fifo_rready[m]),
+            .m_axi_rvalid   (m_rvalid[m]),
+            .m_axi_rid      (m_rid[m]),
+            .m_axi_rdata    (m_rdata[m]),
+            .m_axi_rresp    (m_rresp[m]),
+            .m_axi_rlast    (m_rlast[m]),
+            .m_axi_rready   (m_rready[m])
+        );
+    end
+endgenerate
+
+//=============================================================================
+// 7. Read Reorder Logic (sid_buffer write/clear + reorder)
 //=============================================================================
 
 //=============================================================================
@@ -690,9 +748,9 @@ wire [MST_AMT-1:0]       sid_buf_s_clr_rdy;
 genvar si_clr;
 generate
     for(si_clr = 0; si_clr < MST_AMT; si_clr = si_clr + 1) begin : SID_BUF_CLR_PACK
-        assign clr_last_packed[si_clr]    = M_RLAST[si_clr];
-        assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = M_RSID[si_clr];
-        assign clr_sid_vld_packed[si_clr] = M_RVALID[si_clr] & m_rready[si_clr];
+        assign clr_last_packed[si_clr]    = r_fifo_rlast[si_clr];
+        assign clr_sid_packed[W_SID*(si_clr+1)-1 -: W_SID] = r_fifo_rid[si_clr];
+        assign clr_sid_vld_packed[si_clr] = r_fifo_rvalid[si_clr] & r_fifo_rready[si_clr] & r_fifo_rlast[si_clr];
     end
 endgenerate
 
@@ -758,7 +816,7 @@ generate
 endgenerate
 
 //=============================================================================
-// 7. axi_crossbar: Core Routing Engine (connect to new slave side FIFOs)
+// 8. axi_crossbar: Core Routing Engine (connect to new slave side FIFOs)
 //=============================================================================
 axi_crossbar #(
     .MST_AMT(MST_AMT),
