@@ -32,7 +32,7 @@ module axi_interconnect
 
     // ========== Master Flattened Interface ==========
     // AW
-    input   wire  [W_ID*MST_AMT-1   : 0]  M_AXI_AWID_i,
+    input   wire  [W_ID*MST_AMT-1             : 0]  M_AXI_AWID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  M_AXI_AWADDR_i,
     input   wire  [LEN_W*MST_AMT-1            : 0]  M_AXI_AWLEN_i,
     input   wire  [SIZE_W*MST_AMT-1           : 0]  M_AXI_AWSIZE_i,
@@ -46,12 +46,12 @@ module axi_interconnect
     input   wire  [MST_AMT-1                  : 0]  M_AXI_WVALID_i,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_WREADY_o,
     // B
-    output  wire  [W_ID*MST_AMT-1   : 0]  M_AXI_BID_o,
+    output  wire  [W_ID*MST_AMT-1             : 0]  M_AXI_BID_o,
     output  wire  [RESP_W*MST_AMT-1           : 0]  M_AXI_BRESP_o,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_BVALID_o,
     input   wire  [MST_AMT-1                  : 0]  M_AXI_BREADY_i,
     // AR
-    input   wire  [W_ID*MST_AMT-1   : 0]  M_AXI_ARID_i,
+    input   wire  [W_ID*MST_AMT-1             : 0]  M_AXI_ARID_i,
     input   wire  [ADDR_WIDTH*MST_AMT-1       : 0]  M_AXI_ARADDR_i,
     input   wire  [LEN_W*MST_AMT-1            : 0]  M_AXI_ARLEN_i,
     input   wire  [SIZE_W*MST_AMT-1           : 0]  M_AXI_ARSIZE_i,
@@ -59,7 +59,7 @@ module axi_interconnect
     input   wire  [MST_AMT-1                  : 0]  M_AXI_ARVALID_i,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_ARREADY_o,
     // R
-    output  wire  [W_ID*MST_AMT-1   : 0]  M_AXI_RID_o,
+    output  wire  [W_ID*MST_AMT-1             : 0]  M_AXI_RID_o,
     output  wire  [DATA_WIDTH*MST_AMT-1       : 0]  M_AXI_RDATA_o,
     output  wire  [RESP_W*MST_AMT-1           : 0]  M_AXI_RRESP_o,
     output  wire  [MST_AMT-1                  : 0]  M_AXI_RLAST_o,
@@ -110,7 +110,7 @@ module axi_interconnect
 //=============================================================================
 // Internal Arrays: Unpacked per Master
 //=============================================================================
-wire [W_ID-1:0]   m_awid      [0:MST_AMT-1];
+wire [W_ID-1:0]             m_awid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       m_awaddr    [0:MST_AMT-1];
 wire [LEN_W-1:0]            m_awlen     [0:MST_AMT-1];
 wire [SIZE_W-1:0]           m_awsize    [0:MST_AMT-1];
@@ -124,12 +124,12 @@ wire                        m_wlast     [0:MST_AMT-1];
 wire                        m_wvalid    [0:MST_AMT-1];
 wire                        m_wready    [0:MST_AMT-1];
 
-wire [W_ID-1:0]   m_bid       [0:MST_AMT-1];
+wire [W_ID-1:0]             m_bid       [0:MST_AMT-1];
 wire [RESP_W-1:0]           m_bresp     [0:MST_AMT-1];
 wire                        m_bvalid    [0:MST_AMT-1];
 wire                        m_bready    [0:MST_AMT-1];
 
-wire [W_ID-1:0]   m_arid      [0:MST_AMT-1];
+wire [W_ID-1:0]             m_arid      [0:MST_AMT-1];
 wire [ADDR_WIDTH-1:0]       m_araddr    [0:MST_AMT-1];
 wire [LEN_W-1:0]            m_arlen     [0:MST_AMT-1];
 wire [SIZE_W-1:0]           m_arsize    [0:MST_AMT-1];
@@ -137,7 +137,7 @@ wire [BURST_W-1:0]          m_arburst   [0:MST_AMT-1];
 wire                        m_arvalid   [0:MST_AMT-1];
 wire                        m_arready   [0:MST_AMT-1];
 
-wire [W_ID-1:0]   m_rid       [0:MST_AMT-1];
+wire [W_ID-1:0]             m_rid       [0:MST_AMT-1];
 wire [DATA_WIDTH-1:0]       m_rdata     [0:MST_AMT-1];
 wire [RESP_W-1:0]           m_rresp     [0:MST_AMT-1];
 wire                        m_rlast     [0:MST_AMT-1];
@@ -436,15 +436,6 @@ generate
             .s_axi_wlast     (c4k_wlast[m]),
             .s_axi_wvalid    (c4k_wvalid[m]),
             .s_axi_wready    (c4k_wready[m]),
-            // B channel (merged externally by axi_split_b_merge)
-            .s_axi_bid       ({W_MID{1'b0}}),
-            .s_axi_bresp     (2'b00),
-            .s_axi_bvalid    (1'b0),
-            .s_axi_bready    (),
-            .m_axi_bid       (),
-            .m_axi_bresp     (),
-            .m_axi_bvalid    (),
-            .m_axi_bready    (1'b0),
             // AR slave side
             .s_axi_arid      (c4k_arid[m]),
             .s_axi_araddr    (c4k_araddr[m]),

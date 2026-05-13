@@ -1,7 +1,7 @@
 // INCR BURST ONLY
 // 4KB boundary splitter: splits AW/AR when transaction crosses 4KB
 // W channel: forces WLAST=1 on last beat of sub-transaction 1
-// B channel: merges two B responses back into one for the master
+// B channel: handled externally by axi_split_b_merge
 module cross_4k_if #(
       parameter W_ID   = 4           // ID width
               , W_ADDR = 32          // address width
@@ -42,17 +42,6 @@ module cross_4k_if #(
     , output wire                    s_axi_wlast
     , output wire                    s_axi_wvalid
     , input  wire                    s_axi_wready
-
-    // ---- B channel (response merging for split writes) ----
-    , input  wire    [W_ID+1:0]      s_axi_bid          // prefix[1:0] + orig_id
-    , input  wire    [1:0]           s_axi_bresp
-    , input  wire                    s_axi_bvalid
-    , output wire                    s_axi_bready
-
-    , output reg     [W_ID-1:0]      m_axi_bid           // prefix stripped
-    , output reg     [1:0]           m_axi_bresp
-    , output reg                     m_axi_bvalid
-    , input  wire                    m_axi_bready
 
     // ---- AR slave side ----
     , output  reg    [W_ID+1:0]      s_axi_arid          // prefix[1:0] + orig_id
@@ -342,87 +331,5 @@ assign s_axi_wlast  = (!w_trans1_done && w_aw_split && w_beat_cnt == trans1_awle
                       ? 1'b1              // force WLAST on last beat of sub-transaction 1
                       : m_axi_wlast;      // passthrough otherwise
 assign m_axi_wready = s_axi_wready && !w_stall;
-
-//=============================================================================
-// B Channel: merge two B responses → one for split write transactions
-//=============================================================================
-// BID = {prefix[1:0], orig_id[W_ID-1:0]}
-//   2'b00 — non-split transaction  → passthrough
-//   2'b01 — split sub-transaction 1 → absorb, accumulate BRESP
-//   2'b10 — split sub-transaction 2 → absorb, accumulate BRESP
-//   BRESP = bitwise OR of both sub-transactions: either fails → whole fails.
-//=============================================================================
-wire [1:0]      b_prefix    = s_axi_bid[W_ID+1:W_ID];
-wire [W_ID-1:0] b_strip_id  = s_axi_bid[W_ID-1:0];
-wire            b_is_trans1 = (b_prefix == 2'b01);
-wire            b_is_trans2 = (b_prefix == 2'b10);
-wire            b_is_split  = b_is_trans1 || b_is_trans2;
-
-reg             b_split_active;     // armed: split write B merging in progress
-reg             b_got_trans1;       // sub-transaction 1's B received
-reg             b_got_trans2;       // sub-transaction 2's B received
-reg [1:0]       b_resp_merged;      // accumulated BRESP = BRESP_t1 | BRESP_t2
-reg [W_ID-1:0]  b_orig_awid;       // original AWID (lower bits from BID)
-
-always @(posedge clk) begin
-    if (!rst_n) begin
-        b_split_active <= 0;
-        b_got_trans1   <= 0;
-        b_got_trans2   <= 0;
-        b_resp_merged  <= 2'b00;
-        b_orig_awid    <= 0;
-    end else begin
-        // Arm on split AW acceptance (master side)
-        if (m_axi_awvalid && m_axi_awready && aw_cross4k_flag) begin
-            b_split_active <= 1;
-            b_got_trans1   <= 0;
-            b_got_trans2   <= 0;
-            b_resp_merged  <= 2'b00;
-            b_orig_awid    <= m_axi_awid;
-        end
-
-        // B handshake: accumulate BRESP, track by BID prefix
-        if (b_split_active && s_axi_bvalid && s_axi_bready && b_is_split) begin
-            if (b_is_trans1) begin
-                b_got_trans1  <= 1;
-                b_resp_merged <= b_resp_merged | s_axi_bresp;
-            end else if (b_is_trans2) begin
-                b_got_trans2  <= 1;
-                b_resp_merged <= b_resp_merged | s_axi_bresp;
-            end
-        end
-
-        // Both received and merged B accepted by master → done
-        if (b_split_active && b_got_trans1 && b_got_trans2 && m_axi_bready) begin
-            b_split_active <= 0;
-            b_got_trans1   <= 0;
-            b_got_trans2   <= 0;
-        end
-    end
-end
-
-// B ready to slave: accept split B during merge; non-split B when master ready
-assign s_axi_bready = (b_split_active && b_is_split && !(b_got_trans1 && b_got_trans2))
-                      ? 1'b1 : m_axi_bready;
-
-// B response to master
-always @(*) begin
-    if (b_split_active && b_got_trans1 && b_got_trans2) begin
-        // Both sub-transactions done → forward merged B (strip prefix)
-        m_axi_bid    = b_orig_awid;
-        m_axi_bresp  = b_resp_merged;
-        m_axi_bvalid = 1'b1;
-    end else if (!b_split_active || !b_is_split) begin
-        // Passthrough mode (no split, or non-split B): strip prefix
-        m_axi_bid    = b_strip_id;
-        m_axi_bresp  = s_axi_bresp;
-        m_axi_bvalid = s_axi_bvalid;
-    end else begin
-        // Absorbing split B (waiting for the other sub-transaction)
-        m_axi_bid    = 0;
-        m_axi_bresp  = 0;
-        m_axi_bvalid = 0;
-    end
-end
 
 endmodule
