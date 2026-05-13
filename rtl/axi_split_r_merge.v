@@ -1,10 +1,12 @@
 //=============================================================================
 // axi_split_r_merge — R-channel merger for 4KB-split read transactions
 //=============================================================================
-// RID = {prefix[1:0], orig_id[W_ID-1:0]}  (set by cross_4k_if AR split)
-//   2'b00 — non-split  → passthrough (strip prefix)
-//   2'b01 — split sub-transaction 1 → suppress RLAST, accumulate RRESP
-//   2'b10 — split sub-transaction 2 → keep RLAST, accumulate RRESP, finalize
+// RID = {mst_idx[M_ID_W-1:0], split_st[1:0], orig_id[W_ID-1:0]}
+//   M_ID_W   — master index from crossbar, $clog2(MST_AMT)
+//   split_st — 2-bit split status (set by cross_4k_if AR split):
+//     2'b00 : non-split  → passthrough (strip mst_idx+split_st)
+//     2'b01 : split sub-transaction 1 → suppress RLAST, accumulate RRESP
+//     2'b10 : split sub-transaction 2 → keep RLAST, accumulate RRESP, finalize
 //
 // Sub-transaction 1's last beat has RLAST=1 from the slave; this module forces
 // it to 0 so the master sees a single continuous read burst.
@@ -18,6 +20,7 @@
 //=============================================================================
 module axi_split_r_merge #(
     parameter W_ID       = 4,             // original transaction ID width
+    parameter M_ID_W     = 2,             // master index width, $clog2(MST_AMT)
     parameter W_DATA     = 32,            // data bus width
     parameter W_STRB     = W_DATA / 8,    // not used for R channel
     parameter MAX_SPLIT  = 4              // max concurrent split read transactions
@@ -27,7 +30,7 @@ module axi_split_r_merge #(
 
     // ---- R channel slave side (from crossbar / S2M / post-FIFO) ----
     input  wire                 s_axi_rvalid,
-    input  wire [W_ID+1:0]      s_axi_rid,        // {prefix[1:0], orig_id}
+    input  wire [M_ID_W+W_ID+1:0] s_axi_rid,    // {mst_idx, split_st[1:0], orig_id}
     input  wire [W_DATA-1:0]    s_axi_rdata,
     input  wire [1:0]           s_axi_rresp,
     input  wire                 s_axi_rlast,
@@ -35,7 +38,7 @@ module axi_split_r_merge #(
 
     // ---- R channel master side (to master) ----
     output reg                  m_axi_rvalid,
-    output reg  [W_ID-1:0]      m_axi_rid,        // prefix stripped
+    output reg  [W_ID-1:0]      m_axi_rid,        // mst_idx + split_st stripped
     output reg  [W_DATA-1:0]    m_axi_rdata,
     output reg  [1:0]           m_axi_rresp,
     output reg                  m_axi_rlast,
@@ -44,11 +47,12 @@ module axi_split_r_merge #(
 
     //=========================================================================
     // RID field extraction
+    //  split_st at [W_ID+1:W_ID], orig_id at [W_ID-1:0]
     //=========================================================================
-    wire [1:0]      r_prefix    = s_axi_rid[W_ID+1:W_ID];
+    wire [1:0]      r_split_st  = s_axi_rid[W_ID+1:W_ID];
     wire [W_ID-1:0] r_strip_id  = s_axi_rid[W_ID-1:0];
-    wire            r_is_trans1  = (r_prefix == 2'b01);
-    wire            r_is_trans2  = (r_prefix == 2'b10);
+    wire            r_is_trans1  = (r_split_st == 2'b01);
+    wire            r_is_trans2  = (r_split_st == 2'b10);
     wire            r_is_split   = r_is_trans1 || r_is_trans2;
 
     //=========================================================================

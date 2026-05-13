@@ -1,10 +1,12 @@
 //=============================================================================
 // axi_split_b_merge — B-channel response merger for 4KB-split write transactions
 //=============================================================================
-// BID = {prefix[1:0], orig_id[W_ID-1:0]}  (set by cross_4k_if)
-//   2'b00 — non-split transaction  → passthrough (strip prefix, forward)
-//   2'b01 — split sub-transaction 1 → absorb, accumulate BRESP
-//   2'b10 — split sub-transaction 2 → absorb, accumulate BRESP
+// BID = {mst_idx[M_ID_W-1:0], split_st[1:0], orig_id[W_ID-1:0]}
+//   M_ID_W   — master index from crossbar, $clog2(MST_AMT)
+//   split_st — 2-bit split status (set by cross_4k_if):
+//     2'b00 : non-split  → passthrough (strip mst_idx+split_st, forward)
+//     2'b01 : split sub-transaction 1 → absorb, accumulate BRESP
+//     2'b10 : split sub-transaction 2 → absorb, accumulate BRESP
 //
 // Both sub-transactions share the same lower W_ID bits.  Table entries are
 // allocated on first split B arrival (demand-driven, no AW-side push needed).
@@ -13,6 +15,7 @@
 //=============================================================================
 module axi_split_b_merge #(
     parameter W_ID       = 4,             // original transaction ID width
+    parameter M_ID_W     = 2,             // master index width, $clog2(MST_AMT)
     parameter MAX_SPLIT  = 4              // max concurrent split transactions
 ) (
     input  wire                 clk,
@@ -20,24 +23,25 @@ module axi_split_b_merge #(
 
     // ---- B channel slave side (from crossbar / S2M) ----
     input  wire                 s_axi_bvalid,
-    input  wire [W_ID+1:0]      s_axi_bid,       // {prefix[1:0], orig_id}
+    input  wire [M_ID_W+W_ID+1:0] s_axi_bid,    // {mst_idx, split_st[1:0], orig_id}
     input  wire [1:0]           s_axi_bresp,
     output wire                 s_axi_bready,
 
     // ---- B channel master side (to master) ----
     output reg                  m_axi_bvalid,
-    output reg  [W_ID-1:0]      m_axi_bid,       // prefix stripped
+    output reg  [W_ID-1:0]      m_axi_bid,       // mst_idx + split_st stripped
     output reg  [1:0]           m_axi_bresp,
     input  wire                 m_axi_bready
 );
 
     //=========================================================================
     // BID field extraction
+    //  split_st at [W_ID+1:W_ID], orig_id at [W_ID-1:0]
     //=========================================================================
-    wire [1:0]      b_prefix   = s_axi_bid[W_ID+1:W_ID];
-    wire [W_ID-1:0] b_strip_id = s_axi_bid[W_ID-1:0];
-    wire            b_is_trans1 = (b_prefix == 2'b01);
-    wire            b_is_trans2 = (b_prefix == 2'b10);
+    wire [1:0]      b_split_st  = s_axi_bid[W_ID+1:W_ID];
+    wire [W_ID-1:0] b_strip_id  = s_axi_bid[W_ID-1:0];
+    wire            b_is_trans1 = (b_split_st == 2'b01);
+    wire            b_is_trans2 = (b_split_st == 2'b10);
     wire            b_is_split  = b_is_trans1 || b_is_trans2;
 
     //=========================================================================
