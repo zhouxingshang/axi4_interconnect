@@ -643,6 +643,12 @@ generate
     end
 endgenerate
 
+// ----- Clear port packing (one port per master) -----
+wire [MST_AMT-1:0]       clr_last_packed;
+wire [W_SID*MST_AMT-1:0] clr_sid_packed;
+wire [MST_AMT-1:0]       clr_sid_vld_packed;
+wire [MST_AMT-1:0]       sid_buf_s_clr_rdy;
+
 // Gate R ready to crossbar: use s_clr_rdy from shared sid_buffer per master
 // rf-style s_clr_rdy = ~(clr_select ^ clr_grant)
 // When master has no clear request or wins arbitration: s_clr_rdy=1 → rready passes
@@ -807,8 +813,172 @@ generate
 endgenerate
 
 //=============================================================================
-// 8. axi_crossbar: Core Routing Engine (connect to new slave side FIFOs)
+// 8. axi_crossbar: Core Routing Engine
+//    Pack 2D arrays → flat vectors, connect to crossbar, unpack back.
 //=============================================================================
+
+// ----- Master-side packed wires (crossbar interface) -----
+wire [W_MID*MST_AMT-1:0]        x_m_AWID;
+wire [ADDR_WIDTH*MST_AMT-1:0]   x_m_AWADDR;
+wire [BURST_W*MST_AMT-1:0]      x_m_AWBURST;
+wire [LEN_W*MST_AMT-1:0]        x_m_AWLEN;
+wire [SIZE_W*MST_AMT-1:0]       x_m_AWSIZE;
+wire [MST_AMT-1:0]              x_m_AWVALID;
+wire [MST_AMT-1:0]              x_m_AWREADY;
+wire [DATA_WIDTH*MST_AMT-1:0]   x_m_WDATA;
+wire [W_STRB*MST_AMT-1:0]       x_m_WSTRB;
+wire [MST_AMT-1:0]              x_m_WLAST;
+wire [MST_AMT-1:0]              x_m_WVALID;
+wire [MST_AMT-1:0]              x_m_WREADY;
+wire [W_SID*MST_AMT-1:0]        x_m_BID;
+wire [RESP_W*MST_AMT-1:0]       x_m_BRESP;
+wire [MST_AMT-1:0]              x_m_BVALID;
+wire [MST_AMT-1:0]              x_m_BREADY;
+wire [W_MID*MST_AMT-1:0]        x_m_ARID;
+wire [ADDR_WIDTH*MST_AMT-1:0]   x_m_ARADDR;
+wire [BURST_W*MST_AMT-1:0]      x_m_ARBURST;
+wire [LEN_W*MST_AMT-1:0]        x_m_ARLEN;
+wire [SIZE_W*MST_AMT-1:0]       x_m_ARSIZE;
+wire [MST_AMT-1:0]              x_m_ARVALID;
+wire [MST_AMT-1:0]              x_m_ARREADY;
+wire [W_SID*MST_AMT-1:0]        x_m_RID;
+wire [DATA_WIDTH*MST_AMT-1:0]   x_m_RDATA;
+wire [RESP_W*MST_AMT-1:0]       x_m_RRESP;
+wire [MST_AMT-1:0]              x_m_RLAST;
+wire [MST_AMT-1:0]              x_m_RVALID;
+wire [MST_AMT-1:0]              x_m_RREADY;
+
+// ----- Slave-side packed wires (crossbar interface) -----
+wire [W_SID*SLV_AMT-1:0]        x_s_AWID;
+wire [ADDR_WIDTH*SLV_AMT-1:0]   x_s_AWADDR;
+wire [BURST_W*SLV_AMT-1:0]      x_s_AWBURST;
+wire [LEN_W*SLV_AMT-1:0]        x_s_AWLEN;
+wire [SIZE_W*SLV_AMT-1:0]       x_s_AWSIZE;
+wire [SLV_AMT-1:0]              x_s_AWVALID;
+wire [SLV_AMT-1:0]              x_s_AWREADY;
+wire [DATA_WIDTH*SLV_AMT-1:0]   x_s_WDATA;
+wire [W_STRB*SLV_AMT-1:0]       x_s_WSTRB;
+wire [SLV_AMT-1:0]              x_s_WLAST;
+wire [SLV_AMT-1:0]              x_s_WVALID;
+wire [SLV_AMT-1:0]              x_s_WREADY;
+wire [W_SID*SLV_AMT-1:0]        x_s_BID;
+wire [RESP_W*SLV_AMT-1:0]       x_s_BRESP;
+wire [SLV_AMT-1:0]              x_s_BVALID;
+wire [SLV_AMT-1:0]              x_s_BREADY;
+wire [W_SID*SLV_AMT-1:0]        x_s_ARID;
+wire [ADDR_WIDTH*SLV_AMT-1:0]   x_s_ARADDR;
+wire [BURST_W*SLV_AMT-1:0]      x_s_ARBURST;
+wire [LEN_W*SLV_AMT-1:0]        x_s_ARLEN;
+wire [SIZE_W*SLV_AMT-1:0]       x_s_ARSIZE;
+wire [SLV_AMT-1:0]              x_s_ARVALID;
+wire [SLV_AMT-1:0]              x_s_ARREADY;
+wire [W_SID*SLV_AMT-1:0]        x_s_RID;
+wire [DATA_WIDTH*SLV_AMT-1:0]   x_s_RDATA;
+wire [RESP_W*SLV_AMT-1:0]       x_s_RRESP;
+wire [SLV_AMT-1:0]              x_s_RLAST;
+wire [SLV_AMT-1:0]              x_s_RVALID;
+wire [SLV_AMT-1:0]              x_s_RREADY;
+
+// ----- Master-side packing: M_* arrays → flat x_m_* -----
+genvar xm;
+generate
+    for (xm = 0; xm < MST_AMT; xm = xm + 1) begin : PACK_MST
+        // AW channel
+        assign x_m_AWID   [W_MID*(xm+1)-1     -: W_MID]      = M_AWID[xm];
+        assign x_m_AWADDR [ADDR_WIDTH*(xm+1)-1 -: ADDR_WIDTH] = M_AWADDR[xm];
+        assign x_m_AWBURST[BURST_W*(xm+1)-1   -: BURST_W]    = M_AWBURST[xm];
+        assign x_m_AWLEN  [LEN_W*(xm+1)-1     -: LEN_W]      = M_AWLEN[xm];
+        assign x_m_AWSIZE [SIZE_W*(xm+1)-1    -: SIZE_W]     = M_AWSIZE[xm];
+        assign x_m_AWVALID[xm] = M_AWVALID[xm];
+        // W channel
+        assign x_m_WDATA  [DATA_WIDTH*(xm+1)-1 -: DATA_WIDTH] = M_WDATA[xm];
+        assign x_m_WSTRB  [W_STRB*(xm+1)-1     -: W_STRB]     = M_WSTRB[xm];
+        assign x_m_WLAST [xm]  = M_WLAST[xm];
+        assign x_m_WVALID[xm]  = M_WVALID[xm];
+        // B channel
+        assign x_m_BREADY[xm]  = M_BREADY[xm];
+        // AR channel
+        assign x_m_ARID   [W_MID*(xm+1)-1     -: W_MID]      = M_ARID[xm];
+        assign x_m_ARADDR [ADDR_WIDTH*(xm+1)-1 -: ADDR_WIDTH] = M_ARADDR[xm];
+        assign x_m_ARBURST[BURST_W*(xm+1)-1   -: BURST_W]    = M_ARBURST[xm];
+        assign x_m_ARLEN  [LEN_W*(xm+1)-1     -: LEN_W]      = M_ARLEN[xm];
+        assign x_m_ARSIZE [SIZE_W*(xm+1)-1    -: SIZE_W]     = M_ARSIZE[xm];
+        assign x_m_ARVALID[xm] = M_ARVALID[xm];
+        // R channel
+        assign x_m_RREADY[xm]  = M_RREADY[xm];
+    end
+endgenerate
+
+// ----- Master-side unpacking: flat x_m_* → M_* arrays -----
+generate
+    for (xm = 0; xm < MST_AMT; xm = xm + 1) begin : UNPACK_MST_XBAR
+        assign M_AWREADY[xm] = x_m_AWREADY[xm];
+        assign M_WREADY[xm]  = x_m_WREADY[xm];
+        assign M_BID[xm]     = x_m_BID   [W_SID*(xm+1)-1  -: W_SID];
+        assign M_BRESP[xm]   = x_m_BRESP [RESP_W*(xm+1)-1 -: RESP_W];
+        assign M_BVALID[xm]  = x_m_BVALID[xm];
+        assign M_ARREADY[xm] = x_m_ARREADY[xm];
+        assign M_RID[xm]     = x_m_RID   [W_SID*(xm+1)-1     -: W_SID];
+        assign M_RDATA[xm]   = x_m_RDATA [DATA_WIDTH*(xm+1)-1 -: DATA_WIDTH];
+        assign M_RRESP[xm]   = x_m_RRESP [RESP_W*(xm+1)-1    -: RESP_W];
+        assign M_RLAST[xm]   = x_m_RLAST[xm];
+        assign M_RVALID[xm]  = x_m_RVALID[xm];
+    end
+endgenerate
+
+// ----- Slave-side packing: S_* / s_*_fifo arrays → flat x_s_* -----
+genvar xs;
+generate
+    for (xs = 0; xs < SLV_AMT; xs = xs + 1) begin : PACK_SLV
+        // AW channel (inputs to crossbar)
+        assign x_s_AWREADY[xs]  = S_AWREADY[xs];
+        // W channel (inputs to crossbar)
+        assign x_s_WREADY[xs]   = S_WREADY[xs];
+        // B channel (inputs to crossbar, from s_*_fifo)
+        assign x_s_BID   [W_SID*(xs+1)-1  -: W_SID]  = s_bid_fifo[xs];
+        assign x_s_BRESP [RESP_W*(xs+1)-1 -: RESP_W] = s_bresp_fifo[xs];
+        assign x_s_BVALID[xs]   = s_bvalid_fifo[xs];
+        // AR channel (inputs to crossbar)
+        assign x_s_ARREADY[xs]  = S_ARREADY[xs];
+        // R channel (inputs to crossbar, from s_*_fifo)
+        assign x_s_RID   [W_SID*(xs+1)-1     -: W_SID]      = s_rid_fifo[xs];
+        assign x_s_RDATA [DATA_WIDTH*(xs+1)-1 -: DATA_WIDTH] = s_rdata_fifo[xs];
+        assign x_s_RRESP [RESP_W*(xs+1)-1    -: RESP_W]     = s_rresp_fifo[xs];
+        assign x_s_RLAST[xs]    = s_rlast_fifo[xs];
+        assign x_s_RVALID[xs]   = s_rvalid_fifo[xs];
+    end
+endgenerate
+
+// ----- Slave-side unpacking: flat x_s_* → S_* / s_*_fifo arrays -----
+generate
+    for (xs = 0; xs < SLV_AMT; xs = xs + 1) begin : UNPACK_SLV_XBAR
+        // AW channel (outputs from crossbar)
+        assign S_AWID[xs]       = x_s_AWID   [W_SID*(xs+1)-1     -: W_SID];
+        assign S_AWADDR[xs]     = x_s_AWADDR [ADDR_WIDTH*(xs+1)-1 -: ADDR_WIDTH];
+        assign S_AWBURST[xs]    = x_s_AWBURST[BURST_W*(xs+1)-1   -: BURST_W];
+        assign S_AWLEN[xs]      = x_s_AWLEN  [LEN_W*(xs+1)-1     -: LEN_W];
+        assign S_AWSIZE[xs]     = x_s_AWSIZE [SIZE_W*(xs+1)-1    -: SIZE_W];
+        assign S_AWVALID[xs]    = x_s_AWVALID[xs];
+        // W channel (outputs from crossbar)
+        assign S_WDATA[xs]      = x_s_WDATA  [DATA_WIDTH*(xs+1)-1 -: DATA_WIDTH];
+        assign S_WSTRB[xs]      = x_s_WSTRB  [W_STRB*(xs+1)-1     -: W_STRB];
+        assign S_WLAST[xs]      = x_s_WLAST[xs];
+        assign S_WVALID[xs]     = x_s_WVALID[xs];
+        // B channel (outputs from crossbar)
+        assign s_bready_fifo[xs] = x_s_BREADY[xs];
+        // AR channel (outputs from crossbar)
+        assign S_ARID[xs]       = x_s_ARID   [W_SID*(xs+1)-1     -: W_SID];
+        assign S_ARADDR[xs]     = x_s_ARADDR [ADDR_WIDTH*(xs+1)-1 -: ADDR_WIDTH];
+        assign S_ARBURST[xs]    = x_s_ARBURST[BURST_W*(xs+1)-1   -: BURST_W];
+        assign S_ARLEN[xs]      = x_s_ARLEN  [LEN_W*(xs+1)-1     -: LEN_W];
+        assign S_ARSIZE[xs]     = x_s_ARSIZE [SIZE_W*(xs+1)-1    -: SIZE_W];
+        assign S_ARVALID[xs]    = x_s_ARVALID[xs];
+        // R channel (outputs from crossbar)
+        assign s_rready_fifo[xs] = x_s_RREADY[xs];
+    end
+endgenerate
+
+// ----- Crossbar instantiation -----
 axi_crossbar #(
     .MST_AMT(MST_AMT),
     .SLV_AMT(SLV_AMT),
@@ -828,68 +998,68 @@ axi_crossbar #(
     .AXI_CLK(AXI_CLK),
     .AXI_RSTn(AXI_RSTn),
 
-    // Master Ports (connected to pre-FIFO outputs)
-    .m_AWID_i({M_AWID[MST_AMT-1:0]}),
-    .m_AWADDR_i({M_AWADDR[MST_AMT-1:0]}),
-    .m_AWLEN_i({M_AWLEN[MST_AMT-1:0]}),
-    .m_AWSIZE_i({M_AWSIZE[MST_AMT-1:0]}),
-    .m_AWBURST_i({M_AWBURST[MST_AMT-1:0]}),
-    .m_AWVALID_i({M_AWVALID[MST_AMT-1:0]}),
-    .m_AWREADY_o({M_AWREADY[MST_AMT-1:0]}),
-    .m_WDATA_i({M_WDATA[MST_AMT-1:0]}),
-    .m_WSTRB_i({M_WSTRB[MST_AMT-1:0]}),
-    .m_WLAST_i({M_WLAST[MST_AMT-1:0]}),
-    .m_WVALID_i({M_WVALID[MST_AMT-1:0]}),
-    .m_WREADY_o({M_WREADY[MST_AMT-1:0]}),
-    .m_BID_o({M_BID[MST_AMT-1:0]}),
-    .m_BRESP_o({M_BRESP[MST_AMT-1:0]}),
-    .m_BVALID_o({M_BVALID[MST_AMT-1:0]}),
-    .m_BREADY_i({M_BREADY[MST_AMT-1:0]}),
-    .m_ARID_i({M_ARID[MST_AMT-1:0]}),
-    .m_ARADDR_i({M_ARADDR[MST_AMT-1:0]}),
-    .m_ARLEN_i({M_ARLEN[MST_AMT-1:0]}),
-    .m_ARSIZE_i({M_ARSIZE[MST_AMT-1:0]}),
-    .m_ARBURST_i({M_ARBURST[MST_AMT-1:0]}),
-    .m_ARVALID_i({M_ARVALID[MST_AMT-1:0]}),
-    .m_ARREADY_o({M_ARREADY[MST_AMT-1:0]}),
-    .m_RID_o({M_RID[MST_AMT-1:0]}),
-    .m_RDATA_o({M_RDATA[MST_AMT-1:0]}),
-    .m_RRESP_o({M_RRESP[MST_AMT-1:0]}),
-    .m_RLAST_o({M_RLAST[MST_AMT-1:0]}),
-    .m_RVALID_o({M_RVALID[MST_AMT-1:0]}),
-    .m_RREADY_i({M_RREADY[MST_AMT-1:0]}),
+    // Master Ports
+    .m_AWID_i(x_m_AWID),
+    .m_AWADDR_i(x_m_AWADDR),
+    .m_AWLEN_i(x_m_AWLEN),
+    .m_AWSIZE_i(x_m_AWSIZE),
+    .m_AWBURST_i(x_m_AWBURST),
+    .m_AWVALID_i(x_m_AWVALID),
+    .m_AWREADY_o(x_m_AWREADY),
+    .m_WDATA_i(x_m_WDATA),
+    .m_WSTRB_i(x_m_WSTRB),
+    .m_WLAST_i(x_m_WLAST),
+    .m_WVALID_i(x_m_WVALID),
+    .m_WREADY_o(x_m_WREADY),
+    .m_BID_o(x_m_BID),
+    .m_BRESP_o(x_m_BRESP),
+    .m_BVALID_o(x_m_BVALID),
+    .m_BREADY_i(x_m_BREADY),
+    .m_ARID_i(x_m_ARID),
+    .m_ARADDR_i(x_m_ARADDR),
+    .m_ARLEN_i(x_m_ARLEN),
+    .m_ARSIZE_i(x_m_ARSIZE),
+    .m_ARBURST_i(x_m_ARBURST),
+    .m_ARVALID_i(x_m_ARVALID),
+    .m_ARREADY_o(x_m_ARREADY),
+    .m_RID_o(x_m_RID),
+    .m_RDATA_o(x_m_RDATA),
+    .m_RRESP_o(x_m_RRESP),
+    .m_RLAST_o(x_m_RLAST),
+    .m_RVALID_o(x_m_RVALID),
+    .m_RREADY_i(x_m_RREADY),
     .m_RSID_o(M_RSID_PACKED),
 
-    // Slave Ports (connected to new slave-side FIFOs)
-    .s_AWID_o({S_AWID[SLV_AMT-1:0]}),
-    .s_AWADDR_o({S_AWADDR[SLV_AMT-1:0]}),
-    .s_AWLEN_o({S_AWLEN[SLV_AMT-1:0]}),
-    .s_AWSIZE_o({S_AWSIZE[SLV_AMT-1:0]}),
-    .s_AWBURST_o({S_AWBURST[SLV_AMT-1:0]}),
-    .s_AWVALID_o({S_AWVALID[SLV_AMT-1:0]}),
-    .s_AWREADY_i({S_AWREADY[SLV_AMT-1:0]}),
-    .s_WDATA_o({S_WDATA[SLV_AMT-1:0]}),
-    .s_WSTRB_o({S_WSTRB[SLV_AMT-1:0]}),
-    .s_WLAST_o({S_WLAST[SLV_AMT-1:0]}),
-    .s_WVALID_o({S_WVALID[SLV_AMT-1:0]}),
-    .s_WREADY_i({S_WREADY[SLV_AMT-1:0]}),
-    .s_BID_i({s_bid_fifo[SLV_AMT-1:0]}),
-    .s_BRESP_i({s_bresp_fifo[SLV_AMT-1:0]}),
-    .s_BVALID_i({s_bvalid_fifo[SLV_AMT-1:0]}),
-    .s_BREADY_o({s_bready_fifo[SLV_AMT-1:0]}),
-    .s_ARID_o({S_ARID[SLV_AMT-1:0]}),
-    .s_ARADDR_o({S_ARADDR[SLV_AMT-1:0]}),
-    .s_ARLEN_o({S_ARLEN[SLV_AMT-1:0]}),
-    .s_ARSIZE_o({S_ARSIZE[SLV_AMT-1:0]}),
-    .s_ARBURST_o({S_ARBURST[SLV_AMT-1:0]}),
-    .s_ARVALID_o({S_ARVALID[SLV_AMT-1:0]}),
-    .s_ARREADY_i({S_ARREADY[SLV_AMT-1:0]}),
-    .s_RID_i({s_rid_fifo[SLV_AMT-1:0]}),
-    .s_RDATA_i({s_rdata_fifo[SLV_AMT-1:0]}),
-    .s_RRESP_i({s_rresp_fifo[SLV_AMT-1:0]}),
-    .s_RLAST_i({s_rlast_fifo[SLV_AMT-1:0]}),
-    .s_RVALID_i({s_rvalid_fifo[SLV_AMT-1:0]}),
-    .s_RREADY_o({s_rready_fifo[SLV_AMT-1:0]}),
+    // Slave Ports
+    .s_AWID_o(x_s_AWID),
+    .s_AWADDR_o(x_s_AWADDR),
+    .s_AWLEN_o(x_s_AWLEN),
+    .s_AWSIZE_o(x_s_AWSIZE),
+    .s_AWBURST_o(x_s_AWBURST),
+    .s_AWVALID_o(x_s_AWVALID),
+    .s_AWREADY_i(x_s_AWREADY),
+    .s_WDATA_o(x_s_WDATA),
+    .s_WSTRB_o(x_s_WSTRB),
+    .s_WLAST_o(x_s_WLAST),
+    .s_WVALID_o(x_s_WVALID),
+    .s_WREADY_i(x_s_WREADY),
+    .s_BID_i(x_s_BID),
+    .s_BRESP_i(x_s_BRESP),
+    .s_BVALID_i(x_s_BVALID),
+    .s_BREADY_o(x_s_BREADY),
+    .s_ARID_o(x_s_ARID),
+    .s_ARADDR_o(x_s_ARADDR),
+    .s_ARLEN_o(x_s_ARLEN),
+    .s_ARSIZE_o(x_s_ARSIZE),
+    .s_ARBURST_o(x_s_ARBURST),
+    .s_ARVALID_o(x_s_ARVALID),
+    .s_ARREADY_i(x_s_ARREADY),
+    .s_RID_i(x_s_RID),
+    .s_RDATA_i(x_s_RDATA),
+    .s_RRESP_i(x_s_RRESP),
+    .s_RLAST_i(x_s_RLAST),
+    .s_RVALID_i(x_s_RVALID),
+    .s_RREADY_o(x_s_RREADY),
 
     // Control
     .arbiter_type(arbiter_type),

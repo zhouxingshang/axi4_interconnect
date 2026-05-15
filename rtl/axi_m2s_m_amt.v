@@ -99,8 +99,8 @@ wire [W_ADDR-1:0]      m_awaddr    [0:MST_AMT-1];
 wire [ALEN_W-1:0]      m_awlen     [0:MST_AMT-1];
 wire [ASIZE_W-1:0]     m_awsize    [0:MST_AMT-1];
 wire [ABURST_W-1:0]    m_awburst   [0:MST_AMT-1];
-wire                   m_awvalid   [0:MST_AMT-1];
-wire                   m_awready   [0:MST_AMT-1];
+wire [MST_AMT-1:0]       m_awvalid;
+wire [MST_AMT-1:0]       m_awready;
 
 wire [W_DATA-1:0]      m_wdata     [0:MST_AMT-1];
 wire [W_STRB-1:0]      m_wstrb     [0:MST_AMT-1];
@@ -113,8 +113,8 @@ wire [W_ADDR-1:0]      m_araddr    [0:MST_AMT-1];
 wire [ALEN_W-1:0]      m_arlen     [0:MST_AMT-1];
 wire [ASIZE_W-1:0]     m_arsize    [0:MST_AMT-1];
 wire [ABURST_W-1:0]    m_arburst   [0:MST_AMT-1];
-wire                   m_arvalid   [0:MST_AMT-1];
-wire                   m_arready   [0:MST_AMT-1];
+wire [MST_AMT-1:0]       m_arvalid;
+wire [MST_AMT-1:0]       m_arready;
 
 //=============================================================================
 // W-Follows-AW Core: AW Order FIFO + Beat Counter Signals
@@ -126,8 +126,8 @@ wire                   aw_fifo_rd_en;
 wire                   aw_fifo_full;
 wire                   aw_fifo_empty;
 
-wire [CNT_W-1:0]       w_beat_cnt;                  // Remaining beats for current W transaction
-wire [MST_ID_W-1:0]    cur_w_mst_id;                // Current master whose W data should be routed
+reg  [CNT_W-1:0]       w_beat_cnt;                  // Remaining beats for current W transaction
+reg  [MST_ID_W-1:0]    cur_w_mst_id;                // Current master whose W data should be routed
 wire                   w_transaction_active;        // Flag: W transaction in progress
 assign w_transaction_active = (w_beat_cnt > 0);
 
@@ -185,8 +185,8 @@ always @(*) begin
         // ⚠️ WSELECT REMOVED: W routing now follows AW order FIFO, not address decode
     end else begin
         // Default slave mode: accept any request not selected by others, gated by slv_en
-        AWSELECT = (~AWSELECT_IN & {m_awvalid[MST_AMT-1:0]}) & {MST_AMT{slv_en}};
-        ARSELECT = (~ARSELECT_IN & {m_arvalid[MST_AMT-1:0]}) & {MST_AMT{slv_en}};
+        AWSELECT = (~AWSELECT_IN & m_awvalid) & {MST_AMT{slv_en}};
+        ARSELECT = (~ARSELECT_IN & m_arvalid) & {MST_AMT{slv_en}};
     end
 end
 
@@ -204,14 +204,14 @@ axi_arbiter_m2s_m_amt #(
     
     // AW channel ports
     .AWSELECT    (AWSELECT),
-    .AWVALID     ({m_awvalid[MST_AMT-1:0]}),
-    .AWREADY     ({m_awready[MST_AMT-1:0]}),
+    .AWVALID     (m_awvalid),
+    .AWREADY     (m_awready),
     .AWGRANT     (AWGRANT),
     
     // AR channel ports
     .ARSELECT    (ARSELECT),
-    .ARVALID     ({m_arvalid[MST_AMT-1:0]}),
-    .ARREADY     ({m_arready[MST_AMT-1:0]}),
+    .ARVALID     (m_arvalid),
+    .ARREADY     (m_arready),
     .ARGRANT     (ARGRANT),
     
     .arbiter_type(arbiter_type)
@@ -220,8 +220,8 @@ axi_arbiter_m2s_m_amt #(
 //=============================================================================
 // AW Handshake Capture -> Push to Order FIFO
 //=============================================================================
-wire [MST_AMT-1:0] aw_handshake = AWGRANT & {MST_AMT{S_AWREADY}} & {m_awvalid[MST_AMT-1:0]};
-wire [MST_ID_W-1:0] aw_grant_idx;
+wire [MST_AMT-1:0] aw_handshake = AWGRANT & {MST_AMT{S_AWREADY}} & m_awvalid;
+reg  [MST_ID_W-1:0] aw_grant_idx;
 
 // One-hot grant to binary index encoder (priority: low index first)
 always @(*) begin
@@ -255,7 +255,8 @@ aw_order_fifo #(
     // Read port
     .rd_en    (aw_fifo_rd_en),
     .rd_data  (aw_fifo_rd_data),
-    .rd_empty (aw_fifo_empty)
+    .rd_empty (aw_fifo_empty),
+    .item_cnt ()
 );
 
 //=============================================================================
