@@ -13,7 +13,10 @@
       "Bash(sed -i '559s/\\\\.M_ID_W\\(SLV_ID_W\\)/.W_CID\\(SLV_ID_W\\)/' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")",
       "Bash(sed -i '645s/\\\\.M_ID_W\\(SLV_ID_W\\)/.W_CID\\(SLV_ID_W\\)/' \"c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v\")",
       "Bash(grep -n '// 7\\\\.\\\\|// 8\\\\.\\\\|//========================================================================' \"c:/Users/22612/Desktop/AXI4/rtl/axi_interconnect.v\")",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(sed -i '840d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")",
+      "Bash(sed -i '971d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")",
+      "Bash(sed -i '1054,1057d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")"
     ]
   }
 }

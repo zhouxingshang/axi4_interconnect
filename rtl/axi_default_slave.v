@@ -17,7 +17,6 @@ module axi_default_slave
      , input  wire                  AWVALID
      , output reg                   AWREADY
 
-     , input  wire [W_SID-1:0]      WID
      , input  wire [W_DATA-1:0]     WDATA
      , input  wire [W_STRB-1:0]     WSTRB
      , input  wire                  WLAST
@@ -100,11 +99,6 @@ module axi_default_slave
                          countW <= countW + 1;
                      end
                  end
-                 // synopsys translate_off
-                 if ((WVALID==1'b1)&&(WID!=awid_reg)) begin
-                     $display("%04d %m Error AWID(0x%x):WID(0x%x) mismatch", $time, awid_reg, WID);
-                 end
-                 // synopsys translate_on
                  end // STW_WAIT
              STW_RSP: begin
                  if (BREADY==1'b1) begin

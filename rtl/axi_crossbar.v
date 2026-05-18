@@ -426,10 +426,6 @@ endgenerate
 //=============================================================================
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_M2S
-        // 提取当前从设备的地址基址 / 译码长度
-        wire [ADDR_WIDTH-1:0] slv_base = SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH];
-        wire [7:0]          slv_len  = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
-
         // 构造打包的主设备数组以连接 M2S 模块
         wire [W_MID*MST_AMT-1:0] m_awid_packed;
         wire [ADDR_WIDTH*MST_AMT-1:0]     m_awaddr_packed;
@@ -482,8 +478,8 @@ generate
         wire [MST_AMT-1:0] m2s_awsel, m2s_arsel;
 
         axi_m2s_m_amt #(
-            .ADDR_BASE(slv_base),
-            .ADDR_LENGTH(slv_len),
+            .ADDR_BASE(SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH]),
+            .ADDR_LENGTH(SLV_ADDR_LEN[8*(s+1)-1 -: 8]),
             .M_ID_W(MST_ID_W),
             .W_ID(W_MID),
             .W_ADDR(ADDR_WIDTH),
@@ -573,7 +569,6 @@ generate
                 .AWVALID (s_awvalid[s]),
                 .AWREADY (s_awready[s]),
 
-                .WID     ({W_SID{1'b0}}),
                 .WDATA   (s_wdata[s]),
                 .WSTRB   (s_wstrb[s]),
                 .WLAST   (s_wlast[s]),
