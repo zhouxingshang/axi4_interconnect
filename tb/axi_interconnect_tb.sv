@@ -244,7 +244,7 @@ module axi_interconnect_tb;
     // Slave Memory Model
     //=========================================================================
     // Simple memory model per slave: 4KB of storage
-    localparam SLV_MEM_DEPTH = 1024;  // 1024 x 32-bit = 4KB
+    localparam SLV_MEM_DEPTH = 2048;  // 2048 x 32-bit = 8KB
     reg [DATA_WIDTH-1:0] slv_mem [0:SLV_AMT-1][0:SLV_MEM_DEPTH-1];
 
     // Initialize slave memory with known pattern (address-dependent)
@@ -292,7 +292,7 @@ module axi_interconnect_tb;
                 aw_done = 1'b1;
                 beat_cnt = 0;
                 total_beats = awlen + 8'd1;
-                word_idx = awaddr[ADDR_WIDTH-1:2]; // word-aligned
+                word_idx = awaddr[SLV_ADDR_SPAN-1:2]; // word-aligned
             end
 
             // W data handshake
@@ -301,7 +301,7 @@ module axi_interconnect_tb;
                 wstrb = S_AXI_WSTRB[W_STRB*(slv_id+1)-1 -: W_STRB];
                 wlast = S_AXI_WLAST[slv_id];
                 // Write to memory with byte strobes
-                word_idx = awaddr[ADDR_WIDTH-1:2] + beat_cnt;
+                word_idx = awaddr[SLV_ADDR_SPAN-1:2] + beat_cnt;
                 if (word_idx < SLV_MEM_DEPTH) begin
                     for (bi = 0; bi < W_STRB; bi = bi + 1) begin
                         if (wstrb[bi])
@@ -350,7 +350,7 @@ module axi_interconnect_tb;
                 ar_done = 1'b1;
                 beat_cnt = 0;
                 total_beats = arlen + 8'd1;
-                word_idx = araddr[ADDR_WIDTH-1:2];
+                word_idx = araddr[SLV_ADDR_SPAN-1:2];
                 // Drive first beat
                 S_AXI_RID[W_SID*(slv_id+1)-1 -: W_SID] <= arid;
                 if (word_idx < SLV_MEM_DEPTH)
@@ -373,7 +373,7 @@ module axi_interconnect_tb;
                 else begin
                     beat_cnt = beat_cnt + 1;
 
-                    word_idx = araddr[ADDR_WIDTH-1:2] + beat_cnt + 1;
+                    word_idx = araddr[SLV_ADDR_SPAN-1:2] + beat_cnt;
 
                     if (word_idx < SLV_MEM_DEPTH)
                         S_AXI_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH]
@@ -853,11 +853,11 @@ module axi_interconnect_tb;
     end
 
     //=========================================================================
-    // Waveform dump (for GUI simulators)
+    // Waveform dump (FSDB for Verdi)
     //=========================================================================
     initial begin
-        $dumpfile("axi_interconnect_tb.vcd");
-        $dumpvars(0, axi_interconnect_tb);
+        $fsdbDumpfile("axi_interconnect_tb.fsdb");
+        $fsdbDumpvars(0, axi_interconnect_tb);
     end
 
 endmodule

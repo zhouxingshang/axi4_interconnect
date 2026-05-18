@@ -993,7 +993,7 @@ axi_crossbar #(
     .SLV_ADDR_BASE(SLV_ADDR_BASE),
     .SLV_ADDR_LEN(SLV_ADDR_LEN),
     .DEFAULT_SLV_IDX(0),
-    .DEFAULT_SLV_EN(1'b1)
+    .DEFAULT_SLV_EN(1'b0)
 ) u_axi_crossbar (
     .AXI_CLK(AXI_CLK),
     .AXI_RSTn(AXI_RSTn),
