@@ -57,7 +57,7 @@ module axi_arbiter_param_rr #(
             end
 
             // Map back to absolute one-hot grant
-            assign grant_nxt = 1'b1 << ((winner_idx + rr_ptr) % NUM);
+            assign grant_nxt = (|req) ? (1'b1 << ((winner_idx + rr_ptr) % NUM)) : {NUM{1'b0}};
 
             // RR Pointer Update
             always @(posedge clk) begin
