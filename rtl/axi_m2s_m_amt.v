@@ -235,7 +235,8 @@ end
 
 // AW order FIFO write data: {mst_idx, awlen}
 assign aw_fifo_wr_data = {aw_grant_idx, m_awlen[aw_grant_idx]};
-assign aw_fifo_wr_en   = |aw_handshake;
+// Only push to FIFO when W is busy (Case 1 direct-loads when W idle)
+assign aw_fifo_wr_en   = |aw_handshake && w_transaction_active;
 
 //=============================================================================
 // AW Order FIFO Instance (modularized)
@@ -266,14 +267,16 @@ wire [MST_ID_W-1:0]  fifo_mst_idx;
 wire [ALEN_W-1:0]    fifo_awlen;
 assign {fifo_mst_idx, fifo_awlen} = aw_fifo_rd_data;
 
-// FIFO read enable: when current W transaction completes (last beat + WLAST)
-assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID);
+// FIFO read enable: only pop when current W transaction came from FIFO
+assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID) && from_fifo;
 
 // W beat counter state machine
+reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
 always @(posedge AXI_CLK) begin
     if(!AXI_RSTn) begin
         w_beat_cnt   <= 0;
         cur_w_mst_id <= 0;
+        from_fifo    <= 1'b0;
     end else begin
         // AW / W beat counter state machine
         // 优先级: 新 AW 直达 > W 传输递减 > FIFO 取出下一笔
@@ -281,11 +284,12 @@ always @(posedge AXI_CLK) begin
         if(|aw_handshake && !w_transaction_active) begin
             w_beat_cnt   <= m_awlen[aw_grant_idx] + 1'b1;  // beats = LEN+1
             cur_w_mst_id <= aw_grant_idx;
+            from_fifo    <= 1'b0;  // Direct loaded, not from FIFO
         end
         // Case 2: W handshake occurs -> decrement counter
         else if(w_transaction_active && S_WREADY && S_WVALID) begin
             if(w_beat_cnt == 1'b1 && S_WLAST) begin
-                w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered
+                w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered if from_fifo
             end else begin
                 w_beat_cnt <= w_beat_cnt - 1'b1;
             end
@@ -294,6 +298,7 @@ always @(posedge AXI_CLK) begin
         else if(!w_transaction_active && !aw_fifo_empty) begin
             cur_w_mst_id <= fifo_mst_idx;
             w_beat_cnt   <= fifo_awlen + 1'b1;
+            from_fifo    <= 1'b1;  // Loaded from FIFO
         end
     end
 end
@@ -334,7 +339,7 @@ always @(*) begin
     S_WLAST = 1'b0;
     S_WVALID = 1'b0;
     
-    if(w_transaction_active && !aw_fifo_empty) begin
+    if(w_transaction_active) begin
         // Only route data from the master whose AW was granted first
         S_WDATA = w_fifo_dout[cur_w_mst_id][W_DATA+W_STRB:W_STRB+1];
         S_WSTRB = w_fifo_dout[cur_w_mst_id][W_STRB:1];

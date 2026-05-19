@@ -123,7 +123,7 @@ generate
     end
 endgenerate
 
-`define M_BBUS {M_BID[W_SID-1:0], M_BRESP, M_BVALID}
+`define M_BBUS {M_BID[W_ID-1:0], M_BRESP, M_BVALID}
 always @(*) begin
     `M_BBUS = 0;
     for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];
