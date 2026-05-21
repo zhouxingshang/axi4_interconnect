@@ -278,7 +278,7 @@ module axi_s2m_tb;
     //=========================================================================
     task automatic mst_recv_r_burst(
         output [W_SID-1:0]   rsid,
-        ref   [W_DATA-1:0]   rdata [0:7],
+        output [W_DATA-1:0]  rdata [0:7],
         output [1:0]         rresp,
         output int           beat_cnt
     );
@@ -286,19 +286,20 @@ module axi_s2m_tb;
         int  b;
         begin
             b = 0;
+            rlast = 0;
             @(posedge clk);
             while (!M_RVALID) @(posedge clk);
             M_RREADY <= 1'b1;
-            do begin
+            while (!rlast) begin
+                @(posedge clk);
                 rdata[b] = M_RDATA;
                 rlast = M_RLAST;
                 if (b == 0) begin rsid = M_RSID; rresp = M_RRESP; end
+                $display("[%0t] MST recv beat[%0d]: data=0x%08h last=%0d",
+                         $time, b, rdata[b], rlast);
                 b = b + 1;
-                @(posedge clk);
-                while (!M_RVALID) @(posedge clk);
-            end while (!rlast);
+            end
             beat_cnt = b;
-            @(posedge clk);
             M_RREADY <= 1'b0;
         end
     endtask
@@ -463,16 +464,8 @@ module axi_s2m_tb;
         $display("\n--- TEST 6: Two-slave R arbitration ---");
         begin
             fork
-                begin
-                    slv_send_r(0, 6'h40, 2'd0, 32'hCAFE_0000, 2'b00, 1'b1);
-                end
-                begin
-                    slv_send_r(1, 6'h41, 2'd0, 32'hCAFE_0001, 2'b00, 1'b1);
-                end
-            join
-            $display("[%0t] TEST 6: both R sends done", $time);
-
-            fork
+                slv_send_r(0, 6'h40, 2'd0, 32'hCAFE_0000, 2'b00, 1'b1);
+                slv_send_r(1, 6'h41, 2'd0, 32'hCAFE_0001, 2'b00, 1'b1);
                 begin
                     mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
                     $display("[%0t] MST recv R1: sid=0x%03x data=0x%08h",
