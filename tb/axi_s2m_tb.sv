@@ -319,6 +319,8 @@ module axi_s2m_tb;
     //=========================================================================
     reg [W_SID-1:0]   cap_sid;
     reg [1:0]         cap_resp;
+    reg [W_SID-1:0]   cap_sid1, cap_sid2;
+    reg [1:0]         cap_resp1, cap_resp2;
     reg [W_DATA-1:0]  cap_rdata [];
     reg [W_DATA-1:0]  rburst_data [0:3];
     integer           bi;
@@ -383,28 +385,18 @@ module axi_s2m_tb;
         //=================================================================
         $display("\n--- TEST 3: Two-slave B arbitration ---");
         begin
-            // Both slv0 and slv2 target master 0 simultaneously
+            // Both sends and receives in one fork
+            // Receives are sequential to avoid both sampling the same M_BVALID
             fork
+                slv_send_b(0, 6'h10, 2'd0, 2'b00);
+                slv_send_b(2, 6'h11, 2'd0, 2'b01);
                 begin
-                    slv_send_b(0, 6'h10, 2'd0, 2'b00);
-                end
-                begin
-                    slv_send_b(2, 6'h11, 2'd0, 2'b01);
+                    mst_recv_b(cap_sid1, cap_resp1);
+                    mst_recv_b(cap_sid2, cap_resp2);
                 end
             join
-            $display("[%0t] TEST 3: both B sends done", $time);
-
-            // Receive both responses (order depends on arbitration)
-            fork
-                begin
-                    mst_recv_b(cap_sid, cap_resp);
-                    $display("[%0t] MST recv B1: sid=0x%03x resp=%0d", $time, cap_sid, cap_resp);
-                end
-                begin
-                    mst_recv_b(cap_sid, cap_resp);
-                    $display("[%0t] MST recv B2: sid=0x%03x resp=%0d", $time, cap_sid, cap_resp);
-                end
-            join
+            $display("[%0t] TEST 3: recv1 sid=0x%03x resp=%0d  recv2 sid=0x%03x resp=%0d",
+                     $time, cap_sid1, cap_resp1, cap_sid2, cap_resp2);
         end
         $display("[%0t] TEST 3 done (errors=%0d)", $time, err_cnt);
 

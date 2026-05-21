@@ -111,6 +111,29 @@ axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
     .req(RSELECT_in & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
 );
 
+// Delayed grants with handshake-hold: grant only advances when M-side handshake completes
+// This aligns S_BREADY routing with M_BREADY timing (which is NBA-delayed by 1 cycle)
+reg [SLV_AMT-1:0] bgrant_d;
+reg [SLV_AMT-1:0] rgrant_d;
+always @(posedge AXI_CLK) begin
+    if (!AXI_RSTn) begin
+        bgrant_d <= '0;
+        rgrant_d <= '0;
+    end else begin
+        // B grant: advance when idle, handshake completes, or M-side goes quiet
+        if (|bgrant_d == 0 || !M_BVALID)
+            bgrant_d <= BGRANT;
+        else if (M_BREADY && M_BVALID)
+            bgrant_d <= BGRANT;
+
+        // R grant: same hold mechanism
+        if (|rgrant_d == 0 || !M_RVALID)
+            rgrant_d <= RGRANT;
+        else if (M_RREADY && M_RVALID)
+            rgrant_d <= RGRANT;
+    end
+end
+
 // Pack bus for muxing
 localparam NUM_B_WIDTH = W_SID + 2 + 1;
 localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;
@@ -123,7 +146,8 @@ generate
     end
 endgenerate
 
-`define M_BBUS {M_BID[W_ID-1:0], M_BRESP, M_BVALID}
+`define M_BBUS {M_BID[W_SID-1:0], M_BRESP, M_BVALID}
+// M-side data mux: use combinational BGRANT for immediate M_BVALID assertion
 always @(*) begin
     `M_BBUS = 0;
     for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];
@@ -135,11 +159,11 @@ always @(*) begin
     for(int i = 0; i < SLV_AMT; i++) if(RGRANT[i]) `M_RBUS = bus_r[i];
 end
 
-// Ready generation
+// S-side ready: use held grant to align with M_BREADY/M_RREADY timing
 generate
     for(si = 0; si < SLV_AMT; si = si + 1) begin : READY_GEN
-        assign s_bready[si] = BGRANT[si] & M_BREADY;
-        assign s_rready[si] = RGRANT[si] & M_RREADY;
+        assign s_bready[si] = bgrant_d[si] & M_BREADY;
+        assign s_rready[si] = rgrant_d[si] & M_RREADY;
     end
 endgenerate
 
