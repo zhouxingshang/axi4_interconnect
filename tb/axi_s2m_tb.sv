@@ -261,14 +261,14 @@ module axi_s2m_tb;
         output              rlast
     );
         begin
+            @(posedge clk);
+            while (!M_RVALID) @(posedge clk);
             M_RREADY <= 1'b1;
-            do begin
-                @(posedge clk);
-            end while (!M_RVALID);
             rsid  = M_RSID;
             rdata = M_RDATA;
             rresp = M_RRESP;
             rlast = M_RLAST;
+            @(posedge clk);
             M_RREADY <= 1'b0;
         end
     endtask
@@ -277,22 +277,28 @@ module axi_s2m_tb;
     // Master BFM: Receive full R burst on master side
     //=========================================================================
     task automatic mst_recv_r_burst(
-        output [W_SID-1:0]  rsid,
-        output [W_DATA-1:0] rdata [],
-        output [1:0]        rresp
+        output [W_SID-1:0]   rsid,
+        ref   [W_DATA-1:0]   rdata [0:7],
+        output [1:0]         rresp,
+        output int           beat_cnt
     );
-        reg                   rlast;
+        reg  rlast;
+        int  b;
         begin
+            b = 0;
+            @(posedge clk);
+            while (!M_RVALID) @(posedge clk);
             M_RREADY <= 1'b1;
             do begin
+                rdata[b] = M_RDATA;
+                rlast = M_RLAST;
+                if (b == 0) begin rsid = M_RSID; rresp = M_RRESP; end
+                b = b + 1;
                 @(posedge clk);
                 while (!M_RVALID) @(posedge clk);
-                rdata = {rdata, M_RDATA};
-                rlast = M_RLAST;
-                rsid  = M_RSID;
-                rresp = M_RRESP;
-                @(posedge clk);
             end while (!rlast);
+            beat_cnt = b;
+            @(posedge clk);
             M_RREADY <= 1'b0;
         end
     endtask
@@ -321,7 +327,9 @@ module axi_s2m_tb;
     reg [1:0]         cap_resp;
     reg [W_SID-1:0]   cap_sid1, cap_sid2;
     reg [1:0]         cap_resp1, cap_resp2;
-    reg [W_DATA-1:0]  cap_rdata [];
+    reg               cap_rlast;
+    reg [W_DATA-1:0]  cap_rdata [0:7];
+    integer           cap_rbeat_cnt;
     reg [W_DATA-1:0]  rburst_data [0:3];
     integer           bi;
 
@@ -410,9 +418,9 @@ module axi_s2m_tb;
                     slv_send_r(0, 6'h20, 2'd0, 32'hDEAD_BEEF, 2'b00, 1'b1);
                 end
                 begin
-                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_sid[0]);
+                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
                     $display("[%0t] MST recv R: sid=0x%03x data=0x%08h last=%0d",
-                             $time, cap_sid, cap_rdata[0], cap_sid[0]);
+                             $time, cap_sid, cap_rdata[0], cap_rlast);
                 end
             join
 
@@ -427,7 +435,6 @@ module axi_s2m_tb;
         //=================================================================
         $display("\n--- TEST 5: R burst (4 beats) ---");
         begin
-            cap_rdata = '{};
             rburst_data[0] = 32'hA000_0000;
             rburst_data[1] = 32'hA000_0001;
             rburst_data[2] = 32'hA000_0002;
@@ -438,8 +445,8 @@ module axi_s2m_tb;
                     slv_send_r_burst(0, 6'h30, 2'd0, rburst_data, 2'b00);
                 end
                 begin
-                    mst_recv_r_burst(cap_sid, cap_rdata, cap_resp);
-                    $display("[%0t] MST recv R burst: %0d beats", $time, cap_rdata.size());
+                    mst_recv_r_burst(cap_sid, cap_rdata, cap_resp, cap_rbeat_cnt);
+                    $display("[%0t] MST recv R burst: %0d beats", $time, cap_rbeat_cnt);
                 end
             join
 
@@ -467,12 +474,12 @@ module axi_s2m_tb;
 
             fork
                 begin
-                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_sid[0]);
+                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
                     $display("[%0t] MST recv R1: sid=0x%03x data=0x%08h",
                              $time, cap_sid, cap_rdata[0]);
                 end
                 begin
-                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_sid[0]);
+                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
                     $display("[%0t] MST recv R2: sid=0x%03x data=0x%08h",
                              $time, cap_sid, cap_rdata[0]);
                 end
@@ -502,7 +509,7 @@ module axi_s2m_tb;
             $display("[%0t] TEST 7: both R sends done (slv0 should have been blocked)", $time);
 
             // Only one response should arrive (from slv1)
-            mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_sid[0]);
+            mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
             check_eq("R from slv1 (gated ok)", cap_rdata[0], 32'hBBBB_0001);
 
             // Restore r_order_grant
@@ -529,7 +536,7 @@ module axi_s2m_tb;
             // Receive both (order may vary due to independent channels)
             fork
                 begin
-                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_sid[0]);
+                    mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
                     $display("[%0t] MST recv R: data=0x%08h", $time, cap_rdata[0]);
                 end
                 begin
