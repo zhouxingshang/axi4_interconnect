@@ -172,13 +172,13 @@ module axi_s2m_tb;
             $display("[%0t] SLV[%0d] B: sid=0x%03x dst_mst=%0d id=%0d resp=%0d",
                      $time, slv_id, sid, dst_mst, orig_id, bresp);
 
-            S_BID[W_SID*(slv_id+1)-1 -: W_SID] <= sid;
-            S_BRESP[2*(slv_id+1)-1 -: 2]      <= bresp;
-            S_BVALID[slv_id] <= 1'b1;
+            S_BID[W_SID*(slv_id+1)-1 -: W_SID] = sid;
+            S_BRESP[2*(slv_id+1)-1 -: 2]      = bresp;
+            S_BVALID[slv_id] = 1'b1;
 
             @(posedge clk);
             while (!S_BREADY[slv_id]) @(posedge clk);
-            S_BVALID[slv_id] <= 1'b0;
+            S_BVALID[slv_id] = 1'b0;
             $display("[%0t] SLV[%0d] B handshake done", $time, slv_id);
         end
     endtask
@@ -200,15 +200,15 @@ module axi_s2m_tb;
             $display("[%0t] SLV[%0d] R: sid=0x%03x dst_mst=%0d data=0x%08h last=%0d",
                      $time, slv_id, sid, dst_mst, rdata, rlast);
 
-            S_RID[W_SID*(slv_id+1)-1 -: W_SID]       <= sid;
-            S_RDATA[W_DATA*(slv_id+1)-1 -: W_DATA]   <= rdata;
-            S_RRESP[2*(slv_id+1)-1 -: 2]             <= rresp;
-            S_RLAST[slv_id]                          <= rlast;
-            S_RVALID[slv_id] <= 1'b1;
+            S_RID[W_SID*(slv_id+1)-1 -: W_SID]       = sid;
+            S_RDATA[W_DATA*(slv_id+1)-1 -: W_DATA]   = rdata;
+            S_RRESP[2*(slv_id+1)-1 -: 2]             = rresp;
+            S_RLAST[slv_id]                          = rlast;
+            S_RVALID[slv_id] = 1'b1;
 
             @(posedge clk);
             while (!S_RREADY[slv_id]) @(posedge clk);
-            S_RVALID[slv_id] <= 1'b0;
+            S_RVALID[slv_id] = 1'b0;
             $display("[%0t] SLV[%0d] R handshake done", $time, slv_id);
         end
     endtask
@@ -242,11 +242,11 @@ module axi_s2m_tb;
         begin
             @(posedge clk);
             while (!M_BVALID) @(posedge clk);
-            M_BREADY <= 1'b1;
+            M_BREADY = 1'b1;
             bid   = M_BID;
             bresp = M_BRESP;
             @(posedge clk);
-            M_BREADY <= 1'b0;
+            M_BREADY = 1'b0;
             while (M_BVALID && M_BREADY) @(posedge clk); // in case of back-to-back
         end
     endtask
@@ -263,13 +263,13 @@ module axi_s2m_tb;
         begin
             @(posedge clk);
             while (!M_RVALID) @(posedge clk);
-            M_RREADY <= 1'b1;
+            M_RREADY = 1'b1;
             rsid  = M_RSID;
             rdata = M_RDATA;
             rresp = M_RRESP;
             rlast = M_RLAST;
             @(posedge clk);
-            M_RREADY <= 1'b0;
+            M_RREADY = 1'b0;
         end
     endtask
 
@@ -289,7 +289,7 @@ module axi_s2m_tb;
             rlast = 0;
             @(posedge clk);
             while (!M_RVALID) @(posedge clk);
-            M_RREADY <= 1'b1;
+            M_RREADY = 1'b1;
             while (!rlast) begin
                 @(posedge clk);
                 rdata[b] = M_RDATA;
@@ -300,7 +300,7 @@ module axi_s2m_tb;
                 b = b + 1;
             end
             beat_cnt = b;
-            M_RREADY <= 1'b0;
+            M_RREADY = 1'b0;
         end
     endtask
 
