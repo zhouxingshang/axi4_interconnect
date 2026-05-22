@@ -25,7 +25,7 @@ module cross_tb;
     localparam W_SID             = MST_ID_W + SLV_ID_W + W_ID; // 8
 
     // 4KB address space per slave
-    localparam SLV_MEM_DEPTH = 1024;
+    localparam SLV_MEM_DEPTH = 32;
     localparam [SLV_AMT*ADDR_WIDTH-1:0] SLV_ADDR_BASE = {
         32'h00003000,   // Slave 3: 0x3000-0x3FFF
         32'h00002000,   // Slave 2: 0x2000-0x2FFF
@@ -631,8 +631,13 @@ module cross_tb;
         for (i = 0; i < SLV_AMT; i = i + 1) begin
             test_addr = slv_base_addr(i[1:0]) + 32'h40;
             wdata[0] = gen_data(test_addr, 8'd0);
+            $display("[%0t] TEST1: WDATA = 0x%08h (addr=0x%08h, slave=%0d)",
+                     $time, wdata[0], test_addr, i);
             axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, wdata);
+            $display("[%0t] TEST1: SLV_MEM[%0d][%0d] = 0x%08h",
+                     $time, i, test_addr[11:2], slv_mem[i][test_addr[11:2]]);
             axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, rdata);
+            $display("[%0t] TEST1: RDATA[0] = 0x%08h", $time, rdata[0]);
             expected = gen_data(test_addr, 8'd0);
             if (rdata[0] !== expected) begin
                 $display("[%0t] ERROR: S%0d mismatch! got=0x%08h exp=0x%08h",

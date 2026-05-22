@@ -1,690 +1,70 @@
-module axi_s2m_s_amt
+module aw_order_fifo
 #(
-    parameter MASTER_ID       = 0,
-    parameter W_CID           = 4,
-    parameter W_ID            = 6,
-    parameter W_ADDR          = 32,
-    parameter W_DATA          = 32,
-    parameter W_STRB          = (W_DATA/8),
-    parameter W_SID           = W_CID + W_ID,
-    parameter MST_AMT         = 4,
-    parameter SLV_AMT         = 4,
-    parameter MST_ID_FIELD_MSB = W_SID-1,
-    parameter MST_ID_FIELD_LSB = W_ID
+    parameter DATA_WIDTH  = 11,   // {MST_ID_W, ALEN_W} width
+    parameter FIFO_DEPTH  = 8,    // Number of entries (power of 2 recommended)
+    parameter PTR_W       = $clog2(FIFO_DEPTH)
 )
 (
-    input  wire                      AXI_RSTn,
-    input  wire                      AXI_CLK,
-    
-    // Master side ports (single master)
-    output reg   [W_SID-1:0]         M_BID,
-    output reg   [1:0]               M_BRESP,
-    output reg                       M_BVALID,
-    input  wire                      M_BREADY,
-    
-    output reg   [W_SID-1:0]         M_RSID,
-    output reg   [W_DATA-1:0]        M_RDATA,
-    output reg   [1:0]               M_RRESP,
-    output reg                       M_RLAST,
-    output reg                       M_RVALID,
-    input  wire                      M_RREADY,
-    
-    // Slave side ports (packed)
-    input  wire  [W_SID*SLV_AMT-1:0]  S_BID,
-    input  wire  [2*SLV_AMT-1:0]      S_BRESP,
-    input  wire  [SLV_AMT-1:0]        S_BVALID,
-    output wire  [SLV_AMT-1:0]        S_BREADY,
-    
-    input  wire  [W_SID*SLV_AMT-1:0]  S_RID,
-    input  wire  [W_DATA*SLV_AMT-1:0] S_RDATA,
-    input  wire  [2*SLV_AMT-1:0]      S_RRESP,
-    input  wire  [SLV_AMT-1:0]        S_RLAST,
-    input  wire  [SLV_AMT-1:0]        S_RVALID,
-    output wire  [SLV_AMT-1:0]        S_RREADY,
-    
-    input  wire  [SLV_AMT-1:0]        r_order_grant,
-    input  wire                       arbiter_type
-);
-
-localparam MST_ID_W = $clog2(MST_AMT);
-localparam NUM = SLV_AMT;
-
-// Unpack slave arrays
-wire [W_SID-1:0]   s_bid      [0:SLV_AMT-1];
-wire [1:0]         s_bresp    [0:SLV_AMT-1];
-wire               s_bvalid   [0:SLV_AMT-1];
-wire               s_bready   [0:SLV_AMT-1];
-
-wire [W_SID-1:0]   s_rid      [0:SLV_AMT-1];
-wire [W_DATA-1:0]  s_rdata    [0:SLV_AMT-1];
-wire [1:0]         s_rresp    [0:SLV_AMT-1];
-wire               s_rlast    [0:SLV_AMT-1];
-wire               s_rvalid   [0:SLV_AMT-1];
-wire               s_rready   [0:SLV_AMT-1];
-
-genvar si;
-generate
-    for(si = 0; si < SLV_AMT; si = si + 1) begin : UNPACK
-        assign s_bid[si]    = S_BID[W_SID*si +: W_SID];
-        assign s_bresp[si]  = S_BRESP[2*si +: 2];
-        assign s_bvalid[si] = S_BVALID[si];
-        assign S_BREADY[si] = s_bready[si];
-        
-        assign s_rid[si]    = S_RID[W_SID*si +: W_SID];
-        assign s_rdata[si]  = S_RDATA[W_DATA*si +: W_DATA];
-        assign s_rresp[si]  = S_RRESP[2*si +: 2];
-        assign s_rlast[si]  = S_RLAST[si];
-        assign s_rvalid[si] = S_RVALID[si];
-        assign S_RREADY[si] = s_rready[si];
-    end
-endgenerate
-
-// Extract master index from ID
-// ID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
-wire [MST_ID_W-1:0] s_bid_mst_idx [0:SLV_AMT-1];
-wire [MST_ID_W-1:0] s_rid_mst_idx [0:SLV_AMT-1];
-generate
-    for(si = 0; si < SLV_AMT; si = si + 1) begin : DECODE
-        assign s_bid_mst_idx[si] = s_bid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
-        assign s_rid_mst_idx[si] = s_rid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
-    end
-endgenerate
-
-// Select logic
-wire [SLV_AMT-1:0] BSELECT, RSELECT, RSELECT_in;
-generate
-    for(si = 0; si < SLV_AMT; si = si + 1) begin : SELECT
-        assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID);
-        assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID);
-        assign RSELECT_in[si] = RSELECT[si] & r_order_grant[si];
-    end
-endgenerate
-
-// Arbitration
-wire [SLV_AMT-1:0] BGRANT, RGRANT;
-axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_b (
-    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
-    .req(BSELECT & {S_BVALID[SLV_AMT-1:0]}), .grant(BGRANT)
-);
-axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
-    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
-    .req(RSELECT_in & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
-);
-
-// Delayed grants with handshake-hold: grant only advances when M-side handshake completes
-// This aligns S_BREADY routing with M_BREADY timing (which is NBA-delayed by 1 cycle)
-reg [SLV_AMT-1:0] bgrant_d;
-reg [SLV_AMT-1:0] rgrant_d;
-always @(posedge AXI_CLK) begin
-    if (!AXI_RSTn) begin
-        bgrant_d <= '0;
-        rgrant_d <= '0;
-    end else begin
-        // B grant: advance when idle, handshake completes, or M-side goes quiet
-        if (|bgrant_d == 0 || !M_BVALID)
-            bgrant_d <= BGRANT;
-        else if (M_BREADY && M_BVALID)
-            bgrant_d <= BGRANT;
-
-        // R grant: same hold mechanism
-        if (|rgrant_d == 0 || !M_RVALID)
-            rgrant_d <= RGRANT;
-        else if (M_RREADY && M_RVALID)
-            rgrant_d <= RGRANT;
-    end
-end
-
-// Pack bus for muxing
-localparam NUM_B_WIDTH = W_SID + 2 + 1;
-localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;
-wire [NUM_B_WIDTH-1:0] bus_b [0:SLV_AMT-1];
-wire [NUM_R_WIDTH-1:0] bus_r [0:SLV_AMT-1];
-generate
-    for(si = 0; si < SLV_AMT; si = si + 1) begin : PACK
-        assign bus_b[si] = {s_bid[si], s_bresp[si], s_bvalid[si]};
-        assign bus_r[si] = {s_rid[si], s_rdata[si], s_rresp[si], s_rlast[si], s_rvalid[si]};
-    end
-endgenerate
-
-`define M_BBUS {M_BID[W_SID-1:0], M_BRESP, M_BVALID}
-// M-side data mux: use combinational BGRANT for immediate M_BVALID assertion
-always @(*) begin
-    `M_BBUS = 0;
-    for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];
-end
-
-`define M_RBUS {M_RSID, M_RDATA, M_RRESP, M_RLAST, M_RVALID}
-always @(*) begin
-    `M_RBUS = 0;
-    for(int i = 0; i < SLV_AMT; i++) if(RGRANT[i]) `M_RBUS = bus_r[i];
-end
-
-// S-side ready: use held grant to align with M_BREADY/M_RREADY timing
-generate
-    for(si = 0; si < SLV_AMT; si = si + 1) begin : READY_GEN
-        assign s_bready[si] = bgrant_d[si] & M_BREADY;
-        assign s_rready[si] = rgrant_d[si] & M_RREADY;
-    end
-endgenerate
-
-endmodule
-
-module axi_arbiter_param_rr #(
-    parameter NUM = 4
-)(
-    input  wire              clk,
-    input  wire              rst_n,
-    input  wire              arbiter_type, // 0: RR, 1: Fixed
-    input  wire [NUM-1:0]    req,
-    output wire [NUM-1:0]    grant
-);
-    localparam PTR_W = (NUM > 1) ? $clog2(NUM) : 1;
-
-    reg  [PTR_W-1:0] rr_ptr;      // Points to next priority start index
-    wire [NUM-1:0]   grant_nxt;
-    wire [NUM-1:0]   fixed_grant;
-
-    // ---------------------------------------------------------
-    // Priority Encoder: Returns one-hot of the lowest index '1'
-    // ---------------------------------------------------------
-    function automatic [NUM-1:0] pri_enc;
-        input [NUM-1:0] mask;
-        integer i;
-        begin
-            pri_enc = {NUM{1'b0}};
-            for(i = 0; i < NUM; i = i + 1) begin
-                if(mask[i]) begin
-                    pri_enc = 1'b1 << i;
-                    break;
-                end
-            end
-        end
-    endfunction
-
-    // ---------------------------------------------------------
-    // Fixed Priority
-    // ---------------------------------------------------------
-    assign fixed_grant = pri_enc(req);
-
-    // ---------------------------------------------------------
-    // Round Robin Logic (if NUM > 1)
-    // ---------------------------------------------------------
-    generate
-        if (NUM > 1) begin : rr_gen
-            // Rotate request vector so that rr_ptr becomes logical index 0
-            wire [2*NUM-1:0] req_rot = {req, req} >> rr_ptr;
-            wire [NUM-1:0]   pri_rot = pri_enc(req_rot[NUM-1:0]);
-
-            // Convert rotated one-hot back to absolute winner index
-            reg [PTR_W-1:0] winner_idx;
-            always @(*) begin
-                winner_idx = 0;
-                for(int i = 0; i < NUM; i = i + 1) begin
-                    if(pri_rot[i]) begin
-                        winner_idx = i[PTR_W-1:0];
-                        break;
-                    end
-                end
-            end
-
-            // Map back to absolute one-hot grant
-            assign grant_nxt = (|req) ? (1'b1 << ((winner_idx + rr_ptr) % NUM)) : {NUM{1'b0}};
-
-            // RR Pointer Update
-            always @(posedge clk) begin
-                if(!rst_n) begin
-                    rr_ptr <= {PTR_W{1'b0}};
-                end else if(grant != 0) begin
-                    rr_ptr <= (winner_idx + 1'b1) % NUM;
-                end
-            end
-        end else begin : single_requester
-            // When only one requester, grant is simply the request
-            assign grant_nxt = req;
-            // rr_ptr unused, tie to 0
-            always @(posedge clk) begin
-                if(!rst_n) rr_ptr <= 0;
-                else rr_ptr <= 0;
-            end
-        end
-    endgenerate
-
-    // Output MUX
-    assign grant = (arbiter_type) ? fixed_grant : grant_nxt;
-
-endmodule
-
-//=============================================================================
-// Testbench: axi_s2m_s_amt_tb
-// Desc     : Testbench for axi_s2m_s_amt (slave-to-master response mux)
-//=============================================================================
-
-c      - Master identity encoded implicitly via array index (no m_id port)
-//=============================================================================
-module axi_m2s_m_amt
-#(
-    parameter ADDR_BASE       = 32'h0,          // Slave address base
-    parameter ADDR_LENGTH     = 12,             // Effective address bits for decode
-    parameter M_ID_W           = 4,              // Channel ID width
-    parameter W_ID            = 4,              // Transaction ID width
-    parameter W_ADDR          = 32,             // Address width
-    parameter W_DATA          = 32,             // Data width
-    parameter W_STRB          = (W_DATA/8),     // Data strobe width
-    parameter W_SID           = M_ID_W + W_ID,   // Slave-side ID width
-    parameter MST_AMT         = 3,              // Number of masters (parameterized)
-    parameter OUTSTANDING_AMT = 8,              // Max outstanding AW transactions
-    parameter ALEN_W          = 8,              // AWLEN/ARLEN width
-    parameter ASIZE_W         = 3,              // AWSIZE/ARSIZE width
-    parameter ABURST_W        = 2,              // AWBURST/ARBURST width
-    parameter SLAVE_DEFAULT   = 1'b0            // Default-slave mode flag
-)
-(
-    // Global signals
-    input   wire                      AXI_RSTn,
-    input   wire                      AXI_CLK,
-    
-    // ========== Master side ports (FLATTENED & PARAMETERIZED) ==========
-    // AW channel
-    input   wire  [MST_AMT*W_ID-1     : 0]        M_AWID,
-    input   wire  [MST_AMT*W_ADDR-1   : 0]        M_AWADDR,
-    input   wire  [MST_AMT*ALEN_W-1   : 0]        M_AWLEN,
-    input   wire  [MST_AMT*ASIZE_W-1  : 0]        M_AWSIZE,
-    input   wire  [MST_AMT*ABURST_W-1 : 0]        M_AWBURST,
-    input   wire  [MST_AMT-1          : 0]        M_AWVALID,
-    output  wire  [MST_AMT-1          : 0]        M_AWREADY,
-    
-    // W channel
-    input   wire  [MST_AMT*W_DATA-1   : 0]        M_WDATA,
-    input   wire  [MST_AMT*W_STRB-1   : 0]        M_WSTRB,
-    input   wire  [MST_AMT-1          : 0]        M_WLAST,
-    input   wire  [MST_AMT-1          : 0]        M_WVALID,
-    output  wire  [MST_AMT-1          : 0]        M_WREADY,
-    
-    // AR channel
-    input   wire  [MST_AMT*W_ID-1     : 0]        M_ARID,
-    input   wire  [MST_AMT*W_ADDR-1   : 0]        M_ARADDR,
-    input   wire  [MST_AMT*ALEN_W-1   : 0]        M_ARLEN,
-    input   wire  [MST_AMT*ASIZE_W-1  : 0]        M_ARSIZE,
-    input   wire  [MST_AMT*ABURST_W-1 : 0]        M_ARBURST,
-    input   wire  [MST_AMT-1          : 0]        M_ARVALID,
-    output  wire  [MST_AMT-1          : 0]        M_ARREADY,
-    
-    // ========== Slave side ports (single slave interface) ==========
-    // AW channel
-    output  reg    [W_SID-1     : 0]        S_AWID,
-    output  reg    [W_ADDR-1   : 0]        S_AWADDR,
-    output  reg    [ALEN_W-1   : 0]        S_AWLEN,
-    output  reg    [ASIZE_W-1  : 0]        S_AWSIZE,
-    output  reg    [ABURST_W-1 : 0]        S_AWBURST,
-    output  reg                            S_AWVALID,
-    input   wire                           S_AWREADY,
-    
-    // W channel
-    output  reg    [W_DATA-1:0]            S_WDATA,
-    output  reg    [W_STRB-1:0]            S_WSTRB,
-    output  reg                            S_WLAST,
-    output  reg                            S_WVALID,
-    input   wire                           S_WREADY,
-    
-    // AR channel
-    output  reg    [W_SID-1     : 0]        S_ARID,
-    output  reg    [W_ADDR-1   : 0]        S_ARADDR,
-    output  reg    [ALEN_W-1   : 0]        S_ARLEN,
-    output  reg    [ASIZE_W-1  : 0]        S_ARSIZE,
-    output  reg    [ABURST_W-1 : 0]        S_ARBURST,
-    output  reg                            S_ARVALID,
-    input   wire                           S_ARREADY,
-    
-    // ========== Control/Status ports ==========
-    output  wire  [MST_AMT-1:0]    AWSELECT_OUT,
-    output  wire  [MST_AMT-1:0]    ARSELECT_OUT,
-    input   wire  [MST_AMT-1:0]    AWSELECT_IN,
-    input   wire  [MST_AMT-1:0]    ARSELECT_IN,
-    input   wire                   arbiter_type,
-    input   wire                   slv_en
-    // ⚠️ channel_en REMOVED - not needed
-);
-
-//=============================================================================
-// Local Parameters
-//=============================================================================
-localparam MST_ID_W     = $clog2(MST_AMT);                          // Width to encode master index
-localparam AW_ORDER_W   = MST_ID_W + ALEN_W;                        // {mst_idx, awlen} for FIFO
-localparam CNT_W        = ALEN_W + 1;                               // Beat counter: AWLEN+1
-
-//=============================================================================
-// Internal Signals - Flattened Arrays for Master Ports
-//=============================================================================
-wire [W_ID-1:0]        m_awid      [0:MST_AMT-1];
-wire [W_ADDR-1:0]      m_awaddr    [0:MST_AMT-1];
-wire [ALEN_W-1:0]      m_awlen     [0:MST_AMT-1];
-wire [ASIZE_W-1:0]     m_awsize    [0:MST_AMT-1];
-wire [ABURST_W-1:0]    m_awburst   [0:MST_AMT-1];
-wire [MST_AMT-1:0]       m_awvalid;
-wire [MST_AMT-1:0]       m_awready;
-
-wire [W_DATA-1:0]      m_wdata     [0:MST_AMT-1];
-wire [W_STRB-1:0]      m_wstrb     [0:MST_AMT-1];
-wire                   m_wlast     [0:MST_AMT-1];
-wire                   m_wvalid    [0:MST_AMT-1];
-wire                   m_wready    [0:MST_AMT-1];
-
-wire [W_ID-1:0]        m_arid      [0:MST_AMT-1];
-wire [W_ADDR-1:0]      m_araddr    [0:MST_AMT-1];
-wire [ALEN_W-1:0]      m_arlen     [0:MST_AMT-1];
-wire [ASIZE_W-1:0]     m_arsize    [0:MST_AMT-1];
-wire [ABURST_W-1:0]    m_arburst   [0:MST_AMT-1];
-wire [MST_AMT-1:0]       m_arvalid;
-wire [MST_AMT-1:0]       m_arready;
-
-//=============================================================================
-// W-Follows-AW Core: AW Order FIFO + Beat Counter Signals
-//=============================================================================
-wire [AW_ORDER_W-1:0]  aw_fifo_wr_data;
-wire [AW_ORDER_W-1:0]  aw_fifo_rd_data;
-wire                   aw_fifo_wr_en;
-wire                   aw_fifo_rd_en;
-wire                   aw_fifo_full;
-wire                   aw_fifo_empty;
-
-reg  [CNT_W-1:0]       w_beat_cnt;                  // Remaining beats for current W transaction
-reg  [MST_ID_W-1:0]    cur_w_mst_id;                // Current master whose W data should be routed
-wire                   w_transaction_active;        // Flag: W transaction in progress
-assign w_transaction_active = (w_beat_cnt > 0);
-
-//=============================================================================
-// Address Decode & Arbitration Signals
-//=============================================================================
-reg  [MST_AMT-1:0] AWSELECT, ARSELECT;
-wire [MST_AMT-1:0] AWGRANT, ARGRANT;
-assign AWSELECT_OUT = AWSELECT;
-assign ARSELECT_OUT = ARSELECT;
-
-//=============================================================================
-// Port Flattening: generate loop for unpack/pack
-//=============================================================================
-genvar m;
-generate
-    for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
-        // AW channel unpack
-        assign m_awid[m]    = M_AWID[W_ID*(m+1)-1 -: W_ID];
-        assign m_awaddr[m]  = M_AWADDR[W_ADDR*(m+1)-1 -: W_ADDR];
-        assign m_awlen[m]   = M_AWLEN[ALEN_W*(m+1)-1 -: ALEN_W];
-        assign m_awsize[m]  = M_AWSIZE[ASIZE_W*(m+1)-1 -: ASIZE_W];
-        assign m_awburst[m] = M_AWBURST[ABURST_W*(m+1)-1 -: ABURST_W];
-        assign m_awvalid[m] = M_AWVALID[m];
-        assign M_AWREADY[m] = m_awready[m];
-        
-        // W channel unpack
-        assign m_wdata[m]   = M_WDATA[W_DATA*(m+1)-1 -: W_DATA];
-        assign m_wstrb[m]   = M_WSTRB[W_STRB*(m+1)-1 -: W_STRB];
-        assign m_wlast[m]   = M_WLAST[m];
-        assign m_wvalid[m]  = M_WVALID[m];
-        assign M_WREADY[m]  = m_wready[m];
-        
-        // AR channel unpack
-        assign m_arid[m]    = M_ARID[W_ID*(m+1)-1 -: W_ID];
-        assign m_araddr[m]  = M_ARADDR[W_ADDR*(m+1)-1 -: W_ADDR];
-        assign m_arlen[m]   = M_ARLEN[ALEN_W*(m+1)-1 -: ALEN_W];
-        assign m_arsize[m]  = M_ARSIZE[ASIZE_W*(m+1)-1 -: ASIZE_W];
-        assign m_arburst[m] = M_ARBURST[ABURST_W*(m+1)-1 -: ABURST_W];
-        assign m_arvalid[m] = M_ARVALID[m];
-        assign M_ARREADY[m] = m_arready[m];
-    end
-endgenerate
-
-//=============================================================================
-// Address Decode (parameterized, NO channel_en gating)
-//=============================================================================
-always @(*) begin
-    if (SLAVE_DEFAULT == 1'b0) begin
-        for(int i = 0; i < MST_AMT; i++) begin
-            // Address match: compare upper bits against ADDR_BASE, gated by slv_en
-            AWSELECT[i] = (m_awaddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
-            ARSELECT[i] = (m_araddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
-        end
-        // ⚠️ WSELECT REMOVED: W routing now follows AW order FIFO, not address decode
-    end else begin
-        // Default slave mode: accept any request not selected by others, gated by slv_en
-        AWSELECT = (~AWSELECT_IN & m_awvalid) & {MST_AMT{slv_en}};
-        ARSELECT = (~ARSELECT_IN & m_arvalid) & {MST_AMT{slv_en}};
-    end
-end
-
-//=============================================================================
-// AW/AR Arbitration (SINGLE instance handling both channels)
-//=============================================================================
-// Note: axi_arbiter_m2s_m_amt handles both AW and AR internally
-axi_arbiter_m2s_m_amt #(
-    .W_CID(M_ID_W), 
-    .W_ID(W_ID), 
-    .NUM(MST_AMT)
-) u_axi_arbiter_aw_ar (
-    .AXI_RSTn    (AXI_RSTn),
-    .AXI_CLK     (AXI_CLK),
-    
-    // AW channel ports
-    .AWSELECT    (AWSELECT),
-    .AWVALID     (m_awvalid),
-    .AWREADY     (m_awready),
-    .AWGRANT     (AWGRANT),
-    
-    // AR channel ports
-    .ARSELECT    (ARSELECT),
-    .ARVALID     (m_arvalid),
-    .ARREADY     (m_arready),
-    .ARGRANT     (ARGRANT),
-    
-    .arbiter_type(arbiter_type)
-    // ⚠️ W channel ports REMOVED - handled by AW-order FIFO logic
-);
-//=============================================================================
-// AW Handshake Capture -> Push to Order FIFO
-//=============================================================================
-wire [MST_AMT-1:0] aw_handshake = AWGRANT & {MST_AMT{S_AWREADY}} & m_awvalid;
-reg  [MST_ID_W-1:0] aw_grant_idx;
-
-// One-hot grant to binary index encoder (priority: low index first)
-always @(*) begin
-    aw_grant_idx = '0;
-    for(int i = 0; i < MST_AMT; i++) begin
-        if(AWGRANT[i]) begin
-            aw_grant_idx = i[MST_ID_W-1:0];
-        end
-    end
-end
-
-// AW order FIFO write data: {mst_idx, awlen}
-assign aw_fifo_wr_data = {aw_grant_idx, m_awlen[aw_grant_idx]};
-// Only push to FIFO when W is busy (Case 1 direct-loads when W idle)
-assign aw_fifo_wr_en   = |aw_handshake && w_transaction_active;
-
-//=============================================================================
-// AW Order FIFO Instance (modularized)
-//=============================================================================
-aw_order_fifo #(
-    .DATA_WIDTH(AW_ORDER_W),
-    .FIFO_DEPTH(OUTSTANDING_AMT)
-) u_aw_order_fifo (
-    .clk      (AXI_CLK),
-    .rst_n    (AXI_RSTn),
+    input  wire                   clk,
+    input  wire                   rst_n,
     
     // Write port
-    .wr_en    (aw_fifo_wr_en),
-    .wr_data  (aw_fifo_wr_data),
-    .wr_full  (aw_fifo_full),
+    input  wire                   wr_en,
+    input  wire [DATA_WIDTH-1:0]  wr_data,
+    output wire                   wr_full,
     
     // Read port
-    .rd_en    (aw_fifo_rd_en),
-    .rd_data  (aw_fifo_rd_data),
-    .rd_empty (aw_fifo_empty),
-    .item_cnt ()
+    input  wire                   rd_en,
+    output wire [DATA_WIDTH-1:0]  rd_data,
+    output wire                   rd_empty,
+    
+    // Status
+    output wire [PTR_W:0]         item_cnt
 );
 
-//=============================================================================
-// W Beat Counter & Current Master Tracking
-//=============================================================================
-wire [MST_ID_W-1:0]  fifo_mst_idx;
-wire [ALEN_W-1:0]    fifo_awlen;
-assign {fifo_mst_idx, fifo_awlen} = aw_fifo_rd_data;
+// Internal registers
+reg  [PTR_W-1:0]  wr_ptr;
+reg  [PTR_W-1:0]  rd_ptr;
+reg  [PTR_W:0]    fill_cnt;
 
-// FIFO read enable: only pop when current W transaction came from FIFO
-reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
-assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID) && from_fifo;
+// Memory array
+reg [DATA_WIDTH-1:0] mem [0:FIFO_DEPTH-1];
 
-// Per-master pending AW counter: gates W FIFO write to prevent stale data
-// in non-targeted M2S instances. Increment on AW handshake, decrement on
-// WLAST completion for the corresponding master.
-integer          pending_aw_cnt [0:MST_AMT-1];
+// Read data output (combinational)
+assign rd_data = mem[rd_ptr];
 
-// W beat counter state machine
-always @(posedge AXI_CLK) begin
-    if(!AXI_RSTn) begin
-        w_beat_cnt   <= 0;
-        cur_w_mst_id <= 0;
-        from_fifo    <= 1'b0;
+// Full/Empty flags
+assign wr_full  = (fill_cnt == FIFO_DEPTH);
+assign rd_empty = (fill_cnt == 0);
+assign item_cnt = fill_cnt;
+
+// Write pointer & data storage
+always @(posedge clk) begin
+    if (!rst_n) begin
+        wr_ptr   <= '0;
+        fill_cnt <= '0;
     end else begin
-        // AW / W beat counter state machine
-        // 优先级: 新 AW 直达 > W 传输递减 > FIFO 取出下一笔
-        // Case 1: AW handshake while W idle -> direct load (bypass FIFO latency)
-        if(|aw_handshake && !w_transaction_active) begin
-            w_beat_cnt   <= m_awlen[aw_grant_idx] + 1'b1;  // beats = LEN+1
-            cur_w_mst_id <= aw_grant_idx;
-            from_fifo    <= 1'b0;  // Direct loaded, not from FIFO
+        if (wr_en && !wr_full) begin
+            mem[wr_ptr] <= wr_data;
+            wr_ptr      <= wr_ptr + 1'b1;
         end
-        // Case 2: W handshake occurs -> decrement counter
-        else if(w_transaction_active && S_WREADY && S_WVALID) begin
-            if(w_beat_cnt == 1'b1 && S_WLAST) begin
-                w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered if from_fifo
-            end else begin
-                w_beat_cnt <= w_beat_cnt - 1'b1;
-            end
+        // Update fill_cnt for write
+        if (wr_en && !wr_full) begin
+            fill_cnt <= fill_cnt + 1'b1;
         end
-        // Case 3: W idle, FIFO has pending AW -> load next transaction
-        else if(!w_transaction_active && !aw_fifo_empty) begin
-            cur_w_mst_id <= fifo_mst_idx;
-            w_beat_cnt   <= fifo_awlen + 1'b1;
-            from_fifo    <= 1'b1;  // Loaded from FIFO
+        // Update fill_cnt for read
+        if (rd_en && !rd_empty) begin
+            fill_cnt <= fill_cnt - 1'b1;
         end
     end
 end
 
-//=============================================================================
-// W FIFO write gating: track pending AW count per master
-// Only allow W data into per-master FIFO when this M2S has granted AW to that master
-//=============================================================================
-integer pi;
-always @(posedge AXI_CLK) begin
-    if(!AXI_RSTn) begin
-        for(pi = 0; pi < MST_AMT; pi = pi + 1)
-            pending_aw_cnt[pi] <= 0;
-    end else begin
-        for(pi = 0; pi < MST_AMT; pi = pi + 1) begin
-            if(aw_handshake[pi] && (cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
-                ; // simultaneous AW accept + W last beat → net zero
-            else if(aw_handshake[pi])
-                pending_aw_cnt[pi] <= pending_aw_cnt[pi] + 1;
-            else if((cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
-                pending_aw_cnt[pi] <= pending_aw_cnt[pi] - 1;
-        end
-    end
-end
-
-//=============================================================================
-// W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
-//=============================================================================
-wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
-wire [MST_AMT-1:0]         w_fifo_vld;
-
-generate
-    for(m = 0; m < MST_AMT; m = m + 1) begin : W_FIFO_PER_MASTER
-        axi_fifo_sync #(
-            .FDW(W_DATA + W_STRB + 1),  // {WDATA, WSTRB, WLAST}
-            .FAW(2)                      // depth = 2^2 = 4
-        ) u_fifo_w (
-            .rstn   (AXI_RSTn),
-            .clr    (1'b0),
-            .clk    (AXI_CLK),
-
-            // Write side: from master
-            .wr_rdy (m_wready[m]),
-            .wr_vld (m_wvalid[m] && (pending_aw_cnt[m] > 0)),
-            .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
-
-            // Read side: to slave (gated by W-follows-AW logic)
-            .rd_rdy ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active && S_WREADY),
-            .rd_vld (w_fifo_vld[m]),
-            .rd_dout(w_fifo_dout[m])
-        );
-    end
-endgenerate
-
-// W output Mux: select from current master's FIFO (priority encoder style)
-always @(*) begin
-    S_WDATA = '0;
-    S_WSTRB = '0;
-    S_WLAST = 1'b0;
-    S_WVALID = 1'b0;
-    
-    if(w_transaction_active) begin
-        // Only route data from the master whose AW was granted first
-        S_WDATA = w_fifo_dout[cur_w_mst_id][W_DATA+W_STRB:W_STRB+1];
-        S_WSTRB = w_fifo_dout[cur_w_mst_id][W_STRB:1];
-        S_WLAST = w_fifo_dout[cur_w_mst_id][0];
-        S_WVALID = w_fifo_vld[cur_w_mst_id];
-    end
-end
-
-//=============================================================================
-// AW Ready Back-pressure: stall if FIFO full (prevent overflow)
-//=============================================================================
-wire aw_stall = aw_fifo_full;
-assign m_awready = AWGRANT & {MST_AMT{S_AWREADY}} & ~{MST_AMT{aw_stall}};
-
-// AR Ready: grant held by arbiter, gated by slave ARREADY
-//=============================================================================
-assign m_arready = ARGRANT & {MST_AMT{S_ARREADY}};
-
-//=============================================================================
-// AW/AR Bus Packing & Routing (parameterized Mux)
-//=============================================================================
-localparam NUM_AW_WIDTH = W_SID + W_ADDR + ALEN_W + ASIZE_W + ABURST_W + 1;
-localparam NUM_AR_WIDTH = W_SID + W_ADDR + ALEN_W + ASIZE_W + ABURST_W + 1;
-
-wire [NUM_AW_WIDTH-1:0] bus_aw [0:MST_AMT-1];
-wire [NUM_AR_WIDTH-1:0] bus_ar [0:MST_AMT-1];
-
-generate
-    for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_BUS_AW_AR
-        // S_AWID/S_ARID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
-        // Embeds master index as ID extension for response routing in S2M module
-        assign bus_aw[m] = {m[MST_ID_W-1:0], m_awid[m],
-                           m_awaddr[m], m_awlen[m], m_awsize[m], m_awburst[m], m_awvalid[m]};
-        assign bus_ar[m] = {m[MST_ID_W-1:0], m_arid[m],
-                           m_araddr[m], m_arlen[m], m_arsize[m], m_arburst[m], m_arvalid[m]};
-    end
-endgenerate
-
-`define S_AWBUS {S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID}
-`define S_ARBUS {S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID}
-
-// AW routing Mux (parameterized case statement)
-always @(*) begin
-    `S_AWBUS = '0;
-    for(int i = 0; i < MST_AMT; i++) begin
-        if(AWGRANT[i]) begin
-            `S_AWBUS = bus_aw[i];
-        end
-    end
-end
-
-// AR routing Mux (parameterized case statement)
-always @(*) begin
-    `S_ARBUS = '0;
-    for(int i = 0; i < MST_AMT; i++) begin
-        if(ARGRANT[i]) begin
-            `S_ARBUS = bus_ar[i];
-        end
+// Read pointer
+always @(posedge clk) begin
+    if (!rst_n) begin
+        rd_ptr   <= '0;
+    end else if (rd_en && !rd_empty) begin
+        rd_ptr   <= rd_ptr + 1'b1;
     end
 end
 
@@ -797,202 +177,88 @@ module axi_arbiter_m2s_m_amt #(
 
 endmodule
 
-module aw_order_fifo
-#(
-    parameter DATA_WIDTH  = 11,   // {MST_ID_W, ALEN_W} width
-    parameter FIFO_DEPTH  = 8,    // Number of entries (power of 2 recommended)
-    parameter PTR_W       = $clog2(FIFO_DEPTH)
-)
-(
-    input  wire                   clk,
-    input  wire                   rst_n,
-    
-    // Write port
-    input  wire                   wr_en,
-    input  wire [DATA_WIDTH-1:0]  wr_data,
-    output wire                   wr_full,
-    
-    // Read port
-    input  wire                   rd_en,
-    output wire [DATA_WIDTH-1:0]  rd_data,
-    output wire                   rd_empty,
-    
-    // Status
-    output wire [PTR_W:0]         item_cnt
+module axi_arbiter_param_rr #(
+    parameter NUM = 4
+)(
+    input  wire              clk,
+    input  wire              rst_n,
+    input  wire              arbiter_type, // 0: RR, 1: Fixed
+    input  wire [NUM-1:0]    req,
+    output wire [NUM-1:0]    grant
 );
+    localparam PTR_W = (NUM > 1) ? $clog2(NUM) : 1;
 
-// Internal registers
-reg  [PTR_W-1:0]  wr_ptr;
-reg  [PTR_W-1:0]  rd_ptr;
-reg  [PTR_W:0]    fill_cnt;
+    reg  [PTR_W-1:0] rr_ptr;      // Points to next priority start index
+    wire [NUM-1:0]   grant_nxt;
+    wire [NUM-1:0]   fixed_grant;
 
-// Memory array
-reg [DATA_WIDTH-1:0] mem [0:FIFO_DEPTH-1];
-
-// Read data output (combinational)
-assign rd_data = mem[rd_ptr];
-
-// Full/Empty flags
-assign wr_full  = (fill_cnt == FIFO_DEPTH);
-assign rd_empty = (fill_cnt == 0);
-assign item_cnt = fill_cnt;
-
-// Write pointer & data storage
-always @(posedge clk) begin
-    if (!rst_n) begin
-        wr_ptr   <= '0;
-        fill_cnt <= '0;
-    end else begin
-        if (wr_en && !wr_full) begin
-            mem[wr_ptr] <= wr_data;
-            wr_ptr      <= wr_ptr + 1'b1;
-        end
-        // Update fill_cnt for write
-        if (wr_en && !wr_full) begin
-            fill_cnt <= fill_cnt + 1'b1;
-        end
-        // Update fill_cnt for read
-        if (rd_en && !rd_empty) begin
-            fill_cnt <= fill_cnt - 1'b1;
-        end
-    end
-end
-
-// Read pointer
-always @(posedge clk) begin
-    if (!rst_n) begin
-        rd_ptr   <= '0;
-    end else if (rd_en && !rd_empty) begin
-        rd_ptr   <= rd_ptr + 1'b1;
-    end
-end
-
-endmodule
-
-// Synchronous FIFO
-//----------------------------------------------------------------
-// MACROS and PARAMETERS
-//     FDW: bit-width of data
-//     FAW: num of entries in power of 2
-//----------------------------------------------------------------
-// Features
-//    * ready-valid handshake protocol
-//    * First-Word Fall-Through, but rd_vld indicates its validity
-//----------------------------------------------------------------
-//    * data moves when both ready(rdy) and valid(vld) is high.
-//    * ready(rdy) means the receiver is ready to accept data.
-//    * valid(vld) means the data is valid on 'data'.
-//----------------------------------------------------------------
-
-module axi_fifo_sync
-     #(parameter FDW =32, // fifof data width
-                 FAW =5   // num of entries in 2 to the power FAW
-                 )
-(
-       input   wire           rstn
-     , input   wire           clr 
-     , input   wire           clk
-
-     , output  wire           wr_rdy
-     , input   wire           wr_vld
-     , input   wire [FDW-1:0] wr_din
-     , input   wire           rd_rdy
-     , output  wire           rd_vld
-     , output  wire [FDW-1:0] rd_dout
-);
-    
-   localparam FDT = 1 << FAW;
-
-   wire           full     ;
-   wire           empty    ;
-   reg  [FAW:0]   item_cnt ;
-   reg  [FAW:0]   fifo_head; // where data to be read
-   reg  [FAW:0]   fifo_tail; // where data to be written
-   reg  [FAW:0]   next_tail;
-   reg  [FAW:0]   next_head;
-
-   //---------------------------------------------------
-   // synopsys translate_off
-   initial fifo_head = 'h0;
-   initial fifo_tail = 'h0;
-   initial next_head = 'h0;
-   initial next_tail = 'h0;
-   // synopsys translate_on
-   //---------------------------------------------------
-
-   // push data item into the entry pointed by fifo_tail
-   always @(posedge clk) begin
-      if (!rstn) begin
-          fifo_tail <= 0;
-          next_tail <= 1;
-      end else if (clr) begin
-          fifo_tail <= 0;
-          next_tail <= 1;
-      end else begin
-          if (!full && wr_vld) begin
-              fifo_tail <= next_tail;
-              next_tail <= next_tail + 1;
-          end 
-      end
-   end
-
-   // pop data item from the entry pointed by fifo_head
-   always @(posedge clk) begin
-      if (!rstn) begin
-          fifo_head <= 0;
-          next_head <= 1;
-      end else if (clr) begin
-          fifo_head <= 0;
-          next_head <= 1;
-      end else begin
-          if (!empty && rd_rdy) begin
-              fifo_head <= next_head;
-              next_head <= next_head + 1;
-          end
-      end
-   end
-
-   always @(posedge clk) begin
-      if (!rstn) begin
-         item_cnt <= 0;
-      end else if (clr) begin
-         item_cnt <= 0;
-      end else begin
-         if (wr_vld && !full && (!rd_rdy || (rd_rdy && empty))) begin
-             item_cnt <= item_cnt + 1;
-         end else
-         if (rd_rdy && !empty && (!wr_vld || (wr_vld && full))) begin
-             item_cnt <= item_cnt - 1;
-         end
-      end
-   end
-   
-   assign rd_vld = ~empty;
-   assign wr_rdy = ~full;
-   assign empty  = (fifo_head == fifo_tail);
-   assign full   = (item_cnt >= FDT);
-
-   reg [FDW-1:0] Mem [0:FDT-1];
-
-   // synopsys translate_off
-   integer i, j;
-   initial begin
-        for (i = 0; i < FDT; i++) begin
-            for (j = 0; j < FDW; j++) begin
-                Mem[i][j] = 'd0;
+    // ---------------------------------------------------------
+    // Priority Encoder: Returns one-hot of the lowest index '1'
+    // ---------------------------------------------------------
+    function automatic [NUM-1:0] pri_enc;
+        input [NUM-1:0] mask;
+        integer i;
+        begin
+            pri_enc = {NUM{1'b0}};
+            for(i = 0; i < NUM; i = i + 1) begin
+                if(mask[i]) begin
+                    pri_enc = 1'b1 << i;
+                    break;
+                end
             end
-            
         end
-   end
-   // synopsys translate_on
+    endfunction
 
-   assign rd_dout  = Mem[fifo_head[FAW-1:0]];
+    // ---------------------------------------------------------
+    // Fixed Priority
+    // ---------------------------------------------------------
+    assign fixed_grant = pri_enc(req);
 
-   always @(posedge clk) begin
-       if (!full && wr_vld) begin
-           Mem[fifo_tail[FAW-1:0]] <= wr_din;
-       end
-   end
+    // ---------------------------------------------------------
+    // Round Robin Logic (if NUM > 1)
+    // ---------------------------------------------------------
+    generate
+        if (NUM > 1) begin : rr_gen
+            // Rotate request vector so that rr_ptr becomes logical index 0
+            wire [2*NUM-1:0] req_rot = {req, req} >> rr_ptr;
+            wire [NUM-1:0]   pri_rot = pri_enc(req_rot[NUM-1:0]);
+
+            // Convert rotated one-hot back to absolute winner index
+            reg [PTR_W-1:0] winner_idx;
+            always @(*) begin
+                winner_idx = 0;
+                for(int i = 0; i < NUM; i = i + 1) begin
+                    if(pri_rot[i]) begin
+                        winner_idx = i[PTR_W-1:0];
+                        break;
+                    end
+                end
+            end
+
+            // Map back to absolute one-hot grant
+            assign grant_nxt = (|req) ? (1'b1 << ((winner_idx + rr_ptr) % NUM)) : {NUM{1'b0}};
+
+            // RR Pointer Update
+            always @(posedge clk) begin
+                if(!rst_n) begin
+                    rr_ptr <= {PTR_W{1'b0}};
+                end else if(grant != 0) begin
+                    rr_ptr <= (winner_idx + 1'b1) % NUM;
+                end
+            end
+        end else begin : single_requester
+            // When only one requester, grant is simply the request
+            assign grant_nxt = req;
+            // rr_ptr unused, tie to 0
+            always @(posedge clk) begin
+                if(!rst_n) rr_ptr <= 0;
+                else rr_ptr <= 0;
+            end
+        end
+    endgenerate
+
+    // Output MUX
+    assign grant = (arbiter_type) ? fixed_grant : grant_nxt;
 
 endmodule
 
@@ -1026,8 +292,8 @@ module axi_crossbar
 
     // ========== 从设备地址基址数组 ==========
     // 格式: {SLV_AMT{ADDR_WIDTH{1'b0}}} - 用户需按从设备逐一覆写
-    parameter [0:(SLV_AMT*ADDR_WIDTH)-1] SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},
-    parameter [0:(SLV_AMT*8)-1]          SLV_ADDR_LEN  = {SLV_AMT{8'd12}}, // 默认 12 位译码
+    parameter [(SLV_AMT*ADDR_WIDTH)-1:0] SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},
+    parameter [(SLV_AMT*8)-1:0]          SLV_ADDR_LEN  = {SLV_AMT{8'd12}}, // 默认 12 位译码
 
     // ========== 默认从设备配置 ==========
     parameter DEFAULT_SLV_IDX       = 0,              // 默认从设备索引 (未命中地址空间的访问)
@@ -1675,6 +941,923 @@ endgenerate
 
 endmodule
 
+// Synchronous FIFO
+//----------------------------------------------------------------
+// MACROS and PARAMETERS
+//     FDW: bit-width of data
+//     FAW: num of entries in power of 2
+//----------------------------------------------------------------
+// Features
+//    * ready-valid handshake protocol
+//    * First-Word Fall-Through, but rd_vld indicates its validity
+//----------------------------------------------------------------
+//    * data moves when both ready(rdy) and valid(vld) is high.
+//    * ready(rdy) means the receiver is ready to accept data.
+//    * valid(vld) means the data is valid on 'data'.
+//----------------------------------------------------------------
+
+module axi_fifo_sync
+     #(parameter FDW =32, // fifof data width
+                 FAW =5   // num of entries in 2 to the power FAW
+                 )
+(
+       input   wire           rstn
+     , input   wire           clr 
+     , input   wire           clk
+
+     , output  wire           wr_rdy
+     , input   wire           wr_vld
+     , input   wire [FDW-1:0] wr_din
+     , input   wire           rd_rdy
+     , output  wire           rd_vld
+     , output  wire [FDW-1:0] rd_dout
+);
+    
+   localparam FDT = 1 << FAW;
+
+   wire           full     ;
+   wire           empty    ;
+   reg  [FAW:0]   item_cnt ;
+   reg  [FAW:0]   fifo_head; // where data to be read
+   reg  [FAW:0]   fifo_tail; // where data to be written
+   reg  [FAW:0]   next_tail;
+   reg  [FAW:0]   next_head;
+
+   //---------------------------------------------------
+   // synopsys translate_off
+   initial fifo_head = 'h0;
+   initial fifo_tail = 'h0;
+   initial next_head = 'h0;
+   initial next_tail = 'h0;
+   // synopsys translate_on
+   //---------------------------------------------------
+
+   // push data item into the entry pointed by fifo_tail
+   always @(posedge clk) begin
+      if (!rstn) begin
+          fifo_tail <= 0;
+          next_tail <= 1;
+      end else if (clr) begin
+          fifo_tail <= 0;
+          next_tail <= 1;
+      end else begin
+          if (!full && wr_vld) begin
+              fifo_tail <= next_tail;
+              next_tail <= next_tail + 1;
+          end 
+      end
+   end
+
+   // pop data item from the entry pointed by fifo_head
+   always @(posedge clk) begin
+      if (!rstn) begin
+          fifo_head <= 0;
+          next_head <= 1;
+      end else if (clr) begin
+          fifo_head <= 0;
+          next_head <= 1;
+      end else begin
+          if (!empty && rd_rdy) begin
+              fifo_head <= next_head;
+              next_head <= next_head + 1;
+          end
+      end
+   end
+
+   always @(posedge clk) begin
+      if (!rstn) begin
+         item_cnt <= 0;
+      end else if (clr) begin
+         item_cnt <= 0;
+      end else begin
+         if (wr_vld && !full && (!rd_rdy || (rd_rdy && empty))) begin
+             item_cnt <= item_cnt + 1;
+         end else
+         if (rd_rdy && !empty && (!wr_vld || (wr_vld && full))) begin
+             item_cnt <= item_cnt - 1;
+         end
+      end
+   end
+   
+   assign rd_vld = ~empty;
+   assign wr_rdy = ~full;
+   assign empty  = (fifo_head == fifo_tail);
+   assign full   = (item_cnt >= FDT);
+
+   reg [FDW-1:0] Mem [0:FDT-1];
+
+   // synopsys translate_off
+   integer i, j;
+   initial begin
+        for (i = 0; i < FDT; i++) begin
+            for (j = 0; j < FDW; j++) begin
+                Mem[i][j] = 'd0;
+            end
+            
+        end
+   end
+   // synopsys translate_on
+
+   assign rd_dout  = Mem[fifo_head[FAW-1:0]];
+
+   always @(posedge clk) begin
+       if (!full && wr_vld) begin
+           Mem[fifo_tail[FAW-1:0]] <= wr_din;
+       end
+   end
+
+endmodule
+
+module axi_default_slave
+     #(parameter W_CID  = 4        // Channel ID width
+               , W_ID   = 4        // ID width
+               , W_ADDR = 32       // address width
+               , W_DATA = 32       // data width
+               , W_STRB = W_DATA/8 // data strobe width
+               , W_SID  = W_CID+W_ID
+      )
+(
+       input  wire                  AXI_RSTn
+     , input  wire                  AXI_CLK
+     , input  wire [W_SID-1:0]      AWID
+     , input  wire [W_ADDR-1:0]     AWADDR
+     , input  wire [ 7:0]           AWLEN
+     , input  wire [ 2:0]           AWSIZE
+     , input  wire [ 1:0]           AWBURST
+     , input  wire                  AWVALID
+     , output reg                   AWREADY
+
+     , input  wire [W_DATA-1:0]     WDATA
+     , input  wire [W_STRB-1:0]     WSTRB
+     , input  wire                  WLAST
+     , input  wire                  WVALID
+     , output reg                   WREADY
+
+     , output reg  [W_SID-1:0]      BID
+     , output wire [ 1:0]           BRESP
+     , output reg                   BVALID
+     , input  wire                  BREADY
+
+     , input  wire [W_SID-1:0]      ARID
+     , input  wire [W_ADDR-1:0]     ARADDR
+     , input  wire [ 7:0]           ARLEN
+     , input  wire [ 2:0]           ARSIZE
+     , input  wire [ 1:0]           ARBURST
+     , input  wire                  ARVALID
+     , output reg                   ARREADY
+
+     , output reg  [W_SID-1:0]      RID
+     , output wire [W_DATA-1:0]     RDATA
+     , output wire [ 1:0]           RRESP
+     , output reg                   RLAST
+     , output reg                   RVALID
+     , input  wire                  RREADY
+);
+     //-----------------------------------------------------------
+     // write case
+     assign BRESP = 2'b11; // DECERR: decode error
+     reg [W_SID-1:0] awid_reg;
+     reg [8:0] countW, awlen_reg;
+
+     localparam STW_IDLE   = 'h0,
+                STW_RUN    = 'h1,
+                STW_WAIT   = 'h2,
+                STW_RSP    = 'h3;
+     reg [1:0] stateW=STW_IDLE;
+     always @ (posedge AXI_CLK) begin
+         if (!AXI_RSTn) begin
+             AWREADY   <= 1'b0;
+             WREADY    <= 1'b0;
+             BID       <=  'h0;
+             BVALID    <= 1'b0;
+             countW    <=  'h0;
+             awlen_reg <=  'h0;
+             awid_reg  <=  'h0;
+             stateW    <= STW_IDLE;
+         end else begin
+             case (stateW)
+             STW_IDLE: begin
+                 if (AWVALID==1'b1) begin
+                     AWREADY <= 1'b1;
+                     stateW  <= STW_RUN;
+                 end
+                 end // STW_IDLE
+             STW_RUN: begin
+                 if ((AWVALID==1'b1)&&(AWREADY==1'b1)) begin
+                      AWREADY   <= 1'b0;
+                      WREADY    <= 1'b1;
+                      awlen_reg <= {1'b0,AWLEN};
+                      awid_reg  <= AWID;
+                      stateW    <= STW_WAIT;
+                 end else begin
+                 end
+                 end // STW_IDLE
+             STW_WAIT: begin
+                 if (WVALID==1'b1) begin
+                     if ((countW>=awlen_reg)||(WLAST==1'b1)) begin
+                         BID    <= awid_reg;
+                         BVALID <= 1'b1;
+                         WREADY <= 1'b0;
+                         countW <= 'h0;
+                         stateW <= STW_RSP;
+                         // synopsys translate_off
+                         if (WLAST==1'b0) begin
+                             $display("%04d %m Error expecting WLAST", $time);
+                         end
+                         // synopsys translate_on
+                     end else begin
+                         countW <= countW + 1;
+                     end
+                 end
+                 end // STW_WAIT
+             STW_RSP: begin
+                 if (BREADY==1'b1) begin
+                     BVALID  <= 1'b0;
+                     if (AWVALID==1'b1) begin
+                         AWREADY <= 1'b1;
+                         stateW  <= STW_RUN;
+                     end else begin
+                         stateW  <= STW_IDLE;
+                     end
+                 end
+                 end // STW_RSP
+             endcase
+         end
+     end
+     
+     //-----------------------------------------------------------
+     // read case
+     assign RRESP = 2'b11; // DECERR; decode error
+     assign RDATA = ~'h0;
+     reg [W_SID-1:0] arid_reg;
+     reg [8:0] countR, arlen_reg;
+
+     localparam STR_IDLE   = 'h0,
+                STR_RUN    = 'h1,
+                STR_WAIT   = 'h2,
+                STR_END    = 'h3;
+     reg [1:0] stateR=STR_IDLE;
+     always @ (posedge AXI_CLK) begin
+         if (!AXI_RSTn) begin
+             ARREADY   <= 1'b0;
+             RID       <=  'h0;
+             RLAST     <= 1'b0;
+             RVALID    <= 1'b0;
+             arid_reg  <=  'h0;
+             arlen_reg <=  'h0;
+             countR    <=  'h0;
+             stateR    <= STR_IDLE;
+         end else begin
+             case (stateR)
+             STR_IDLE: begin
+                 if (ARVALID==1'b1) begin
+                      ARREADY   <= 1'b1;
+                      stateR    <= STR_RUN;
+                 end
+                 end // STR_IDLE
+             STR_RUN: begin
+                 if ((ARVALID==1'b1)&&(ARREADY==1'b1)) begin
+                      ARREADY   <= 1'b0;
+                      arlen_reg <= ARLEN+1;
+                      arid_reg  <= ARID;
+                      RID       <= ARID;
+                      RVALID    <= 1'b1;
+                      RLAST     <= (ARLEN=='h0) ? 1'b1 : 1'b0;
+                      countR    <=  'h2;
+                      stateR    <= STR_WAIT;
+                 end
+                 end // STR_IDLE
+             STR_WAIT: begin
+                 if (RREADY==1'b1) begin
+                     if (countR>=(arlen_reg+1)) begin
+                         RVALID  <= 1'b0;
+                         RLAST   <= 1'b0;
+                         countR  <= 'h0;
+                         stateR  <= STR_END;
+                     end else begin
+                         if (countR==arlen_reg) RLAST  <= 1'b1;
+                         countR <= countR + 1;
+                     end
+                 end
+                 end // STR_WAIT
+             STR_END: begin
+                 if (ARVALID==1'b1) begin
+                      ARREADY   <= 1'b1;
+                      stateR    <= STR_RUN;
+                 end else begin
+                      stateR    <= STR_IDLE;
+                 end
+                 end // STR_END
+             endcase
+         end
+     end
+endmodule
+
+c      - Master identity encoded implicitly via array index (no m_id port)
+//=============================================================================
+module axi_m2s_m_amt
+#(
+    parameter ADDR_BASE       = 32'h0,          // Slave address base
+    parameter ADDR_LENGTH     = 12,             // Effective address bits for decode
+    parameter M_ID_W           = 4,              // Channel ID width
+    parameter W_ID            = 4,              // Transaction ID width
+    parameter W_ADDR          = 32,             // Address width
+    parameter W_DATA          = 32,             // Data width
+    parameter W_STRB          = (W_DATA/8),     // Data strobe width
+    parameter W_SID           = M_ID_W + W_ID,   // Slave-side ID width
+    parameter MST_AMT         = 3,              // Number of masters (parameterized)
+    parameter OUTSTANDING_AMT = 8,              // Max outstanding AW transactions
+    parameter ALEN_W          = 8,              // AWLEN/ARLEN width
+    parameter ASIZE_W         = 3,              // AWSIZE/ARSIZE width
+    parameter ABURST_W        = 2,              // AWBURST/ARBURST width
+    parameter SLAVE_DEFAULT   = 1'b0            // Default-slave mode flag
+)
+(
+    // Global signals
+    input   wire                      AXI_RSTn,
+    input   wire                      AXI_CLK,
+    
+    // ========== Master side ports (FLATTENED & PARAMETERIZED) ==========
+    // AW channel
+    input   wire  [MST_AMT*W_ID-1     : 0]        M_AWID,
+    input   wire  [MST_AMT*W_ADDR-1   : 0]        M_AWADDR,
+    input   wire  [MST_AMT*ALEN_W-1   : 0]        M_AWLEN,
+    input   wire  [MST_AMT*ASIZE_W-1  : 0]        M_AWSIZE,
+    input   wire  [MST_AMT*ABURST_W-1 : 0]        M_AWBURST,
+    input   wire  [MST_AMT-1          : 0]        M_AWVALID,
+    output  wire  [MST_AMT-1          : 0]        M_AWREADY,
+    
+    // W channel
+    input   wire  [MST_AMT*W_DATA-1   : 0]        M_WDATA,
+    input   wire  [MST_AMT*W_STRB-1   : 0]        M_WSTRB,
+    input   wire  [MST_AMT-1          : 0]        M_WLAST,
+    input   wire  [MST_AMT-1          : 0]        M_WVALID,
+    output  wire  [MST_AMT-1          : 0]        M_WREADY,
+    
+    // AR channel
+    input   wire  [MST_AMT*W_ID-1     : 0]        M_ARID,
+    input   wire  [MST_AMT*W_ADDR-1   : 0]        M_ARADDR,
+    input   wire  [MST_AMT*ALEN_W-1   : 0]        M_ARLEN,
+    input   wire  [MST_AMT*ASIZE_W-1  : 0]        M_ARSIZE,
+    input   wire  [MST_AMT*ABURST_W-1 : 0]        M_ARBURST,
+    input   wire  [MST_AMT-1          : 0]        M_ARVALID,
+    output  wire  [MST_AMT-1          : 0]        M_ARREADY,
+    
+    // ========== Slave side ports (single slave interface) ==========
+    // AW channel
+    output  reg    [W_SID-1     : 0]        S_AWID,
+    output  reg    [W_ADDR-1   : 0]        S_AWADDR,
+    output  reg    [ALEN_W-1   : 0]        S_AWLEN,
+    output  reg    [ASIZE_W-1  : 0]        S_AWSIZE,
+    output  reg    [ABURST_W-1 : 0]        S_AWBURST,
+    output  reg                            S_AWVALID,
+    input   wire                           S_AWREADY,
+    
+    // W channel
+    output  reg    [W_DATA-1:0]            S_WDATA,
+    output  reg    [W_STRB-1:0]            S_WSTRB,
+    output  reg                            S_WLAST,
+    output  reg                            S_WVALID,
+    input   wire                           S_WREADY,
+    
+    // AR channel
+    output  reg    [W_SID-1     : 0]        S_ARID,
+    output  reg    [W_ADDR-1   : 0]        S_ARADDR,
+    output  reg    [ALEN_W-1   : 0]        S_ARLEN,
+    output  reg    [ASIZE_W-1  : 0]        S_ARSIZE,
+    output  reg    [ABURST_W-1 : 0]        S_ARBURST,
+    output  reg                            S_ARVALID,
+    input   wire                           S_ARREADY,
+    
+    // ========== Control/Status ports ==========
+    output  wire  [MST_AMT-1:0]    AWSELECT_OUT,
+    output  wire  [MST_AMT-1:0]    ARSELECT_OUT,
+    input   wire  [MST_AMT-1:0]    AWSELECT_IN,
+    input   wire  [MST_AMT-1:0]    ARSELECT_IN,
+    input   wire                   arbiter_type,
+    input   wire                   slv_en
+    // ⚠️ channel_en REMOVED - not needed
+);
+
+//=============================================================================
+// Local Parameters
+//=============================================================================
+localparam MST_ID_W     = $clog2(MST_AMT);                          // Width to encode master index
+localparam AW_ORDER_W   = MST_ID_W + ALEN_W;                        // {mst_idx, awlen} for FIFO
+localparam CNT_W        = ALEN_W + 1;                               // Beat counter: AWLEN+1
+
+//=============================================================================
+// Internal Signals - Flattened Arrays for Master Ports
+//=============================================================================
+wire [W_ID-1:0]        m_awid      [0:MST_AMT-1];
+wire [W_ADDR-1:0]      m_awaddr    [0:MST_AMT-1];
+wire [ALEN_W-1:0]      m_awlen     [0:MST_AMT-1];
+wire [ASIZE_W-1:0]     m_awsize    [0:MST_AMT-1];
+wire [ABURST_W-1:0]    m_awburst   [0:MST_AMT-1];
+wire [MST_AMT-1:0]       m_awvalid;
+wire [MST_AMT-1:0]       m_awready;
+
+wire [W_DATA-1:0]      m_wdata     [0:MST_AMT-1];
+wire [W_STRB-1:0]      m_wstrb     [0:MST_AMT-1];
+wire                   m_wlast     [0:MST_AMT-1];
+wire                   m_wvalid    [0:MST_AMT-1];
+wire                   m_wready    [0:MST_AMT-1];
+
+wire [W_ID-1:0]        m_arid      [0:MST_AMT-1];
+wire [W_ADDR-1:0]      m_araddr    [0:MST_AMT-1];
+wire [ALEN_W-1:0]      m_arlen     [0:MST_AMT-1];
+wire [ASIZE_W-1:0]     m_arsize    [0:MST_AMT-1];
+wire [ABURST_W-1:0]    m_arburst   [0:MST_AMT-1];
+wire [MST_AMT-1:0]       m_arvalid;
+wire [MST_AMT-1:0]       m_arready;
+
+//=============================================================================
+// W-Follows-AW Core: AW Order FIFO + Beat Counter Signals
+//=============================================================================
+wire [AW_ORDER_W-1:0]  aw_fifo_wr_data;
+wire [AW_ORDER_W-1:0]  aw_fifo_rd_data;
+wire                   aw_fifo_wr_en;
+wire                   aw_fifo_rd_en;
+wire                   aw_fifo_full;
+wire                   aw_fifo_empty;
+
+reg  [CNT_W-1:0]       w_beat_cnt;                  // Remaining beats for current W transaction
+reg  [MST_ID_W-1:0]    cur_w_mst_id;                // Current master whose W data should be routed
+wire                   w_transaction_active;        // Flag: W transaction in progress
+assign w_transaction_active = (w_beat_cnt > 0);
+
+//=============================================================================
+// Address Decode & Arbitration Signals
+//=============================================================================
+reg  [MST_AMT-1:0] AWSELECT, ARSELECT;
+wire [MST_AMT-1:0] AWGRANT, ARGRANT;
+assign AWSELECT_OUT = AWSELECT;
+assign ARSELECT_OUT = ARSELECT;
+
+//=============================================================================
+// Port Flattening: generate loop for unpack/pack
+//=============================================================================
+genvar m;
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
+        // AW channel unpack
+        assign m_awid[m]    = M_AWID[W_ID*(m+1)-1 -: W_ID];
+        assign m_awaddr[m]  = M_AWADDR[W_ADDR*(m+1)-1 -: W_ADDR];
+        assign m_awlen[m]   = M_AWLEN[ALEN_W*(m+1)-1 -: ALEN_W];
+        assign m_awsize[m]  = M_AWSIZE[ASIZE_W*(m+1)-1 -: ASIZE_W];
+        assign m_awburst[m] = M_AWBURST[ABURST_W*(m+1)-1 -: ABURST_W];
+        assign m_awvalid[m] = M_AWVALID[m];
+        assign M_AWREADY[m] = m_awready[m];
+        
+        // W channel unpack
+        assign m_wdata[m]   = M_WDATA[W_DATA*(m+1)-1 -: W_DATA];
+        assign m_wstrb[m]   = M_WSTRB[W_STRB*(m+1)-1 -: W_STRB];
+        assign m_wlast[m]   = M_WLAST[m];
+        assign m_wvalid[m]  = M_WVALID[m];
+        assign M_WREADY[m]  = m_wready[m];
+        
+        // AR channel unpack
+        assign m_arid[m]    = M_ARID[W_ID*(m+1)-1 -: W_ID];
+        assign m_araddr[m]  = M_ARADDR[W_ADDR*(m+1)-1 -: W_ADDR];
+        assign m_arlen[m]   = M_ARLEN[ALEN_W*(m+1)-1 -: ALEN_W];
+        assign m_arsize[m]  = M_ARSIZE[ASIZE_W*(m+1)-1 -: ASIZE_W];
+        assign m_arburst[m] = M_ARBURST[ABURST_W*(m+1)-1 -: ABURST_W];
+        assign m_arvalid[m] = M_ARVALID[m];
+        assign M_ARREADY[m] = m_arready[m];
+    end
+endgenerate
+
+//=============================================================================
+// Address Decode (parameterized, NO channel_en gating)
+//=============================================================================
+always @(*) begin
+    if (SLAVE_DEFAULT == 1'b0) begin
+        for(int i = 0; i < MST_AMT; i++) begin
+            // Address match: compare upper bits against ADDR_BASE, gated by slv_en
+            AWSELECT[i] = (m_awaddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
+            ARSELECT[i] = (m_araddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
+        end
+        // ⚠️ WSELECT REMOVED: W routing now follows AW order FIFO, not address decode
+    end else begin
+        // Default slave mode: accept any request not selected by others, gated by slv_en
+        AWSELECT = (~AWSELECT_IN & m_awvalid) & {MST_AMT{slv_en}};
+        ARSELECT = (~ARSELECT_IN & m_arvalid) & {MST_AMT{slv_en}};
+    end
+end
+
+//=============================================================================
+// AW/AR Arbitration (SINGLE instance handling both channels)
+//=============================================================================
+// Note: axi_arbiter_m2s_m_amt handles both AW and AR internally
+axi_arbiter_m2s_m_amt #(
+    .W_CID(M_ID_W), 
+    .W_ID(W_ID), 
+    .NUM(MST_AMT)
+) u_axi_arbiter_aw_ar (
+    .AXI_RSTn    (AXI_RSTn),
+    .AXI_CLK     (AXI_CLK),
+    
+    // AW channel ports
+    .AWSELECT    (AWSELECT),
+    .AWVALID     (m_awvalid),
+    .AWREADY     (m_awready),
+    .AWGRANT     (AWGRANT),
+    
+    // AR channel ports
+    .ARSELECT    (ARSELECT),
+    .ARVALID     (m_arvalid),
+    .ARREADY     (m_arready),
+    .ARGRANT     (ARGRANT),
+    
+    .arbiter_type(arbiter_type)
+    // ⚠️ W channel ports REMOVED - handled by AW-order FIFO logic
+);
+//=============================================================================
+// AW Handshake Capture -> Push to Order FIFO
+//=============================================================================
+wire [MST_AMT-1:0] aw_handshake = AWGRANT & {MST_AMT{S_AWREADY}} & m_awvalid;
+reg  [MST_ID_W-1:0] aw_grant_idx;
+
+// One-hot grant to binary index encoder (priority: low index first)
+always @(*) begin
+    aw_grant_idx = '0;
+    for(int i = 0; i < MST_AMT; i++) begin
+        if(AWGRANT[i]) begin
+            aw_grant_idx = i[MST_ID_W-1:0];
+        end
+    end
+end
+
+// AW order FIFO write data: {mst_idx, awlen}
+assign aw_fifo_wr_data = {aw_grant_idx, m_awlen[aw_grant_idx]};
+// Only push to FIFO when W is busy (Case 1 direct-loads when W idle)
+assign aw_fifo_wr_en   = |aw_handshake && w_transaction_active;
+
+//=============================================================================
+// AW Order FIFO Instance (modularized)
+//=============================================================================
+aw_order_fifo #(
+    .DATA_WIDTH(AW_ORDER_W),
+    .FIFO_DEPTH(OUTSTANDING_AMT)
+) u_aw_order_fifo (
+    .clk      (AXI_CLK),
+    .rst_n    (AXI_RSTn),
+    
+    // Write port
+    .wr_en    (aw_fifo_wr_en),
+    .wr_data  (aw_fifo_wr_data),
+    .wr_full  (aw_fifo_full),
+    
+    // Read port
+    .rd_en    (aw_fifo_rd_en),
+    .rd_data  (aw_fifo_rd_data),
+    .rd_empty (aw_fifo_empty),
+    .item_cnt ()
+);
+
+//=============================================================================
+// W Beat Counter & Current Master Tracking
+//=============================================================================
+wire [MST_ID_W-1:0]  fifo_mst_idx;
+wire [ALEN_W-1:0]    fifo_awlen;
+assign {fifo_mst_idx, fifo_awlen} = aw_fifo_rd_data;
+
+// FIFO read enable: only pop when current W transaction came from FIFO
+reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
+assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID) && from_fifo;
+
+// Per-master pending AW counter: gates W FIFO write to prevent stale data
+// in non-targeted M2S instances. Increment on AW handshake, decrement on
+// WLAST completion for the corresponding master.
+integer          pending_aw_cnt [0:MST_AMT-1];
+
+// W beat counter state machine
+always @(posedge AXI_CLK) begin
+    if(!AXI_RSTn) begin
+        w_beat_cnt   <= 0;
+        cur_w_mst_id <= 0;
+        from_fifo    <= 1'b0;
+    end else begin
+        // AW / W beat counter state machine
+        // 优先级: 新 AW 直达 > W 传输递减 > FIFO 取出下一笔
+        // Case 1: AW handshake while W idle -> direct load (bypass FIFO latency)
+        if(|aw_handshake && !w_transaction_active) begin
+            w_beat_cnt   <= m_awlen[aw_grant_idx] + 1'b1;  // beats = LEN+1
+            cur_w_mst_id <= aw_grant_idx;
+            from_fifo    <= 1'b0;  // Direct loaded, not from FIFO
+        end
+        // Case 2: W handshake occurs -> decrement counter
+        else if(w_transaction_active && S_WREADY && S_WVALID) begin
+            if(w_beat_cnt == 1'b1 && S_WLAST) begin
+                w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered if from_fifo
+            end else begin
+                w_beat_cnt <= w_beat_cnt - 1'b1;
+            end
+        end
+        // Case 3: W idle, FIFO has pending AW -> load next transaction
+        else if(!w_transaction_active && !aw_fifo_empty) begin
+            cur_w_mst_id <= fifo_mst_idx;
+            w_beat_cnt   <= fifo_awlen + 1'b1;
+            from_fifo    <= 1'b1;  // Loaded from FIFO
+        end
+    end
+end
+
+//=============================================================================
+// W FIFO write gating: track pending AW count per master
+// Only allow W data into per-master FIFO when this M2S has granted AW to that master
+//=============================================================================
+integer pi;
+always @(posedge AXI_CLK) begin
+    if(!AXI_RSTn) begin
+        for(pi = 0; pi < MST_AMT; pi = pi + 1)
+            pending_aw_cnt[pi] <= 0;
+    end else begin
+        for(pi = 0; pi < MST_AMT; pi = pi + 1) begin
+            if(aw_handshake[pi] && (cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
+                ; // simultaneous AW accept + W last beat → net zero
+            else if(aw_handshake[pi])
+                pending_aw_cnt[pi] <= pending_aw_cnt[pi] + 1;
+            else if((cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
+                pending_aw_cnt[pi] <= pending_aw_cnt[pi] - 1;
+        end
+    end
+end
+
+//=============================================================================
+// W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
+//=============================================================================
+wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
+wire [MST_AMT-1:0]         w_fifo_vld;
+
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : W_FIFO_PER_MASTER
+        axi_fifo_sync #(
+            .FDW(W_DATA + W_STRB + 1),  // {WDATA, WSTRB, WLAST}
+            .FAW(2)                      // depth = 2^2 = 4
+        ) u_fifo_w (
+            .rstn   (AXI_RSTn),
+            .clr    (1'b0),
+            .clk    (AXI_CLK),
+
+            // Write side: from master
+            .wr_rdy (m_wready[m]),
+            .wr_vld (m_wvalid[m] && (pending_aw_cnt[m] > 0)),
+            .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
+
+            // Read side: to slave (gated by W-follows-AW logic)
+            .rd_rdy ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active && S_WREADY),
+            .rd_vld (w_fifo_vld[m]),
+            .rd_dout(w_fifo_dout[m])
+        );
+    end
+endgenerate
+
+// W output Mux: select from current master's FIFO (priority encoder style)
+always @(*) begin
+    S_WDATA = '0;
+    S_WSTRB = '0;
+    S_WLAST = 1'b0;
+    S_WVALID = 1'b0;
+    
+    if(w_transaction_active) begin
+        // Only route data from the master whose AW was granted first
+        S_WDATA = w_fifo_dout[cur_w_mst_id][W_DATA+W_STRB:W_STRB+1];
+        S_WSTRB = w_fifo_dout[cur_w_mst_id][W_STRB:1];
+        S_WLAST = w_fifo_dout[cur_w_mst_id][0];
+        S_WVALID = w_fifo_vld[cur_w_mst_id];
+    end
+end
+
+//=============================================================================
+// AW Ready Back-pressure: stall if FIFO full (prevent overflow)
+//=============================================================================
+wire aw_stall = aw_fifo_full;
+assign m_awready = AWGRANT & {MST_AMT{S_AWREADY}} & ~{MST_AMT{aw_stall}};
+
+// AR Ready: grant held by arbiter, gated by slave ARREADY
+//=============================================================================
+assign m_arready = ARGRANT & {MST_AMT{S_ARREADY}};
+
+//=============================================================================
+// AW/AR Bus Packing & Routing (parameterized Mux)
+//=============================================================================
+localparam NUM_AW_WIDTH = W_SID + W_ADDR + ALEN_W + ASIZE_W + ABURST_W + 1;
+localparam NUM_AR_WIDTH = W_SID + W_ADDR + ALEN_W + ASIZE_W + ABURST_W + 1;
+
+wire [NUM_AW_WIDTH-1:0] bus_aw [0:MST_AMT-1];
+wire [NUM_AR_WIDTH-1:0] bus_ar [0:MST_AMT-1];
+
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_BUS_AW_AR
+        // S_AWID/S_ARID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
+        // Embeds master index as ID extension for response routing in S2M module
+        assign bus_aw[m] = {m[MST_ID_W-1:0], m_awid[m],
+                           m_awaddr[m], m_awlen[m], m_awsize[m], m_awburst[m], m_awvalid[m]};
+        assign bus_ar[m] = {m[MST_ID_W-1:0], m_arid[m],
+                           m_araddr[m], m_arlen[m], m_arsize[m], m_arburst[m], m_arvalid[m]};
+    end
+endgenerate
+
+`define S_AWBUS {S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID}
+`define S_ARBUS {S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID}
+
+// AW routing Mux (parameterized case statement)
+always @(*) begin
+    `S_AWBUS = '0;
+    for(int i = 0; i < MST_AMT; i++) begin
+        if(AWGRANT[i]) begin
+            `S_AWBUS = bus_aw[i];
+        end
+    end
+end
+
+// AR routing Mux (parameterized case statement)
+always @(*) begin
+    `S_ARBUS = '0;
+    for(int i = 0; i < MST_AMT; i++) begin
+        if(ARGRANT[i]) begin
+            `S_ARBUS = bus_ar[i];
+        end
+    end
+end
+
+endmodule
+
+module axi_s2m_s_amt
+#(
+    parameter MASTER_ID       = 0,
+    parameter W_CID           = 4,
+    parameter W_ID            = 6,
+    parameter W_ADDR          = 32,
+    parameter W_DATA          = 32,
+    parameter W_STRB          = (W_DATA/8),
+    parameter W_SID           = W_CID + W_ID,
+    parameter MST_AMT         = 4,
+    parameter SLV_AMT         = 4,
+    parameter MST_ID_FIELD_MSB = W_SID-1,
+    parameter MST_ID_FIELD_LSB = W_ID
+)
+(
+    input  wire                      AXI_RSTn,
+    input  wire                      AXI_CLK,
+
+    // Master side ports (single master)
+    output reg   [W_SID-1:0]         M_BID,
+    output reg   [1:0]               M_BRESP,
+    output reg                       M_BVALID,
+    input  wire                      M_BREADY,
+
+    output reg   [W_SID-1:0]         M_RSID,
+    output reg   [W_DATA-1:0]        M_RDATA,
+    output reg   [1:0]               M_RRESP,
+    output reg                       M_RLAST,
+    output reg                       M_RVALID,
+    input  wire                      M_RREADY,
+
+    // Slave side ports (packed)
+    input  wire  [W_SID*SLV_AMT-1:0]  S_BID,
+    input  wire  [2*SLV_AMT-1:0]      S_BRESP,
+    input  wire  [SLV_AMT-1:0]        S_BVALID,
+    output wire  [SLV_AMT-1:0]        S_BREADY,
+
+    input  wire  [W_SID*SLV_AMT-1:0]  S_RID,
+    input  wire  [W_DATA*SLV_AMT-1:0] S_RDATA,
+    input  wire  [2*SLV_AMT-1:0]      S_RRESP,
+    input  wire  [SLV_AMT-1:0]        S_RLAST,
+    input  wire  [SLV_AMT-1:0]        S_RVALID,
+    output wire  [SLV_AMT-1:0]        S_RREADY,
+
+    input  wire                       arbiter_type
+);
+
+localparam MST_ID_W = $clog2(MST_AMT);
+localparam NUM = SLV_AMT;
+
+// Unpack slave arrays
+wire [W_SID-1:0]   s_bid      [0:SLV_AMT-1];
+wire [1:0]         s_bresp    [0:SLV_AMT-1];
+wire               s_bvalid   [0:SLV_AMT-1];
+wire               s_bready   [0:SLV_AMT-1];
+
+wire [W_SID-1:0]   s_rid      [0:SLV_AMT-1];
+wire [W_DATA-1:0]  s_rdata    [0:SLV_AMT-1];
+wire [1:0]         s_rresp    [0:SLV_AMT-1];
+wire               s_rlast    [0:SLV_AMT-1];
+wire               s_rvalid   [0:SLV_AMT-1];
+wire               s_rready   [0:SLV_AMT-1];
+
+genvar si;
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : UNPACK
+        assign s_bid[si]    = S_BID[W_SID*si +: W_SID];
+        assign s_bresp[si]  = S_BRESP[2*si +: 2];
+        assign s_bvalid[si] = S_BVALID[si];
+        assign S_BREADY[si] = s_bready[si];
+
+        assign s_rid[si]    = S_RID[W_SID*si +: W_SID];
+        assign s_rdata[si]  = S_RDATA[W_DATA*si +: W_DATA];
+        assign s_rresp[si]  = S_RRESP[2*si +: 2];
+        assign s_rlast[si]  = S_RLAST[si];
+        assign s_rvalid[si] = S_RVALID[si];
+        assign S_RREADY[si] = s_rready[si];
+    end
+endgenerate
+
+// Extract master index from ID
+// ID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
+wire [MST_ID_W-1:0] s_bid_mst_idx [0:SLV_AMT-1];
+wire [MST_ID_W-1:0] s_rid_mst_idx [0:SLV_AMT-1];
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : DECODE
+        assign s_bid_mst_idx[si] = s_bid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
+        assign s_rid_mst_idx[si] = s_rid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
+    end
+endgenerate
+
+// Select logic
+wire [SLV_AMT-1:0] BSELECT, RSELECT;
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : SELECT
+        assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID);
+        assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID);
+    end
+endgenerate
+
+// Arbitration
+wire [SLV_AMT-1:0] BGRANT, RGRANT;
+axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_b (
+    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
+    .req(BSELECT & {S_BVALID[SLV_AMT-1:0]}), .grant(BGRANT)
+);
+axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
+    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
+    .req(RSELECT & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
+);
+
+// Delayed grants with handshake-hold: grant only advances when M-side handshake completes
+// This aligns S_BREADY routing with M_BREADY timing (which is NBA-delayed by 1 cycle)
+reg [SLV_AMT-1:0] bgrant_d;
+reg [SLV_AMT-1:0] rgrant_d;
+always @(posedge AXI_CLK) begin
+    if (!AXI_RSTn) begin
+        bgrant_d <= '0;
+        rgrant_d <= '0;
+    end else begin
+        // B grant: advance when idle, handshake completes, or M-side goes quiet
+        if (|bgrant_d == 0 || !M_BVALID)
+            bgrant_d <= BGRANT;
+        else if (M_BREADY && M_BVALID)
+            bgrant_d <= BGRANT;
+
+        // R grant: same hold mechanism
+        if (|rgrant_d == 0 || !M_RVALID)
+            rgrant_d <= RGRANT;
+        else if (M_RREADY && M_RVALID)
+            rgrant_d <= RGRANT;
+    end
+end
+
+// Pack bus for muxing
+localparam NUM_B_WIDTH = W_SID + 2 + 1;
+localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;
+wire [NUM_B_WIDTH-1:0] bus_b [0:SLV_AMT-1];
+wire [NUM_R_WIDTH-1:0] bus_r [0:SLV_AMT-1];
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : PACK
+        assign bus_b[si] = {s_bid[si], s_bresp[si], s_bvalid[si]};
+        assign bus_r[si] = {s_rid[si], s_rdata[si], s_rresp[si], s_rlast[si], s_rvalid[si]};
+    end
+endgenerate
+
+`define M_BBUS {M_BID[W_SID-1:0], M_BRESP, M_BVALID}
+// M-side data mux: use combinational BGRANT for immediate M_BVALID assertion
+always @(*) begin
+    `M_BBUS = 0;
+    for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];
+end
+
+`define M_RBUS {M_RSID, M_RDATA, M_RRESP, M_RLAST, M_RVALID}
+always @(*) begin
+    `M_RBUS = 0;
+    for(int i = 0; i < SLV_AMT; i++) if(RGRANT[i]) `M_RBUS = bus_r[i];
+end
+
+// S-side ready: use held grant to align with M_BREADY/M_RREADY timing
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : READY_GEN
+        assign s_bready[si] = bgrant_d[si] & M_BREADY;
+        assign s_rready[si] = rgrant_d[si] & M_RREADY;
+    end
+endgenerate
+
+endmodule
+
+//=============================================================================
+// Testbench: cross_tb
+// Desc     : Testbench for axi_crossbar (4x4 flattened crossbar switch)
+//=============================================================================
+
 //=============================================================================
 // Testbench: cross_tb
 // Desc     : Testbench for axi_crossbar (4x4 flattened crossbar switch)
@@ -1703,13 +1886,13 @@ module cross_tb;
 
     // 4KB address space per slave
     localparam SLV_MEM_DEPTH = 1024;
-    localparam [0:SLV_AMT*ADDR_WIDTH-1] SLV_ADDR_BASE = {
+    localparam [SLV_AMT*ADDR_WIDTH-1:0] SLV_ADDR_BASE = {
         32'h00003000,   // Slave 3: 0x3000-0x3FFF
         32'h00002000,   // Slave 2: 0x2000-0x2FFF
         32'h00001000,   // Slave 1: 0x1000-0x1FFF
         32'h00000000    // Slave 0: 0x0000-0x0FFF
     };
-    localparam [0:SLV_AMT*8-1] SLV_ADDR_LEN = {
+    localparam [SLV_AMT*8-1:0] SLV_ADDR_LEN = {
         8'd12, 8'd12, 8'd12, 8'd12
     };
 
@@ -2308,8 +2491,13 @@ module cross_tb;
         for (i = 0; i < SLV_AMT; i = i + 1) begin
             test_addr = slv_base_addr(i[1:0]) + 32'h40;
             wdata[0] = gen_data(test_addr, 8'd0);
+            $display("[%0t] TEST1: WDATA = 0x%08h (addr=0x%08h, slave=%0d)",
+                     $time, wdata[0], test_addr, i);
             axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, wdata);
+            $display("[%0t] TEST1: SLV_MEM[%0d][%0d] = 0x%08h",
+                     $time, i, test_addr[11:2], slv_mem[i][test_addr[11:2]]);
             axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, rdata);
+            $display("[%0t] TEST1: RDATA[0] = 0x%08h", $time, rdata[0]);
             expected = gen_data(test_addr, 8'd0);
             if (rdata[0] !== expected) begin
                 $display("[%0t] ERROR: S%0d mismatch! got=0x%08h exp=0x%08h",

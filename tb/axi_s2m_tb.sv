@@ -504,6 +504,30 @@ module axi_s2m_tb;
         @(posedge clk);
 
         //=================================================================
+        // TEST 8: Single-beat R from each slave (matching cross_tb test1)
+        //=================================================================
+        $display("\n--- TEST 8: Single-beat R from each slave ---");
+        begin
+            integer slv_i;
+            for (slv_i = 0; slv_i < SLV_AMT; slv_i = slv_i + 1) begin
+                $display("[%0t] TEST8: slave %0d -> master 0", $time, slv_i);
+                fork
+                    begin
+                        slv_send_r(slv_i, 6'h20 + slv_i[5:0], 2'd0,
+                                   32'h1000_0000 + slv_i[31:0], 2'b00, 1'b1);
+                    end
+                    begin
+                        mst_recv_r(cap_sid, cap_rdata[0], cap_resp, cap_rlast);
+                    end
+                join
+                check_eq("R SID",   cap_sid,       make_sid(2'd0, 6'h20 + slv_i[5:0]));
+                check_eq("R DATA",  cap_rdata[0],  32'h1000_0000 + slv_i[31:0]);
+                check_eq("R RESP",  cap_resp,       2'b00);
+            end
+        end
+        $display("[%0t] TEST 8 done (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
         // FINAL REPORT
         //=================================================================
         $display("\n============================================================");
