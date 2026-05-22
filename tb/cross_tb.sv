@@ -243,118 +243,205 @@ module cross_tb;
     end
 
     //=========================================================================
-    // Slave Write Handler
+    // Shared B-done queues (write handler → B handler, per slave)
+    //=========================================================================
+    reg [W_SID-1:0] b_done_awid [0:SLV_AMT-1][0:3];
+    reg [1:0]       b_done_wr_ptr [0:SLV_AMT-1];
+    reg [1:0]       b_done_rd_ptr [0:SLV_AMT-1];
+    integer         b_done_cnt    [0:SLV_AMT-1];
+
+    integer bq_init_s;
+    initial begin
+        for (bq_init_s = 0; bq_init_s < SLV_AMT; bq_init_s = bq_init_s + 1) begin
+            b_done_wr_ptr[bq_init_s] = 2'b00;
+            b_done_rd_ptr[bq_init_s] = 2'b00;
+            b_done_cnt[bq_init_s]    = 0;
+        end
+    end
+
+    //=========================================================================
+    // Shared AR queues (AR handler → R handler, per slave)
+    //=========================================================================
+    reg [W_SID-1:0] ar_q_arid   [0:SLV_AMT-1][0:3];
+    reg [ADDR_WIDTH-1:0] ar_q_araddr [0:SLV_AMT-1][0:3];
+    reg [7:0]            ar_q_total  [0:SLV_AMT-1][0:3];
+    reg [1:0]       ar_q_wr_ptr [0:SLV_AMT-1];
+    reg [1:0]       ar_q_rd_ptr [0:SLV_AMT-1];
+    integer         ar_q_cnt    [0:SLV_AMT-1];
+
+    integer arq_init_s;
+    initial begin
+        for (arq_init_s = 0; arq_init_s < SLV_AMT; arq_init_s = arq_init_s + 1) begin
+            ar_q_wr_ptr[arq_init_s] = 2'b00;
+            ar_q_rd_ptr[arq_init_s] = 2'b00;
+            ar_q_cnt[arq_init_s]    = 0;
+        end
+    end
+
+    //=========================================================================
+    // Slave Write Handler (with AW→W transaction queue)
     //=========================================================================
     task automatic slv_write_handler(int slv_id);
-        reg [W_SID-1:0]      awid;
-        reg [ADDR_WIDTH-1:0] awaddr;
-        reg [7:0]            awlen;
-        reg [2:0]            awsize;
-        reg [1:0]            awburst;
+        // Pending AW transaction queue (depth 4)
+        reg [W_SID-1:0]      q_awid    [0:3];
+        reg [ADDR_WIDTH-1:0] q_awaddr  [0:3];
+        reg [7:0]            q_total   [0:3];
+        integer              q_wr_ptr, q_rd_ptr, q_cnt;
+
+        // Current active transaction (head of queue, being written)
+        reg [W_SID-1:0]      cur_awid;
+        reg [ADDR_WIDTH-1:0] cur_awaddr;
+        reg [7:0]            cur_total;
+        reg [7:0]            cur_beat_cnt;
+        reg                  cur_active;
+
         reg [DATA_WIDTH-1:0] wdata;
         reg [W_STRB-1:0]     wstrb;
         reg                  wlast;
         reg [ADDR_WIDTH-1:0] word_idx;
-        reg [7:0]            beat_cnt;
-        reg [7:0]            total_beats;
-        reg                  aw_done;
         integer              bi;
-        forever begin
-            @(posedge clk);
-            // AW handshake
-            if (s_AWVALID[slv_id] && s_AWREADY[slv_id]) begin
-                awid    = s_AWID[W_SID*(slv_id+1)-1 -: W_SID];
-                awaddr  = s_AWADDR[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
-                awlen   = s_AWLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W];
-                awsize  = s_AWSIZE[TRANS_DATA_SIZE_W*(slv_id+1)-1 -: TRANS_DATA_SIZE_W];
-                awburst = s_AWBURST[TRANS_BURST_W*(slv_id+1)-1 -: TRANS_BURST_W];
-                aw_done = 1'b1;
-                beat_cnt = 0;
-                total_beats = awlen + 8'd1;
-                word_idx = awaddr[11:2];  // word-aligned in 4KB space
-            end
 
-            // W data handshake
-            if (aw_done && s_WVALID[slv_id] && s_WREADY[slv_id]) begin
-                wdata = s_WDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH];
-                wstrb = s_WSTRB[W_STRB*(slv_id+1)-1 -: W_STRB];
-                wlast = s_WLAST[slv_id];
-                word_idx = awaddr[11:2] + beat_cnt;
-                if (word_idx < SLV_MEM_DEPTH) begin
-                    for (bi = 0; bi < W_STRB; bi = bi + 1) begin
-                        if (wstrb[bi])
-                            slv_mem[slv_id][word_idx][8*bi +: 8] = wdata[8*bi +: 8];
+        begin
+            q_wr_ptr  = 0;
+            q_rd_ptr  = 0;
+            q_cnt     = 0;
+            cur_active = 1'b0;
+
+            forever begin
+                @(posedge clk);
+
+                // AW handshake → enqueue transaction
+                if (s_AWVALID[slv_id] && s_AWREADY[slv_id]) begin
+                    q_awid[q_wr_ptr]   = s_AWID[W_SID*(slv_id+1)-1 -: W_SID];
+                    q_awaddr[q_wr_ptr] = s_AWADDR[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
+                    q_total[q_wr_ptr]  = s_AWLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W] + 8'd1;
+                    q_wr_ptr = (q_wr_ptr + 1) & 3;
+                    q_cnt    = q_cnt + 1;
+                end
+
+                // Dequeue next transaction if idle
+                if (!cur_active && q_cnt > 0) begin
+                    cur_awid      = q_awid[q_rd_ptr];
+                    cur_awaddr    = q_awaddr[q_rd_ptr];
+                    cur_total     = q_total[q_rd_ptr];
+                    cur_beat_cnt  = 0;
+                    cur_active    = 1'b1;
+                    q_rd_ptr      = (q_rd_ptr + 1) & 3;
+                    q_cnt         = q_cnt - 1;
+                end
+
+                // W data handshake
+                if (cur_active && s_WVALID[slv_id] && s_WREADY[slv_id]) begin
+                    wdata = s_WDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH];
+                    wstrb = s_WSTRB[W_STRB*(slv_id+1)-1 -: W_STRB];
+                    wlast = s_WLAST[slv_id];
+                    word_idx = cur_awaddr[11:2] + cur_beat_cnt;
+                    if (word_idx < SLV_MEM_DEPTH) begin
+                        for (bi = 0; bi < W_STRB; bi = bi + 1) begin
+                            if (wstrb[bi])
+                                slv_mem[slv_id][word_idx][8*bi +: 8] = wdata[8*bi +: 8];
+                        end
+                    end
+                    cur_beat_cnt = cur_beat_cnt + 8'd1;
+                    if (wlast) begin
+                        cur_active = 1'b0;
+                        // Push to shared B-done queue (B handler picks up)
+                        b_done_awid[slv_id][b_done_wr_ptr[slv_id]] = cur_awid;
+                        b_done_wr_ptr[slv_id] = (b_done_wr_ptr[slv_id] + 1) & 3;
+                        b_done_cnt[slv_id]    = b_done_cnt[slv_id] + 1;
                     end
                 end
-                beat_cnt = beat_cnt + 8'd1;
-                if (wlast) begin
-                    aw_done = 1'b0;
-                    // Echo back the AWID as BID
-                    s_BID[W_SID*(slv_id+1)-1 -: W_SID] <= awid;
-                    s_BRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
-                    s_BVALID[slv_id] <= 1'b1;
-                end
-            end
-
-            // B handshake complete
-            if (s_BVALID[slv_id] && s_BREADY[slv_id]) begin
-                s_BVALID[slv_id] <= 1'b0;
             end
         end
     endtask
 
     //=========================================================================
-    // Slave Read Handler
+    // Slave B Response Handler (pops from shared B-done queue)
     //=========================================================================
-    task automatic slv_read_handler(int slv_id);
-        reg [W_SID-1:0]      arid;
-        reg [ADDR_WIDTH-1:0] araddr;
-        reg [7:0]            arlen;
-        reg [2:0]            arsize;
-        reg [1:0]            arburst;
-        reg [7:0]            beat_cnt;
-        reg [7:0]            total_beats;
-        reg [ADDR_WIDTH-1:0] word_idx;
-        reg                  ar_done;
+    task automatic slv_b_handler(int slv_id);
         forever begin
             @(posedge clk);
-            // AR handshake
-            if (s_ARVALID[slv_id] && s_ARREADY[slv_id]) begin
-                arid    = s_ARID[W_SID*(slv_id+1)-1 -: W_SID];
-                araddr  = s_ARADDR[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
-                arlen   = s_ARLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W];
-                arsize  = s_ARSIZE[TRANS_DATA_SIZE_W*(slv_id+1)-1 -: TRANS_DATA_SIZE_W];
-                arburst = s_ARBURST[TRANS_BURST_W*(slv_id+1)-1 -: TRANS_BURST_W];
-                ar_done = 1'b1;
-                beat_cnt = 0;
-                total_beats = arlen + 8'd1;
-                word_idx = araddr[11:2];
-                // Drive first beat
-                s_RID[W_SID*(slv_id+1)-1 -: W_SID] <= arid;
-                if (word_idx < SLV_MEM_DEPTH)
-                    s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= slv_mem[slv_id][word_idx];
-                else
-                    s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= 32'hDEAD_BEEF;
-                s_RRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
-                s_RLAST[slv_id] <= (total_beats == 8'd1);
-                s_RVALID[slv_id] <= 1'b1;
+
+            // BVALID is not currently asserted and queue has pending response
+            if (!s_BVALID[slv_id] && b_done_cnt[slv_id] > 0) begin
+                s_BID[W_SID*(slv_id+1)-1 -: W_SID] <= b_done_awid[slv_id][b_done_rd_ptr[slv_id]];
+                s_BRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
+                s_BVALID[slv_id] <= 1'b1;
+                b_done_rd_ptr[slv_id] = (b_done_rd_ptr[slv_id] + 1) & 3;
+                b_done_cnt[slv_id]    = b_done_cnt[slv_id] - 1;
             end
 
-            // R handshake: advance to next beat or finish
-            if (ar_done && s_RVALID[slv_id] && s_RREADY[slv_id]) begin
-                if (beat_cnt == total_beats - 1) begin
-                    // Last beat completed
-                    s_RVALID[slv_id] <= 1'b0;
-                    s_RLAST[slv_id]  <= 1'b0;
-                    ar_done = 1'b0;
-                end else begin
-                    beat_cnt = beat_cnt + 8'd1;
-                    word_idx = araddr[11:2] + beat_cnt;
-                    if (word_idx < SLV_MEM_DEPTH)
-                        s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= slv_mem[slv_id][word_idx];
-                    else
-                        s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= 32'hDEAD_BEEF;
-                    s_RLAST[slv_id] <= (beat_cnt == total_beats - 1);
+            // B handshake complete
+            if (s_BVALID[slv_id] && s_BREADY[slv_id])
+                s_BVALID[slv_id] <= 1'b0;
+        end
+    endtask
+
+    //=========================================================================
+    // Slave AR Handler (only enqueues AR transactions)
+    //=========================================================================
+    task automatic slv_ar_handler(int slv_id);
+        forever begin
+            @(posedge clk);
+            if (s_ARVALID[slv_id] && s_ARREADY[slv_id]) begin
+                ar_q_arid[slv_id][ar_q_wr_ptr[slv_id]]   =  s_ARID[W_SID*(slv_id+1)-1 -: W_SID];
+                ar_q_araddr[slv_id][ar_q_wr_ptr[slv_id]] =  s_ARADDR[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
+                ar_q_total[slv_id][ar_q_wr_ptr[slv_id]]  =  s_ARLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W] + 8'd1;
+                ar_q_wr_ptr[slv_id] = (ar_q_wr_ptr[slv_id] + 1) & 3;
+                ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] + 1;
+            end
+        end
+    endtask
+
+    //=========================================================================
+    // Slave R Data Handler (pops AR queue → drives R beats)
+    //=========================================================================
+    task automatic slv_r_handler(int slv_id);
+        reg [W_SID-1:0]      cur_arid;
+        reg [ADDR_WIDTH-1:0] cur_araddr;
+        reg [7:0]            cur_total;
+        reg [7:0]            cur_beat_cnt;
+        reg                  cur_active;
+        reg [ADDR_WIDTH-1:0] word_idx;
+
+        begin
+            cur_active = 1'b0;
+
+            forever begin
+                @(posedge clk);
+
+                // Dequeue next transaction if idle and R channel clear to drive
+                if (!cur_active && ar_q_cnt[slv_id] > 0 && (!s_RVALID[slv_id] || s_RREADY[slv_id])) begin
+                    cur_arid      = ar_q_arid[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_araddr    = ar_q_araddr[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_total     = ar_q_total[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_beat_cnt  = 0;
+                    cur_active    = 1'b1;
+                    ar_q_rd_ptr[slv_id] = (ar_q_rd_ptr[slv_id] + 1) & 3;
+                    ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] - 1;
+
+                    // Drive first beat
+                    word_idx = cur_araddr[11:2];
+                    s_RID[W_SID*(slv_id+1)-1 -: W_SID] <= cur_arid;
+                    s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <=
+                        (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF;
+                    s_RRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
+                    s_RLAST[slv_id] <= (cur_total == 8'd1);
+                    s_RVALID[slv_id] <= 1'b1;
+                end
+
+                // R handshake: advance or finish
+                if (cur_active && s_RVALID[slv_id] && s_RREADY[slv_id]) begin
+                    if (cur_beat_cnt == cur_total - 1) begin
+                        s_RVALID[slv_id] <= 1'b0;
+                        s_RLAST[slv_id]  <= 1'b0;
+                        cur_active = 1'b0;
+                    end else begin
+                        cur_beat_cnt = cur_beat_cnt + 8'd1;
+                        word_idx = cur_araddr[11:2] + cur_beat_cnt;
+                        s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF;
+                        s_RLAST[slv_id] <= (cur_beat_cnt == cur_total - 1);
+                    end
                 end
             end
         end
@@ -516,7 +603,9 @@ module cross_tb;
             automatic int sid = slv_idx;
             fork
                 slv_write_handler(sid);
-                slv_read_handler(sid);
+                slv_b_handler(sid);
+                slv_ar_handler(sid);
+                slv_r_handler(sid);
             join_none
         end
     end
