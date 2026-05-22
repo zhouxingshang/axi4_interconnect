@@ -26,13 +26,13 @@ module cross_tb;
 
     // 4KB address space per slave
     localparam SLV_MEM_DEPTH = 1024;
-    localparam [0:SLV_AMT*ADDR_WIDTH-1] SLV_ADDR_BASE = {
+    localparam [SLV_AMT*ADDR_WIDTH-1:0] SLV_ADDR_BASE = {
         32'h00003000,   // Slave 3: 0x3000-0x3FFF
         32'h00002000,   // Slave 2: 0x2000-0x2FFF
         32'h00001000,   // Slave 1: 0x1000-0x1FFF
         32'h00000000    // Slave 0: 0x0000-0x0FFF
     };
-    localparam [0:SLV_AMT*8-1] SLV_ADDR_LEN = {
+    localparam [SLV_AMT*8-1:0] SLV_ADDR_LEN = {
         8'd12, 8'd12, 8'd12, 8'd12
     };
 

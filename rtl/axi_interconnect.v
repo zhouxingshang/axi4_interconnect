@@ -23,8 +23,8 @@ module axi_interconnect
     parameter W_SID             = $clog2(MST_AMT) + W_CID + W_ID,  // slave-side ID width
 
     // Address mapping (default: upper bits select slave)
-    parameter [0:(SLV_AMT*ADDR_WIDTH)-1]  SLV_ADDR_BASE = '0,
-    parameter [0:(SLV_AMT*8)-1]           SLV_ADDR_LEN  = {SLV_AMT{8'd12}}
+    parameter [(SLV_AMT*ADDR_WIDTH)-1:0]  SLV_ADDR_BASE = '0,
+    parameter [(SLV_AMT*8)-1:0]           SLV_ADDR_LEN  = {SLV_AMT{8'd12}}
 )
 (
     input   wire                      AXI_CLK,
