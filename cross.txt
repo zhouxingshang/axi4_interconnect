@@ -1,0 +1,2543 @@
+module axi_s2m_s_amt
+#(
+    parameter MASTER_ID       = 0,
+    parameter W_CID           = 4,
+    parameter W_ID            = 6,
+    parameter W_ADDR          = 32,
+    parameter W_DATA          = 32,
+    parameter W_STRB          = (W_DATA/8),
+    parameter W_SID           = W_CID + W_ID,
+    parameter MST_AMT         = 4,
+    parameter SLV_AMT         = 4,
+    parameter MST_ID_FIELD_MSB = W_SID-1,
+    parameter MST_ID_FIELD_LSB = W_ID
+)
+(
+    input  wire                      AXI_RSTn,
+    input  wire                      AXI_CLK,
+    
+    // Master side ports (single master)
+    output reg   [W_SID-1:0]         M_BID,
+    output reg   [1:0]               M_BRESP,
+    output reg                       M_BVALID,
+    input  wire                      M_BREADY,
+    
+    output reg   [W_SID-1:0]         M_RSID,
+    output reg   [W_DATA-1:0]        M_RDATA,
+    output reg   [1:0]               M_RRESP,
+    output reg                       M_RLAST,
+    output reg                       M_RVALID,
+    input  wire                      M_RREADY,
+    
+    // Slave side ports (packed)
+    input  wire  [W_SID*SLV_AMT-1:0]  S_BID,
+    input  wire  [2*SLV_AMT-1:0]      S_BRESP,
+    input  wire  [SLV_AMT-1:0]        S_BVALID,
+    output wire  [SLV_AMT-1:0]        S_BREADY,
+    
+    input  wire  [W_SID*SLV_AMT-1:0]  S_RID,
+    input  wire  [W_DATA*SLV_AMT-1:0] S_RDATA,
+    input  wire  [2*SLV_AMT-1:0]      S_RRESP,
+    input  wire  [SLV_AMT-1:0]        S_RLAST,
+    input  wire  [SLV_AMT-1:0]        S_RVALID,
+    output wire  [SLV_AMT-1:0]        S_RREADY,
+    
+    input  wire  [SLV_AMT-1:0]        r_order_grant,
+    input  wire                       arbiter_type
+);
+
+localparam MST_ID_W = $clog2(MST_AMT);
+localparam NUM = SLV_AMT;
+
+// Unpack slave arrays
+wire [W_SID-1:0]   s_bid      [0:SLV_AMT-1];
+wire [1:0]         s_bresp    [0:SLV_AMT-1];
+wire               s_bvalid   [0:SLV_AMT-1];
+wire               s_bready   [0:SLV_AMT-1];
+
+wire [W_SID-1:0]   s_rid      [0:SLV_AMT-1];
+wire [W_DATA-1:0]  s_rdata    [0:SLV_AMT-1];
+wire [1:0]         s_rresp    [0:SLV_AMT-1];
+wire               s_rlast    [0:SLV_AMT-1];
+wire               s_rvalid   [0:SLV_AMT-1];
+wire               s_rready   [0:SLV_AMT-1];
+
+genvar si;
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : UNPACK
+        assign s_bid[si]    = S_BID[W_SID*si +: W_SID];
+        assign s_bresp[si]  = S_BRESP[2*si +: 2];
+        assign s_bvalid[si] = S_BVALID[si];
+        assign S_BREADY[si] = s_bready[si];
+        
+        assign s_rid[si]    = S_RID[W_SID*si +: W_SID];
+        assign s_rdata[si]  = S_RDATA[W_DATA*si +: W_DATA];
+        assign s_rresp[si]  = S_RRESP[2*si +: 2];
+        assign s_rlast[si]  = S_RLAST[si];
+        assign s_rvalid[si] = S_RVALID[si];
+        assign S_RREADY[si] = s_rready[si];
+    end
+endgenerate
+
+// Extract master index from ID
+// ID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
+wire [MST_ID_W-1:0] s_bid_mst_idx [0:SLV_AMT-1];
+wire [MST_ID_W-1:0] s_rid_mst_idx [0:SLV_AMT-1];
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : DECODE
+        assign s_bid_mst_idx[si] = s_bid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
+        assign s_rid_mst_idx[si] = s_rid[si][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB];
+    end
+endgenerate
+
+// Select logic
+wire [SLV_AMT-1:0] BSELECT, RSELECT, RSELECT_in;
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : SELECT
+        assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID);
+        assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID);
+        assign RSELECT_in[si] = RSELECT[si] & r_order_grant[si];
+    end
+endgenerate
+
+// Arbitration
+wire [SLV_AMT-1:0] BGRANT, RGRANT;
+axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_b (
+    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
+    .req(BSELECT & {S_BVALID[SLV_AMT-1:0]}), .grant(BGRANT)
+);
+axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
+    .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
+    .req(RSELECT_in & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
+);
+
+// Delayed grants with handshake-hold: grant only advances when M-side handshake completes
+// This aligns S_BREADY routing with M_BREADY timing (which is NBA-delayed by 1 cycle)
+reg [SLV_AMT-1:0] bgrant_d;
+reg [SLV_AMT-1:0] rgrant_d;
+always @(posedge AXI_CLK) begin
+    if (!AXI_RSTn) begin
+        bgrant_d <= '0;
+        rgrant_d <= '0;
+    end else begin
+        // B grant: advance when idle, handshake completes, or M-side goes quiet
+        if (|bgrant_d == 0 || !M_BVALID)
+            bgrant_d <= BGRANT;
+        else if (M_BREADY && M_BVALID)
+            bgrant_d <= BGRANT;
+
+        // R grant: same hold mechanism
+        if (|rgrant_d == 0 || !M_RVALID)
+            rgrant_d <= RGRANT;
+        else if (M_RREADY && M_RVALID)
+            rgrant_d <= RGRANT;
+    end
+end
+
+// Pack bus for muxing
+localparam NUM_B_WIDTH = W_SID + 2 + 1;
+localparam NUM_R_WIDTH = W_SID + W_DATA + 2 + 1 + 1;
+wire [NUM_B_WIDTH-1:0] bus_b [0:SLV_AMT-1];
+wire [NUM_R_WIDTH-1:0] bus_r [0:SLV_AMT-1];
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : PACK
+        assign bus_b[si] = {s_bid[si], s_bresp[si], s_bvalid[si]};
+        assign bus_r[si] = {s_rid[si], s_rdata[si], s_rresp[si], s_rlast[si], s_rvalid[si]};
+    end
+endgenerate
+
+`define M_BBUS {M_BID[W_SID-1:0], M_BRESP, M_BVALID}
+// M-side data mux: use combinational BGRANT for immediate M_BVALID assertion
+always @(*) begin
+    `M_BBUS = 0;
+    for(int i = 0; i < SLV_AMT; i++) if(BGRANT[i]) `M_BBUS = bus_b[i];
+end
+
+`define M_RBUS {M_RSID, M_RDATA, M_RRESP, M_RLAST, M_RVALID}
+always @(*) begin
+    `M_RBUS = 0;
+    for(int i = 0; i < SLV_AMT; i++) if(RGRANT[i]) `M_RBUS = bus_r[i];
+end
+
+// S-side ready: use held grant to align with M_BREADY/M_RREADY timing
+generate
+    for(si = 0; si < SLV_AMT; si = si + 1) begin : READY_GEN
+        assign s_bready[si] = bgrant_d[si] & M_BREADY;
+        assign s_rready[si] = rgrant_d[si] & M_RREADY;
+    end
+endgenerate
+
+endmodule
+
+module axi_arbiter_param_rr #(
+    parameter NUM = 4
+)(
+    input  wire              clk,
+    input  wire              rst_n,
+    input  wire              arbiter_type, // 0: RR, 1: Fixed
+    input  wire [NUM-1:0]    req,
+    output wire [NUM-1:0]    grant
+);
+    localparam PTR_W = (NUM > 1) ? $clog2(NUM) : 1;
+
+    reg  [PTR_W-1:0] rr_ptr;      // Points to next priority start index
+    wire [NUM-1:0]   grant_nxt;
+    wire [NUM-1:0]   fixed_grant;
+
+    // ---------------------------------------------------------
+    // Priority Encoder: Returns one-hot of the lowest index '1'
+    // ---------------------------------------------------------
+    function automatic [NUM-1:0] pri_enc;
+        input [NUM-1:0] mask;
+        integer i;
+        begin
+            pri_enc = {NUM{1'b0}};
+            for(i = 0; i < NUM; i = i + 1) begin
+                if(mask[i]) begin
+                    pri_enc = 1'b1 << i;
+                    break;
+                end
+            end
+        end
+    endfunction
+
+    // ---------------------------------------------------------
+    // Fixed Priority
+    // ---------------------------------------------------------
+    assign fixed_grant = pri_enc(req);
+
+    // ---------------------------------------------------------
+    // Round Robin Logic (if NUM > 1)
+    // ---------------------------------------------------------
+    generate
+        if (NUM > 1) begin : rr_gen
+            // Rotate request vector so that rr_ptr becomes logical index 0
+            wire [2*NUM-1:0] req_rot = {req, req} >> rr_ptr;
+            wire [NUM-1:0]   pri_rot = pri_enc(req_rot[NUM-1:0]);
+
+            // Convert rotated one-hot back to absolute winner index
+            reg [PTR_W-1:0] winner_idx;
+            always @(*) begin
+                winner_idx = 0;
+                for(int i = 0; i < NUM; i = i + 1) begin
+                    if(pri_rot[i]) begin
+                        winner_idx = i[PTR_W-1:0];
+                        break;
+                    end
+                end
+            end
+
+            // Map back to absolute one-hot grant
+            assign grant_nxt = (|req) ? (1'b1 << ((winner_idx + rr_ptr) % NUM)) : {NUM{1'b0}};
+
+            // RR Pointer Update
+            always @(posedge clk) begin
+                if(!rst_n) begin
+                    rr_ptr <= {PTR_W{1'b0}};
+                end else if(grant != 0) begin
+                    rr_ptr <= (winner_idx + 1'b1) % NUM;
+                end
+            end
+        end else begin : single_requester
+            // When only one requester, grant is simply the request
+            assign grant_nxt = req;
+            // rr_ptr unused, tie to 0
+            always @(posedge clk) begin
+                if(!rst_n) rr_ptr <= 0;
+                else rr_ptr <= 0;
+            end
+        end
+    endgenerate
+
+    // Output MUX
+    assign grant = (arbiter_type) ? fixed_grant : grant_nxt;
+
+endmodule
+
+//=============================================================================
+// Testbench: axi_s2m_s_amt_tb
+// Desc     : Testbench for axi_s2m_s_amt (slave-to-master response mux)
+//=============================================================================
+
+c      - Master identity encoded implicitly via array index (no m_id port)
+//=============================================================================
+module axi_m2s_m_amt
+#(
+    parameter ADDR_BASE       = 32'h0,          // Slave address base
+    parameter ADDR_LENGTH     = 12,             // Effective address bits for decode
+    parameter M_ID_W           = 4,              // Channel ID width
+    parameter W_ID            = 4,              // Transaction ID width
+    parameter W_ADDR          = 32,             // Address width
+    parameter W_DATA          = 32,             // Data width
+    parameter W_STRB          = (W_DATA/8),     // Data strobe width
+    parameter W_SID           = M_ID_W + W_ID,   // Slave-side ID width
+    parameter MST_AMT         = 3,              // Number of masters (parameterized)
+    parameter OUTSTANDING_AMT = 8,              // Max outstanding AW transactions
+    parameter ALEN_W          = 8,              // AWLEN/ARLEN width
+    parameter ASIZE_W         = 3,              // AWSIZE/ARSIZE width
+    parameter ABURST_W        = 2,              // AWBURST/ARBURST width
+    parameter SLAVE_DEFAULT   = 1'b0            // Default-slave mode flag
+)
+(
+    // Global signals
+    input   wire                      AXI_RSTn,
+    input   wire                      AXI_CLK,
+    
+    // ========== Master side ports (FLATTENED & PARAMETERIZED) ==========
+    // AW channel
+    input   wire  [MST_AMT*W_ID-1     : 0]        M_AWID,
+    input   wire  [MST_AMT*W_ADDR-1   : 0]        M_AWADDR,
+    input   wire  [MST_AMT*ALEN_W-1   : 0]        M_AWLEN,
+    input   wire  [MST_AMT*ASIZE_W-1  : 0]        M_AWSIZE,
+    input   wire  [MST_AMT*ABURST_W-1 : 0]        M_AWBURST,
+    input   wire  [MST_AMT-1          : 0]        M_AWVALID,
+    output  wire  [MST_AMT-1          : 0]        M_AWREADY,
+    
+    // W channel
+    input   wire  [MST_AMT*W_DATA-1   : 0]        M_WDATA,
+    input   wire  [MST_AMT*W_STRB-1   : 0]        M_WSTRB,
+    input   wire  [MST_AMT-1          : 0]        M_WLAST,
+    input   wire  [MST_AMT-1          : 0]        M_WVALID,
+    output  wire  [MST_AMT-1          : 0]        M_WREADY,
+    
+    // AR channel
+    input   wire  [MST_AMT*W_ID-1     : 0]        M_ARID,
+    input   wire  [MST_AMT*W_ADDR-1   : 0]        M_ARADDR,
+    input   wire  [MST_AMT*ALEN_W-1   : 0]        M_ARLEN,
+    input   wire  [MST_AMT*ASIZE_W-1  : 0]        M_ARSIZE,
+    input   wire  [MST_AMT*ABURST_W-1 : 0]        M_ARBURST,
+    input   wire  [MST_AMT-1          : 0]        M_ARVALID,
+    output  wire  [MST_AMT-1          : 0]        M_ARREADY,
+    
+    // ========== Slave side ports (single slave interface) ==========
+    // AW channel
+    output  reg    [W_SID-1     : 0]        S_AWID,
+    output  reg    [W_ADDR-1   : 0]        S_AWADDR,
+    output  reg    [ALEN_W-1   : 0]        S_AWLEN,
+    output  reg    [ASIZE_W-1  : 0]        S_AWSIZE,
+    output  reg    [ABURST_W-1 : 0]        S_AWBURST,
+    output  reg                            S_AWVALID,
+    input   wire                           S_AWREADY,
+    
+    // W channel
+    output  reg    [W_DATA-1:0]            S_WDATA,
+    output  reg    [W_STRB-1:0]            S_WSTRB,
+    output  reg                            S_WLAST,
+    output  reg                            S_WVALID,
+    input   wire                           S_WREADY,
+    
+    // AR channel
+    output  reg    [W_SID-1     : 0]        S_ARID,
+    output  reg    [W_ADDR-1   : 0]        S_ARADDR,
+    output  reg    [ALEN_W-1   : 0]        S_ARLEN,
+    output  reg    [ASIZE_W-1  : 0]        S_ARSIZE,
+    output  reg    [ABURST_W-1 : 0]        S_ARBURST,
+    output  reg                            S_ARVALID,
+    input   wire                           S_ARREADY,
+    
+    // ========== Control/Status ports ==========
+    output  wire  [MST_AMT-1:0]    AWSELECT_OUT,
+    output  wire  [MST_AMT-1:0]    ARSELECT_OUT,
+    input   wire  [MST_AMT-1:0]    AWSELECT_IN,
+    input   wire  [MST_AMT-1:0]    ARSELECT_IN,
+    input   wire                   arbiter_type,
+    input   wire                   slv_en
+    // ⚠️ channel_en REMOVED - not needed
+);
+
+//=============================================================================
+// Local Parameters
+//=============================================================================
+localparam MST_ID_W     = $clog2(MST_AMT);                          // Width to encode master index
+localparam AW_ORDER_W   = MST_ID_W + ALEN_W;                        // {mst_idx, awlen} for FIFO
+localparam CNT_W        = ALEN_W + 1;                               // Beat counter: AWLEN+1
+
+//=============================================================================
+// Internal Signals - Flattened Arrays for Master Ports
+//=============================================================================
+wire [W_ID-1:0]        m_awid      [0:MST_AMT-1];
+wire [W_ADDR-1:0]      m_awaddr    [0:MST_AMT-1];
+wire [ALEN_W-1:0]      m_awlen     [0:MST_AMT-1];
+wire [ASIZE_W-1:0]     m_awsize    [0:MST_AMT-1];
+wire [ABURST_W-1:0]    m_awburst   [0:MST_AMT-1];
+wire [MST_AMT-1:0]       m_awvalid;
+wire [MST_AMT-1:0]       m_awready;
+
+wire [W_DATA-1:0]      m_wdata     [0:MST_AMT-1];
+wire [W_STRB-1:0]      m_wstrb     [0:MST_AMT-1];
+wire                   m_wlast     [0:MST_AMT-1];
+wire                   m_wvalid    [0:MST_AMT-1];
+wire                   m_wready    [0:MST_AMT-1];
+
+wire [W_ID-1:0]        m_arid      [0:MST_AMT-1];
+wire [W_ADDR-1:0]      m_araddr    [0:MST_AMT-1];
+wire [ALEN_W-1:0]      m_arlen     [0:MST_AMT-1];
+wire [ASIZE_W-1:0]     m_arsize    [0:MST_AMT-1];
+wire [ABURST_W-1:0]    m_arburst   [0:MST_AMT-1];
+wire [MST_AMT-1:0]       m_arvalid;
+wire [MST_AMT-1:0]       m_arready;
+
+//=============================================================================
+// W-Follows-AW Core: AW Order FIFO + Beat Counter Signals
+//=============================================================================
+wire [AW_ORDER_W-1:0]  aw_fifo_wr_data;
+wire [AW_ORDER_W-1:0]  aw_fifo_rd_data;
+wire                   aw_fifo_wr_en;
+wire                   aw_fifo_rd_en;
+wire                   aw_fifo_full;
+wire                   aw_fifo_empty;
+
+reg  [CNT_W-1:0]       w_beat_cnt;                  // Remaining beats for current W transaction
+reg  [MST_ID_W-1:0]    cur_w_mst_id;                // Current master whose W data should be routed
+wire                   w_transaction_active;        // Flag: W transaction in progress
+assign w_transaction_active = (w_beat_cnt > 0);
+
+//=============================================================================
+// Address Decode & Arbitration Signals
+//=============================================================================
+reg  [MST_AMT-1:0] AWSELECT, ARSELECT;
+wire [MST_AMT-1:0] AWGRANT, ARGRANT;
+assign AWSELECT_OUT = AWSELECT;
+assign ARSELECT_OUT = ARSELECT;
+
+//=============================================================================
+// Port Flattening: generate loop for unpack/pack
+//=============================================================================
+genvar m;
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
+        // AW channel unpack
+        assign m_awid[m]    = M_AWID[W_ID*(m+1)-1 -: W_ID];
+        assign m_awaddr[m]  = M_AWADDR[W_ADDR*(m+1)-1 -: W_ADDR];
+        assign m_awlen[m]   = M_AWLEN[ALEN_W*(m+1)-1 -: ALEN_W];
+        assign m_awsize[m]  = M_AWSIZE[ASIZE_W*(m+1)-1 -: ASIZE_W];
+        assign m_awburst[m] = M_AWBURST[ABURST_W*(m+1)-1 -: ABURST_W];
+        assign m_awvalid[m] = M_AWVALID[m];
+        assign M_AWREADY[m] = m_awready[m];
+        
+        // W channel unpack
+        assign m_wdata[m]   = M_WDATA[W_DATA*(m+1)-1 -: W_DATA];
+        assign m_wstrb[m]   = M_WSTRB[W_STRB*(m+1)-1 -: W_STRB];
+        assign m_wlast[m]   = M_WLAST[m];
+        assign m_wvalid[m]  = M_WVALID[m];
+        assign M_WREADY[m]  = m_wready[m];
+        
+        // AR channel unpack
+        assign m_arid[m]    = M_ARID[W_ID*(m+1)-1 -: W_ID];
+        assign m_araddr[m]  = M_ARADDR[W_ADDR*(m+1)-1 -: W_ADDR];
+        assign m_arlen[m]   = M_ARLEN[ALEN_W*(m+1)-1 -: ALEN_W];
+        assign m_arsize[m]  = M_ARSIZE[ASIZE_W*(m+1)-1 -: ASIZE_W];
+        assign m_arburst[m] = M_ARBURST[ABURST_W*(m+1)-1 -: ABURST_W];
+        assign m_arvalid[m] = M_ARVALID[m];
+        assign M_ARREADY[m] = m_arready[m];
+    end
+endgenerate
+
+//=============================================================================
+// Address Decode (parameterized, NO channel_en gating)
+//=============================================================================
+always @(*) begin
+    if (SLAVE_DEFAULT == 1'b0) begin
+        for(int i = 0; i < MST_AMT; i++) begin
+            // Address match: compare upper bits against ADDR_BASE, gated by slv_en
+            AWSELECT[i] = (m_awaddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
+            ARSELECT[i] = (m_araddr[i][W_ADDR-1:ADDR_LENGTH] == ADDR_BASE[W_ADDR-1:ADDR_LENGTH]) & slv_en;
+        end
+        // ⚠️ WSELECT REMOVED: W routing now follows AW order FIFO, not address decode
+    end else begin
+        // Default slave mode: accept any request not selected by others, gated by slv_en
+        AWSELECT = (~AWSELECT_IN & m_awvalid) & {MST_AMT{slv_en}};
+        ARSELECT = (~ARSELECT_IN & m_arvalid) & {MST_AMT{slv_en}};
+    end
+end
+
+//=============================================================================
+// AW/AR Arbitration (SINGLE instance handling both channels)
+//=============================================================================
+// Note: axi_arbiter_m2s_m_amt handles both AW and AR internally
+axi_arbiter_m2s_m_amt #(
+    .W_CID(M_ID_W), 
+    .W_ID(W_ID), 
+    .NUM(MST_AMT)
+) u_axi_arbiter_aw_ar (
+    .AXI_RSTn    (AXI_RSTn),
+    .AXI_CLK     (AXI_CLK),
+    
+    // AW channel ports
+    .AWSELECT    (AWSELECT),
+    .AWVALID     (m_awvalid),
+    .AWREADY     (m_awready),
+    .AWGRANT     (AWGRANT),
+    
+    // AR channel ports
+    .ARSELECT    (ARSELECT),
+    .ARVALID     (m_arvalid),
+    .ARREADY     (m_arready),
+    .ARGRANT     (ARGRANT),
+    
+    .arbiter_type(arbiter_type)
+    // ⚠️ W channel ports REMOVED - handled by AW-order FIFO logic
+);
+//=============================================================================
+// AW Handshake Capture -> Push to Order FIFO
+//=============================================================================
+wire [MST_AMT-1:0] aw_handshake = AWGRANT & {MST_AMT{S_AWREADY}} & m_awvalid;
+reg  [MST_ID_W-1:0] aw_grant_idx;
+
+// One-hot grant to binary index encoder (priority: low index first)
+always @(*) begin
+    aw_grant_idx = '0;
+    for(int i = 0; i < MST_AMT; i++) begin
+        if(AWGRANT[i]) begin
+            aw_grant_idx = i[MST_ID_W-1:0];
+        end
+    end
+end
+
+// AW order FIFO write data: {mst_idx, awlen}
+assign aw_fifo_wr_data = {aw_grant_idx, m_awlen[aw_grant_idx]};
+// Only push to FIFO when W is busy (Case 1 direct-loads when W idle)
+assign aw_fifo_wr_en   = |aw_handshake && w_transaction_active;
+
+//=============================================================================
+// AW Order FIFO Instance (modularized)
+//=============================================================================
+aw_order_fifo #(
+    .DATA_WIDTH(AW_ORDER_W),
+    .FIFO_DEPTH(OUTSTANDING_AMT)
+) u_aw_order_fifo (
+    .clk      (AXI_CLK),
+    .rst_n    (AXI_RSTn),
+    
+    // Write port
+    .wr_en    (aw_fifo_wr_en),
+    .wr_data  (aw_fifo_wr_data),
+    .wr_full  (aw_fifo_full),
+    
+    // Read port
+    .rd_en    (aw_fifo_rd_en),
+    .rd_data  (aw_fifo_rd_data),
+    .rd_empty (aw_fifo_empty),
+    .item_cnt ()
+);
+
+//=============================================================================
+// W Beat Counter & Current Master Tracking
+//=============================================================================
+wire [MST_ID_W-1:0]  fifo_mst_idx;
+wire [ALEN_W-1:0]    fifo_awlen;
+assign {fifo_mst_idx, fifo_awlen} = aw_fifo_rd_data;
+
+// FIFO read enable: only pop when current W transaction came from FIFO
+reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
+assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID) && from_fifo;
+
+// Per-master pending AW counter: gates W FIFO write to prevent stale data
+// in non-targeted M2S instances. Increment on AW handshake, decrement on
+// WLAST completion for the corresponding master.
+integer          pending_aw_cnt [0:MST_AMT-1];
+
+// W beat counter state machine
+always @(posedge AXI_CLK) begin
+    if(!AXI_RSTn) begin
+        w_beat_cnt   <= 0;
+        cur_w_mst_id <= 0;
+        from_fifo    <= 1'b0;
+    end else begin
+        // AW / W beat counter state machine
+        // 优先级: 新 AW 直达 > W 传输递减 > FIFO 取出下一笔
+        // Case 1: AW handshake while W idle -> direct load (bypass FIFO latency)
+        if(|aw_handshake && !w_transaction_active) begin
+            w_beat_cnt   <= m_awlen[aw_grant_idx] + 1'b1;  // beats = LEN+1
+            cur_w_mst_id <= aw_grant_idx;
+            from_fifo    <= 1'b0;  // Direct loaded, not from FIFO
+        end
+        // Case 2: W handshake occurs -> decrement counter
+        else if(w_transaction_active && S_WREADY && S_WVALID) begin
+            if(w_beat_cnt == 1'b1 && S_WLAST) begin
+                w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered if from_fifo
+            end else begin
+                w_beat_cnt <= w_beat_cnt - 1'b1;
+            end
+        end
+        // Case 3: W idle, FIFO has pending AW -> load next transaction
+        else if(!w_transaction_active && !aw_fifo_empty) begin
+            cur_w_mst_id <= fifo_mst_idx;
+            w_beat_cnt   <= fifo_awlen + 1'b1;
+            from_fifo    <= 1'b1;  // Loaded from FIFO
+        end
+    end
+end
+
+//=============================================================================
+// W FIFO write gating: track pending AW count per master
+// Only allow W data into per-master FIFO when this M2S has granted AW to that master
+//=============================================================================
+integer pi;
+always @(posedge AXI_CLK) begin
+    if(!AXI_RSTn) begin
+        for(pi = 0; pi < MST_AMT; pi = pi + 1)
+            pending_aw_cnt[pi] <= 0;
+    end else begin
+        for(pi = 0; pi < MST_AMT; pi = pi + 1) begin
+            if(aw_handshake[pi] && (cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
+                ; // simultaneous AW accept + W last beat → net zero
+            else if(aw_handshake[pi])
+                pending_aw_cnt[pi] <= pending_aw_cnt[pi] + 1;
+            else if((cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
+                pending_aw_cnt[pi] <= pending_aw_cnt[pi] - 1;
+        end
+    end
+end
+
+//=============================================================================
+// W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
+//=============================================================================
+wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
+wire [MST_AMT-1:0]         w_fifo_vld;
+
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : W_FIFO_PER_MASTER
+        axi_fifo_sync #(
+            .FDW(W_DATA + W_STRB + 1),  // {WDATA, WSTRB, WLAST}
+            .FAW(2)                      // depth = 2^2 = 4
+        ) u_fifo_w (
+            .rstn   (AXI_RSTn),
+            .clr    (1'b0),
+            .clk    (AXI_CLK),
+
+            // Write side: from master
+            .wr_rdy (m_wready[m]),
+            .wr_vld (m_wvalid[m] && (pending_aw_cnt[m] > 0)),
+            .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
+
+            // Read side: to slave (gated by W-follows-AW logic)
+            .rd_rdy ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active && S_WREADY),
+            .rd_vld (w_fifo_vld[m]),
+            .rd_dout(w_fifo_dout[m])
+        );
+    end
+endgenerate
+
+// W output Mux: select from current master's FIFO (priority encoder style)
+always @(*) begin
+    S_WDATA = '0;
+    S_WSTRB = '0;
+    S_WLAST = 1'b0;
+    S_WVALID = 1'b0;
+    
+    if(w_transaction_active) begin
+        // Only route data from the master whose AW was granted first
+        S_WDATA = w_fifo_dout[cur_w_mst_id][W_DATA+W_STRB:W_STRB+1];
+        S_WSTRB = w_fifo_dout[cur_w_mst_id][W_STRB:1];
+        S_WLAST = w_fifo_dout[cur_w_mst_id][0];
+        S_WVALID = w_fifo_vld[cur_w_mst_id];
+    end
+end
+
+//=============================================================================
+// AW Ready Back-pressure: stall if FIFO full (prevent overflow)
+//=============================================================================
+wire aw_stall = aw_fifo_full;
+assign m_awready = AWGRANT & {MST_AMT{S_AWREADY}} & ~{MST_AMT{aw_stall}};
+
+// AR Ready: grant held by arbiter, gated by slave ARREADY
+//=============================================================================
+assign m_arready = ARGRANT & {MST_AMT{S_ARREADY}};
+
+//=============================================================================
+// AW/AR Bus Packing & Routing (parameterized Mux)
+//=============================================================================
+localparam NUM_AW_WIDTH = W_SID + W_ADDR + ALEN_W + ASIZE_W + ABURST_W + 1;
+localparam NUM_AR_WIDTH = W_SID + W_ADDR + ALEN_W + ASIZE_W + ABURST_W + 1;
+
+wire [NUM_AW_WIDTH-1:0] bus_aw [0:MST_AMT-1];
+wire [NUM_AR_WIDTH-1:0] bus_ar [0:MST_AMT-1];
+
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_BUS_AW_AR
+        // S_AWID/S_ARID format: {mst_idx[MST_ID_W-1:0], original_ID[W_ID-1:0]}
+        // Embeds master index as ID extension for response routing in S2M module
+        assign bus_aw[m] = {m[MST_ID_W-1:0], m_awid[m],
+                           m_awaddr[m], m_awlen[m], m_awsize[m], m_awburst[m], m_awvalid[m]};
+        assign bus_ar[m] = {m[MST_ID_W-1:0], m_arid[m],
+                           m_araddr[m], m_arlen[m], m_arsize[m], m_arburst[m], m_arvalid[m]};
+    end
+endgenerate
+
+`define S_AWBUS {S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID}
+`define S_ARBUS {S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID}
+
+// AW routing Mux (parameterized case statement)
+always @(*) begin
+    `S_AWBUS = '0;
+    for(int i = 0; i < MST_AMT; i++) begin
+        if(AWGRANT[i]) begin
+            `S_AWBUS = bus_aw[i];
+        end
+    end
+end
+
+// AR routing Mux (parameterized case statement)
+always @(*) begin
+    `S_ARBUS = '0;
+    for(int i = 0; i < MST_AMT; i++) begin
+        if(ARGRANT[i]) begin
+            `S_ARBUS = bus_ar[i];
+        end
+    end
+end
+
+endmodule
+
+module axi_arbiter_m2s_m_amt #(
+    parameter W_CID = 4,
+    parameter W_ID  = 4,
+    parameter NUM   = 3          // Number of requesters (parameterized)
+)(
+    input  wire                  AXI_RSTn,
+    input  wire                  AXI_CLK,
+    
+    // AW channel arbitration
+    input  wire  [NUM-1:0]       AWSELECT, AWVALID, AWREADY,
+    output wire  [NUM-1:0]       AWGRANT,
+    
+    // AR channel arbitration
+    input  wire  [NUM-1:0]       ARSELECT, ARVALID, ARREADY,
+    output wire  [NUM-1:0]       ARGRANT,
+    
+    input  wire                  arbiter_type    // 0: RR, 1: Fixed
+);
+    //=========================================================================
+    // AW Arbitration Logic
+    //=========================================================================
+    localparam STAW_RUN = 1'b0, STAW_WAIT = 1'b1;
+    reg [NUM-1:0] awgrant_reg;
+    reg         stateAW = STAW_RUN;
+    wire [NUM-1:0] aw_sel;
+
+    // Parameterized RR/Fixed Arbiter Instance
+    axi_arbiter_param_rr #(
+        .NUM(NUM)
+    ) u_arbiter_aw (
+        .clk          (AXI_CLK),
+        .rst_n        (AXI_RSTn),
+        .arbiter_type (arbiter_type),
+        .req          (AWSELECT & AWVALID),
+        .grant        (aw_sel)
+    );
+
+    // Handshake Hold State Machine
+    always @(posedge AXI_CLK) begin
+        if (!AXI_RSTn) begin
+            awgrant_reg <= '0;
+            stateAW     <= STAW_RUN;
+        end else begin
+            case (stateAW)
+                STAW_RUN: begin
+                    if (|AWGRANT) begin
+                        // Hold grant until handshake completes (AWREADY goes high)
+                        if (~|(AWGRANT & AWREADY)) begin
+                            awgrant_reg <= AWGRANT;
+                            stateAW     <= STAW_WAIT;
+                        end
+                    end
+                end
+                STAW_WAIT: begin
+                    if (|(AWGRANT & AWVALID & AWREADY)) begin
+                        stateAW <= STAW_RUN;
+                    end
+                end
+            endcase
+        end
+    end
+    assign AWGRANT = (stateAW == STAW_RUN) ? aw_sel : awgrant_reg;
+
+    //=========================================================================
+    // AR Arbitration Logic (Mirrors AW)
+    //=========================================================================
+    localparam STAR_RUN = 1'b0, STAR_WAIT = 1'b1;
+    reg [NUM-1:0] argrant_reg;
+    reg         stateAR = STAR_RUN;
+    wire [NUM-1:0] ar_sel;
+
+    axi_arbiter_param_rr #(
+        .NUM(NUM)
+    ) u_arbiter_ar (
+        .clk          (AXI_CLK),
+        .rst_n        (AXI_RSTn),
+        .arbiter_type (arbiter_type),
+        .req          (ARSELECT & ARVALID),
+        .grant        (ar_sel)
+    );
+
+    always @(posedge AXI_CLK) begin
+        if (!AXI_RSTn) begin
+            argrant_reg <= '0;
+            stateAR     <= STAR_RUN;
+        end else begin
+            case (stateAR)
+                STAR_RUN: begin
+                    if (|ARGRANT) begin
+                        if (~|(ARGRANT & ARREADY)) begin
+                            argrant_reg <= ARGRANT;
+                            stateAR     <= STAR_WAIT;
+                        end
+                    end
+                end
+                STAR_WAIT: begin
+                    if (|(ARGRANT & ARVALID & ARREADY)) begin
+                        stateAR <= STAR_RUN;
+                    end
+                end
+            endcase
+        end
+    end
+    assign ARGRANT = (stateAR == STAR_RUN) ? ar_sel : argrant_reg;
+
+endmodule
+
+module aw_order_fifo
+#(
+    parameter DATA_WIDTH  = 11,   // {MST_ID_W, ALEN_W} width
+    parameter FIFO_DEPTH  = 8,    // Number of entries (power of 2 recommended)
+    parameter PTR_W       = $clog2(FIFO_DEPTH)
+)
+(
+    input  wire                   clk,
+    input  wire                   rst_n,
+    
+    // Write port
+    input  wire                   wr_en,
+    input  wire [DATA_WIDTH-1:0]  wr_data,
+    output wire                   wr_full,
+    
+    // Read port
+    input  wire                   rd_en,
+    output wire [DATA_WIDTH-1:0]  rd_data,
+    output wire                   rd_empty,
+    
+    // Status
+    output wire [PTR_W:0]         item_cnt
+);
+
+// Internal registers
+reg  [PTR_W-1:0]  wr_ptr;
+reg  [PTR_W-1:0]  rd_ptr;
+reg  [PTR_W:0]    fill_cnt;
+
+// Memory array
+reg [DATA_WIDTH-1:0] mem [0:FIFO_DEPTH-1];
+
+// Read data output (combinational)
+assign rd_data = mem[rd_ptr];
+
+// Full/Empty flags
+assign wr_full  = (fill_cnt == FIFO_DEPTH);
+assign rd_empty = (fill_cnt == 0);
+assign item_cnt = fill_cnt;
+
+// Write pointer & data storage
+always @(posedge clk) begin
+    if (!rst_n) begin
+        wr_ptr   <= '0;
+        fill_cnt <= '0;
+    end else begin
+        if (wr_en && !wr_full) begin
+            mem[wr_ptr] <= wr_data;
+            wr_ptr      <= wr_ptr + 1'b1;
+        end
+        // Update fill_cnt for write
+        if (wr_en && !wr_full) begin
+            fill_cnt <= fill_cnt + 1'b1;
+        end
+        // Update fill_cnt for read
+        if (rd_en && !rd_empty) begin
+            fill_cnt <= fill_cnt - 1'b1;
+        end
+    end
+end
+
+// Read pointer
+always @(posedge clk) begin
+    if (!rst_n) begin
+        rd_ptr   <= '0;
+    end else if (rd_en && !rd_empty) begin
+        rd_ptr   <= rd_ptr + 1'b1;
+    end
+end
+
+endmodule
+
+// Synchronous FIFO
+//----------------------------------------------------------------
+// MACROS and PARAMETERS
+//     FDW: bit-width of data
+//     FAW: num of entries in power of 2
+//----------------------------------------------------------------
+// Features
+//    * ready-valid handshake protocol
+//    * First-Word Fall-Through, but rd_vld indicates its validity
+//----------------------------------------------------------------
+//    * data moves when both ready(rdy) and valid(vld) is high.
+//    * ready(rdy) means the receiver is ready to accept data.
+//    * valid(vld) means the data is valid on 'data'.
+//----------------------------------------------------------------
+
+module axi_fifo_sync
+     #(parameter FDW =32, // fifof data width
+                 FAW =5   // num of entries in 2 to the power FAW
+                 )
+(
+       input   wire           rstn
+     , input   wire           clr 
+     , input   wire           clk
+
+     , output  wire           wr_rdy
+     , input   wire           wr_vld
+     , input   wire [FDW-1:0] wr_din
+     , input   wire           rd_rdy
+     , output  wire           rd_vld
+     , output  wire [FDW-1:0] rd_dout
+);
+    
+   localparam FDT = 1 << FAW;
+
+   wire           full     ;
+   wire           empty    ;
+   reg  [FAW:0]   item_cnt ;
+   reg  [FAW:0]   fifo_head; // where data to be read
+   reg  [FAW:0]   fifo_tail; // where data to be written
+   reg  [FAW:0]   next_tail;
+   reg  [FAW:0]   next_head;
+
+   //---------------------------------------------------
+   // synopsys translate_off
+   initial fifo_head = 'h0;
+   initial fifo_tail = 'h0;
+   initial next_head = 'h0;
+   initial next_tail = 'h0;
+   // synopsys translate_on
+   //---------------------------------------------------
+
+   // push data item into the entry pointed by fifo_tail
+   always @(posedge clk) begin
+      if (!rstn) begin
+          fifo_tail <= 0;
+          next_tail <= 1;
+      end else if (clr) begin
+          fifo_tail <= 0;
+          next_tail <= 1;
+      end else begin
+          if (!full && wr_vld) begin
+              fifo_tail <= next_tail;
+              next_tail <= next_tail + 1;
+          end 
+      end
+   end
+
+   // pop data item from the entry pointed by fifo_head
+   always @(posedge clk) begin
+      if (!rstn) begin
+          fifo_head <= 0;
+          next_head <= 1;
+      end else if (clr) begin
+          fifo_head <= 0;
+          next_head <= 1;
+      end else begin
+          if (!empty && rd_rdy) begin
+              fifo_head <= next_head;
+              next_head <= next_head + 1;
+          end
+      end
+   end
+
+   always @(posedge clk) begin
+      if (!rstn) begin
+         item_cnt <= 0;
+      end else if (clr) begin
+         item_cnt <= 0;
+      end else begin
+         if (wr_vld && !full && (!rd_rdy || (rd_rdy && empty))) begin
+             item_cnt <= item_cnt + 1;
+         end else
+         if (rd_rdy && !empty && (!wr_vld || (wr_vld && full))) begin
+             item_cnt <= item_cnt - 1;
+         end
+      end
+   end
+   
+   assign rd_vld = ~empty;
+   assign wr_rdy = ~full;
+   assign empty  = (fifo_head == fifo_tail);
+   assign full   = (item_cnt >= FDT);
+
+   reg [FDW-1:0] Mem [0:FDT-1];
+
+   // synopsys translate_off
+   integer i, j;
+   initial begin
+        for (i = 0; i < FDT; i++) begin
+            for (j = 0; j < FDW; j++) begin
+                Mem[i][j] = 'd0;
+            end
+            
+        end
+   end
+   // synopsys translate_on
+
+   assign rd_dout  = Mem[fifo_head[FAW-1:0]];
+
+   always @(posedge clk) begin
+       if (!full && wr_vld) begin
+           Mem[fifo_tail[FAW-1:0]] <= wr_din;
+       end
+   end
+
+endmodule
+
+module axi_crossbar
+#(
+    // ========== 互连配置 ==========
+    parameter MST_AMT               = 4,              // 主设备数量
+    parameter SLV_AMT               = 4,              // 从设备数量
+    parameter OUTSTANDING_AMT       = 8,              // 每主设备最大未完成事务数
+
+    // ========== 事务配置 ==========
+    parameter W_ID        = 4,              // 主设备事务 ID 位宽
+    parameter TRANS_BURST_W         = 2,              // xBURST 字段位宽
+    parameter TRANS_DATA_LEN_W      = 8,              // xLEN 字段位宽
+    parameter TRANS_DATA_SIZE_W     = 3,              // xSIZE 字段位宽
+    parameter TRANS_WR_RESP_W       = 2,              // xRESP 字段位宽
+    parameter DATA_WIDTH            = 32,             // 数据总线位宽
+    parameter ADDR_WIDTH            = 32,             // 地址总线位宽
+
+    // ========== 派生参数 ==========
+    parameter MST_ID_W              = $clog2(MST_AMT),           // 主设备索引编码位宽
+    parameter SLV_ID_W              = 2,           // 从设备索引编码位宽
+    parameter W_STRB                = DATA_WIDTH / 8,            // 字节使能位宽
+    parameter W_MID                 = SLV_ID_W + W_ID, // master-side ID width after cross_4k_if extension
+    parameter W_SID                 = MST_ID_W + SLV_ID_W + W_ID, // 从设备侧 ID 位宽 (MST_IDX + C4K_PREFIX + ORIG_ID)
+
+    // ========== 地址映射配置 ==========
+    // 默认: 地址高位用于选择从设备
+    parameter SLV_ID_MSB_IDX        = ADDR_WIDTH - 1,
+    parameter SLV_ID_LSB_IDX        = ADDR_WIDTH - SLV_ID_W,
+
+    // ========== 从设备地址基址数组 ==========
+    // 格式: {SLV_AMT{ADDR_WIDTH{1'b0}}} - 用户需按从设备逐一覆写
+    parameter [0:(SLV_AMT*ADDR_WIDTH)-1] SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},
+    parameter [0:(SLV_AMT*8)-1]          SLV_ADDR_LEN  = {SLV_AMT{8'd12}}, // 默认 12 位译码
+
+    // ========== 默认从设备配置 ==========
+    parameter DEFAULT_SLV_IDX       = 0,              // 默认从设备索引 (未命中地址空间的访问)
+    parameter DEFAULT_SLV_EN        = 1'b1,           // 使能默认从设备路由
+    parameter [SLV_AMT-1:0] SLV_DEFAULT_MASK = ((DEFAULT_SLV_EN) ? (1 << DEFAULT_SLV_IDX) : '0)  // bit[s]=1 表示 slave s 为默认设备
+)
+(
+    // ========== 全局信号 ==========
+    input   wire                      AXI_RSTn,
+    input   wire                      AXI_CLK,
+
+    // ========== 主设备侧接口 (扁平化) ==========
+    // -- 写地址通道 (AW)
+    input   wire  [W_MID*MST_AMT-1              : 0]  m_AWID_i,
+    input   wire  [ADDR_WIDTH*MST_AMT-1         : 0]  m_AWADDR_i,
+    input   wire  [TRANS_BURST_W*MST_AMT-1      : 0]  m_AWBURST_i,
+    input   wire  [TRANS_DATA_LEN_W*MST_AMT-1   : 0]  m_AWLEN_i,
+    input   wire  [TRANS_DATA_SIZE_W*MST_AMT-1  : 0]  m_AWSIZE_i,
+    input   wire  [MST_AMT-1                    : 0]  m_AWVALID_i,
+    output  wire  [MST_AMT-1                    : 0]  m_AWREADY_o,
+
+    // -- 写数据通道 (W)
+    input   wire  [DATA_WIDTH*MST_AMT-1         : 0]  m_WDATA_i,
+    input   wire  [W_STRB*MST_AMT-1             : 0]  m_WSTRB_i,
+    input   wire  [MST_AMT-1                    : 0]  m_WLAST_i,
+    input   wire  [MST_AMT-1                    : 0]  m_WVALID_i,
+    output  wire  [MST_AMT-1                    : 0]  m_WREADY_o,
+
+    // -- 写响应通道 (B)
+    output  wire  [W_SID*MST_AMT-1              : 0]  m_BID_o,
+    output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_BRESP_o,
+    output  wire  [MST_AMT-1                    : 0]  m_BVALID_o,
+    input   wire  [MST_AMT-1                    : 0]  m_BREADY_i,
+
+    // -- 读地址通道 (AR)
+    input   wire  [W_MID*MST_AMT-1              : 0]  m_ARID_i,
+    input   wire  [ADDR_WIDTH*MST_AMT-1         : 0]  m_ARADDR_i,
+    input   wire  [TRANS_BURST_W*MST_AMT-1      : 0]  m_ARBURST_i,
+    input   wire  [TRANS_DATA_LEN_W*MST_AMT-1   : 0]  m_ARLEN_i,
+    input   wire  [TRANS_DATA_SIZE_W*MST_AMT-1  : 0]  m_ARSIZE_i,
+    input   wire  [MST_AMT-1                    : 0]  m_ARVALID_i,
+    output  wire  [MST_AMT-1                    : 0]  m_ARREADY_o,
+
+    // -- 读数据通道 (R)
+    output  wire  [W_SID*MST_AMT-1              : 0]  m_RID_o,
+    output  wire  [DATA_WIDTH*MST_AMT-1         : 0]  m_RDATA_o,
+    output  wire  [TRANS_WR_RESP_W*MST_AMT-1    : 0]  m_RRESP_o,
+    output  wire  [MST_AMT-1                    : 0]  m_RLAST_o,
+    output  wire  [MST_AMT-1                    : 0]  m_RVALID_o,
+    input   wire  [MST_AMT-1                    : 0]  m_RREADY_i,
+
+    // -- 主设备侧 R SID 输出 (完整 W_SID，用于 reorder/sid_buffer)
+    output  wire  [W_SID*MST_AMT-1              : 0]  m_RSID_o,
+
+    // ========== 从设备侧接口 (扁平化) ==========
+    // -- 写地址通道 (AW)
+    output  wire  [W_SID*SLV_AMT-1              : 0]  s_AWID_o,
+    output  wire  [ADDR_WIDTH*SLV_AMT-1         : 0]  s_AWADDR_o,
+    output  wire  [TRANS_BURST_W*SLV_AMT-1      : 0]  s_AWBURST_o,
+    output  wire  [TRANS_DATA_LEN_W*SLV_AMT-1   : 0]  s_AWLEN_o,
+    output  wire  [TRANS_DATA_SIZE_W*SLV_AMT-1  : 0]  s_AWSIZE_o,
+    output  wire  [SLV_AMT-1                    : 0]  s_AWVALID_o,
+    input   wire  [SLV_AMT-1                    : 0]  s_AWREADY_i,
+
+    // -- 写数据通道 (W)
+    output  wire  [DATA_WIDTH*SLV_AMT-1         : 0]  s_WDATA_o,
+    output  wire  [W_STRB*SLV_AMT-1             : 0]  s_WSTRB_o,
+    output  wire  [SLV_AMT-1                    : 0]  s_WLAST_o,
+    output  wire  [SLV_AMT-1                    : 0]  s_WVALID_o,
+    input   wire  [SLV_AMT-1                    : 0]  s_WREADY_i,
+
+    // -- 写响应通道 (B)
+    input   wire  [W_SID*SLV_AMT-1              : 0]  s_BID_i,
+    input   wire  [TRANS_WR_RESP_W*SLV_AMT-1    : 0]  s_BRESP_i,
+    input   wire  [SLV_AMT-1                    : 0]  s_BVALID_i,
+    output  wire  [SLV_AMT-1                    : 0]  s_BREADY_o,
+
+    // -- 读地址通道 (AR)
+    output  wire  [W_SID*SLV_AMT-1              : 0]  s_ARID_o,
+    output  wire  [ADDR_WIDTH*SLV_AMT-1         : 0]  s_ARADDR_o,
+    output  wire  [TRANS_BURST_W*SLV_AMT-1      : 0]  s_ARBURST_o,
+    output  wire  [TRANS_DATA_LEN_W*SLV_AMT-1   : 0]  s_ARLEN_o,
+    output  wire  [TRANS_DATA_SIZE_W*SLV_AMT-1  : 0]  s_ARSIZE_o,
+    output  wire  [SLV_AMT-1                    : 0]  s_ARVALID_o,
+    input   wire  [SLV_AMT-1                    : 0]  s_ARREADY_i,
+
+    // -- 读数据通道 (R)
+    input   wire  [W_SID*SLV_AMT-1              : 0]  s_RID_i,
+    input   wire  [DATA_WIDTH*SLV_AMT-1         : 0]  s_RDATA_i,
+    input   wire  [TRANS_WR_RESP_W*SLV_AMT-1    : 0]  s_RRESP_i,
+    input   wire  [SLV_AMT-1                    : 0]  s_RLAST_i,
+    input   wire  [SLV_AMT-1                    : 0]  s_RVALID_i,
+    output  wire  [SLV_AMT-1                    : 0]  s_RREADY_o,
+
+    // ========== 控制 / 状态端口 ==========
+    input   wire                      arbiter_type,           // 0: 轮询 (Round-Robin), 1: 固定优先级 (Fixed-Priority)
+
+    // 可选: 从设备使能掩码
+    input   wire  [SLV_AMT-1          : 0]  slv_en_i
+);
+
+//=============================================================================
+// 本地参数与内部信号声明
+//=============================================================================
+localparam ADDR_DECODE_W = SLV_ID_MSB_IDX - SLV_ID_LSB_IDX + 1;
+
+// ========== 扁平化内部数组 (主设备侧) ==========
+wire [W_MID-1:0]             m_awid      [0:MST_AMT-1];
+wire [ADDR_WIDTH-1:0]        m_awaddr    [0:MST_AMT-1];
+wire [TRANS_BURST_W-1:0]     m_awburst   [0:MST_AMT-1];
+wire [TRANS_DATA_LEN_W-1:0]  m_awlen     [0:MST_AMT-1];
+wire [TRANS_DATA_SIZE_W-1:0] m_awsize    [0:MST_AMT-1];
+wire                         m_awvalid   [0:MST_AMT-1];
+wire                         m_awready   [0:MST_AMT-1];
+
+wire [DATA_WIDTH-1:0]        m_wdata     [0:MST_AMT-1];
+wire [W_STRB-1:0]            m_wstrb     [0:MST_AMT-1];
+wire                         m_wlast     [0:MST_AMT-1];
+wire                         m_wvalid    [0:MST_AMT-1];
+wire                         m_wready    [0:MST_AMT-1];
+
+wire [W_SID-1:0]              m_bid       [0:MST_AMT-1];
+wire [TRANS_WR_RESP_W-1:0]   m_bresp     [0:MST_AMT-1];
+wire                         m_bvalid    [0:MST_AMT-1];
+wire                         m_bready    [0:MST_AMT-1];
+
+wire [W_MID-1:0]             m_arid      [0:MST_AMT-1];
+wire [ADDR_WIDTH-1:0]        m_araddr    [0:MST_AMT-1];
+wire [TRANS_BURST_W-1:0]     m_arburst   [0:MST_AMT-1];
+wire [TRANS_DATA_LEN_W-1:0]  m_arlen     [0:MST_AMT-1];
+wire [TRANS_DATA_SIZE_W-1:0] m_arsize    [0:MST_AMT-1];
+wire                         m_arvalid   [0:MST_AMT-1];
+wire                         m_arready   [0:MST_AMT-1];
+
+wire [W_SID-1:0]             m_rid       [0:MST_AMT-1];
+wire [DATA_WIDTH-1:0]        m_rdata     [0:MST_AMT-1];
+wire [TRANS_WR_RESP_W-1:0]   m_rresp     [0:MST_AMT-1];
+wire                         m_rlast     [0:MST_AMT-1];
+wire                         m_rvalid    [0:MST_AMT-1];
+wire                         m_rready    [0:MST_AMT-1];
+
+wire [W_SID-1:0]             m_rsid      [0:MST_AMT-1];   // 来自 S2M 的完整从设备侧 RID
+
+// ========== 扁平化内部数组 (从设备侧) ==========
+wire [W_SID-1:0]             s_awid      [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]        s_awaddr    [0:SLV_AMT-1];
+wire [TRANS_BURST_W-1:0]     s_awburst   [0:SLV_AMT-1];
+wire [TRANS_DATA_LEN_W-1:0]  s_awlen     [0:SLV_AMT-1];
+wire [TRANS_DATA_SIZE_W-1:0] s_awsize    [0:SLV_AMT-1];
+wire                         s_awvalid   [0:SLV_AMT-1];
+wire                         s_awready   [0:SLV_AMT-1];
+
+wire [DATA_WIDTH-1:0]        s_wdata     [0:SLV_AMT-1];
+wire [W_STRB-1:0]            s_wstrb     [0:SLV_AMT-1];
+wire                         s_wlast     [0:SLV_AMT-1];
+wire                         s_wvalid    [0:SLV_AMT-1];
+wire                         s_wready    [0:SLV_AMT-1];
+
+wire [W_SID-1:0]             s_bid       [0:SLV_AMT-1];
+wire [TRANS_WR_RESP_W-1:0]   s_bresp     [0:SLV_AMT-1];
+wire                         s_bvalid    [0:SLV_AMT-1];
+wire                         s_bready    [0:SLV_AMT-1];
+
+wire [W_SID-1:0]             s_arid      [0:SLV_AMT-1];
+wire [ADDR_WIDTH-1:0]        s_araddr    [0:SLV_AMT-1];
+wire [TRANS_BURST_W-1:0]     s_arburst   [0:SLV_AMT-1];
+wire [TRANS_DATA_LEN_W-1:0]  s_arlen     [0:SLV_AMT-1];
+wire [TRANS_DATA_SIZE_W-1:0] s_arsize    [0:SLV_AMT-1];
+wire                         s_arvalid   [0:SLV_AMT-1];
+wire                         s_arready   [0:SLV_AMT-1];
+
+wire [W_SID-1:0]             s_rid       [0:SLV_AMT-1];
+wire [DATA_WIDTH-1:0]        s_rdata     [0:SLV_AMT-1];
+wire [TRANS_WR_RESP_W-1:0]   s_rresp     [0:SLV_AMT-1];
+wire                         s_rlast     [0:SLV_AMT-1];
+wire                         s_rvalid    [0:SLV_AMT-1];
+wire                         s_rready    [0:SLV_AMT-1];
+
+// ========== M2S 互连信号 ==========
+// AWSELECT/ARSELECT: 每从设备的地址译码结果 [MST_AMT-1:0]
+wire [MST_AMT-1:0]           awselect_out [0:SLV_AMT-1];
+wire [MST_AMT-1:0]           arselect_out [0:SLV_AMT-1];
+
+// 默认从设备 M2S 的 AWSELECT_IN = OR(所有非默认从设备的 awselect_out)
+wire [MST_AMT-1:0]           awselect_or_nondefault;
+wire [MST_AMT-1:0]           arselect_or_nondefault;
+
+// Ready 聚合: 收集每个 (从设备, 主设备) 对的 M2S ready，然后按主设备 OR 归约
+wire                         m_awready_m2s [0:SLV_AMT-1][0:MST_AMT-1];
+wire                         m_wready_m2s  [0:SLV_AMT-1][0:MST_AMT-1];
+wire                         m_arready_m2s [0:SLV_AMT-1][0:MST_AMT-1];
+
+// ========== S2M 互连信号 ==========
+// 收集每个 (主设备, 从设备) 对的 S2M ready，然后按从设备 OR 归约
+wire                         s_bready_s2m [0:MST_AMT-1][0:SLV_AMT-1];
+wire                         s_rready_s2m [0:MST_AMT-1][0:SLV_AMT-1];
+
+//=============================================================================
+// 端口扁平化: 主设备侧 (解包)
+//=============================================================================
+genvar m, s;
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : UNPACK_MASTER
+        // AW 通道
+        assign m_awid[m]     = m_AWID_i[W_MID*(m+1)-1 -: W_MID];
+        assign m_awaddr[m]   = m_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
+        assign m_awburst[m]  = m_AWBURST_i[TRANS_BURST_W*(m+1)-1 -: TRANS_BURST_W];
+        assign m_awlen[m]    = m_AWLEN_i[TRANS_DATA_LEN_W*(m+1)-1 -: TRANS_DATA_LEN_W];
+        assign m_awsize[m]   = m_AWSIZE_i[TRANS_DATA_SIZE_W*(m+1)-1 -: TRANS_DATA_SIZE_W];
+        assign m_awvalid[m]  = m_AWVALID_i[m];
+        assign m_AWREADY_o[m] = m_awready[m];
+        
+        // W 通道
+        assign m_wdata[m]    = m_WDATA_i[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH];
+        assign m_wstrb[m]    = m_WSTRB_i[W_STRB*(m+1)-1 -: W_STRB];
+        assign m_wlast[m]    = m_WLAST_i[m];
+        assign m_wvalid[m]   = m_WVALID_i[m];
+        assign m_WREADY_o[m] = m_wready[m];
+        
+        // B 通道
+        assign m_BID_o[W_SID*(m+1)-1 -: W_SID] = m_bid[m];
+        assign m_BRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_bresp[m];
+        assign m_BVALID_o[m] = m_bvalid[m];
+        assign m_bready[m]   = m_BREADY_i[m];
+        
+        // AR 通道
+        assign m_arid[m]     = m_ARID_i[W_MID*(m+1)-1 -: W_MID];
+        assign m_araddr[m]   = m_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH];
+        assign m_arburst[m]  = m_ARBURST_i[TRANS_BURST_W*(m+1)-1 -: TRANS_BURST_W];
+        assign m_arlen[m]    = m_ARLEN_i[TRANS_DATA_LEN_W*(m+1)-1 -: TRANS_DATA_LEN_W];
+        assign m_arsize[m]   = m_ARSIZE_i[TRANS_DATA_SIZE_W*(m+1)-1 -: TRANS_DATA_SIZE_W];
+        assign m_arvalid[m]  = m_ARVALID_i[m];
+        assign m_ARREADY_o[m] = m_arready[m];
+        
+        // R 通道
+        assign m_rid[m]    = m_rsid[m];                // pass full W_SID, no stripping
+        assign m_RSID_o[W_SID*(m+1)-1 -: W_SID] = m_rsid[m];
+        assign m_RID_o[W_SID*(m+1)-1 -: W_SID] = m_rid[m];
+        assign m_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH] = m_rdata[m];
+        assign m_RRESP_o[TRANS_WR_RESP_W*(m+1)-1 -: TRANS_WR_RESP_W] = m_rresp[m];
+        assign m_RLAST_o[m] = m_rlast[m];
+        assign m_RVALID_o[m] = m_rvalid[m];
+        assign m_rready[m]   = m_RREADY_i[m];
+    end
+endgenerate
+
+//=============================================================================
+// 端口扁平化: 从设备侧 (打包)
+// 默认从设备 (SLV_DEFAULT_MASK[s]==1) 的外部端口被 tie-off,
+// 其 s_awready / s_wready / s_arready / B / R 信号由 INST_M2S 中的
+// axi_default_slave 驱动
+//=============================================================================
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_SLAVE
+        if (!SLV_DEFAULT_MASK[s]) begin : NORMAL_SLV
+            // AW 通道
+            assign s_AWID_o[W_SID*(s+1)-1 -: W_SID]       = s_awid[s];
+            assign s_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_awaddr[s];
+            assign s_AWBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_awburst[s];
+            assign s_AWLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_awlen[s];
+            assign s_AWSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = s_awsize[s];
+            assign s_AWVALID_o[s] = s_awvalid[s];
+            assign s_awready[s]   = s_AWREADY_i[s];
+
+            // W 通道
+            assign s_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = s_wdata[s];
+            assign s_WSTRB_o[W_STRB*(s+1)-1 -: W_STRB] = s_wstrb[s];
+            assign s_WLAST_o[s] = s_wlast[s];
+            assign s_WVALID_o[s] = s_wvalid[s];
+            assign s_wready[s]   = s_WREADY_i[s];
+
+            // B 通道
+            assign s_bid[s]      = s_BID_i[W_SID*(s+1)-1 -: W_SID];
+            assign s_bresp[s]    = s_BRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
+            assign s_bvalid[s]   = s_BVALID_i[s];
+            assign s_BREADY_o[s] = s_bready[s];
+
+            // AR 通道
+            assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = s_arid[s];
+            assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr[s];
+            assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_arburst[s];
+            assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_arlen[s];
+            assign s_ARSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = s_arsize[s];
+            assign s_ARVALID_o[s] = s_arvalid[s];
+            assign s_arready[s]   = s_ARREADY_i[s];
+
+            // R 通道
+            assign s_rid[s]      = s_RID_i[W_SID*(s+1)-1 -: W_SID];
+            assign s_rdata[s]    = s_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH];
+            assign s_rresp[s]    = s_RRESP_i[TRANS_WR_RESP_W*(s+1)-1 -: TRANS_WR_RESP_W];
+            assign s_rlast[s]    = s_RLAST_i[s];
+            assign s_rvalid[s]   = s_RVALID_i[s];
+            assign s_RREADY_o[s] = s_rready[s];
+        end else begin : DEFAULT_SLV
+            // 默认从设备: 外部 AW/W/AR 端口 tie-off
+            assign s_AWID_o[W_SID*(s+1)-1 -: W_SID]       = {W_SID{1'b0}};
+            assign s_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = {ADDR_WIDTH{1'b0}};
+            assign s_AWBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = {TRANS_BURST_W{1'b0}};
+            assign s_AWLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = {TRANS_DATA_LEN_W{1'b0}};
+            assign s_AWSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = {TRANS_DATA_SIZE_W{1'b0}};
+            assign s_AWVALID_o[s] = 1'b0;
+            // s_awready[s] 由 INST_M2S 中的 axi_default_slave 驱动
+
+            assign s_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH] = {DATA_WIDTH{1'b0}};
+            assign s_WSTRB_o[W_STRB*(s+1)-1 -: W_STRB] = {W_STRB{1'b0}};
+            assign s_WLAST_o[s] = 1'b0;
+            assign s_WVALID_o[s] = 1'b0;
+            // s_wready[s] 由 INST_M2S 中的 axi_default_slave 驱动
+
+            // B 通道输入由 INST_M2S 中的 axi_default_slave 驱动
+            assign s_BREADY_o[s] = 1'b0;
+
+            assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = {W_SID{1'b0}};
+            assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = {ADDR_WIDTH{1'b0}};
+            assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = {TRANS_BURST_W{1'b0}};
+            assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = {TRANS_DATA_LEN_W{1'b0}};
+            assign s_ARSIZE_o[TRANS_DATA_SIZE_W*(s+1)-1 -: TRANS_DATA_SIZE_W] = {TRANS_DATA_SIZE_W{1'b0}};
+            assign s_ARVALID_o[s] = 1'b0;
+            // s_arready[s] 由 INST_M2S 中的 axi_default_slave 驱动
+
+            // R 通道输入由 INST_M2S 中的 axi_default_slave 驱动
+            assign s_RREADY_o[s] = 1'b0;
+        end
+    end
+endgenerate
+
+//=============================================================================
+// 默认从设备 AWSELECT_IN/ARSELECT_IN 归约
+// awselect_or_nondefault = bitwise OR(所有非默认从设备的 awselect_out)
+// 默认从设备 M2S 内部做 ~AWSELECT_IN, 实现 "未被任何其他从设备选中" 的译码
+//=============================================================================
+generate
+    if (|SLV_DEFAULT_MASK) begin : DEFAULT_OR
+        wire [MST_AMT-1:0] aw_chain [0:SLV_AMT];
+        wire [MST_AMT-1:0] ar_chain [0:SLV_AMT];
+        assign aw_chain[0] = {MST_AMT{1'b0}};
+        assign ar_chain[0] = {MST_AMT{1'b0}};
+        for (s = 0; s < SLV_AMT; s = s + 1) begin
+            if (!SLV_DEFAULT_MASK[s]) begin
+                assign aw_chain[s+1] = aw_chain[s] | awselect_out[s];
+                assign ar_chain[s+1] = ar_chain[s] | arselect_out[s];
+            end else begin
+                assign aw_chain[s+1] = aw_chain[s];
+                assign ar_chain[s+1] = ar_chain[s];
+            end
+        end
+        assign awselect_or_nondefault = aw_chain[SLV_AMT];
+        assign arselect_or_nondefault = ar_chain[SLV_AMT];
+    end else begin
+        assign awselect_or_nondefault = {MST_AMT{1'b0}};
+        assign arselect_or_nondefault = {MST_AMT{1'b0}};
+    end
+endgenerate
+
+//=============================================================================
+// Ready 聚合: 主设备侧 (M2S OR 归约)
+// 对于每个主设备 m，只要存在任意一个从设备 s 的 M2S 返回 ready，则该主设备 ready
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : READY_AGG_M
+        wire [SLV_AMT-1:0] aw_rdy_vec, w_rdy_vec, ar_rdy_vec;
+        for(s = 0; s < SLV_AMT; s = s + 1) begin : AGG_SLV
+            assign aw_rdy_vec[s] = m_awready_m2s[s][m];
+            assign w_rdy_vec[s]  = m_wready_m2s[s][m];
+            assign ar_rdy_vec[s] = m_arready_m2s[s][m];
+        end
+        assign m_awready[m] = |aw_rdy_vec;
+        assign m_wready[m]  = |w_rdy_vec;
+        assign m_arready[m] = |ar_rdy_vec;
+    end
+endgenerate
+
+//=============================================================================
+// Ready 聚合: 从设备侧 (S2M OR 归约)
+// 对于每个从设备 s，只要存在任意一个主设备 m 的 S2M 返回 ready，则该从设备 ready
+//=============================================================================
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : READY_AGG_S
+        wire [MST_AMT-1:0] b_rdy_vec, r_rdy_vec;
+        for(m = 0; m < MST_AMT; m = m + 1) begin : AGG_MST
+            assign b_rdy_vec[m] = s_bready_s2m[m][s];
+            assign r_rdy_vec[m] = s_rready_s2m[m][s];
+        end
+        assign s_bready[s] = |b_rdy_vec;
+        assign s_rready[s] = |r_rdy_vec;
+    end
+endgenerate
+
+//=============================================================================
+// M2S 模块实例化: 每个从设备一个 (axi_m2s_m_amt)
+//=============================================================================
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_M2S
+        // 构造打包的主设备数组以连接 M2S 模块
+        wire [W_MID*MST_AMT-1:0] m_awid_packed;
+        wire [ADDR_WIDTH*MST_AMT-1:0]     m_awaddr_packed;
+        wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_awlen_packed;
+        wire [TRANS_DATA_SIZE_W*MST_AMT-1:0] m_awsize_packed;
+        wire [TRANS_BURST_W*MST_AMT-1:0] m_awburst_packed;
+        wire [MST_AMT-1:0] m_awvalid_packed;
+        wire [MST_AMT-1:0] m_awready_packed;
+        
+        wire [DATA_WIDTH*MST_AMT-1:0] m_wdata_packed;
+        wire [W_STRB*MST_AMT-1:0]     m_wstrb_packed;
+        wire [MST_AMT-1:0] m_wlast_packed;
+        wire [MST_AMT-1:0] m_wvalid_packed;
+        wire [MST_AMT-1:0] m_wready_packed;
+        
+        wire [W_MID*MST_AMT-1:0] m_arid_packed;
+        wire [ADDR_WIDTH*MST_AMT-1:0]     m_araddr_packed;
+        wire [TRANS_DATA_LEN_W*MST_AMT-1:0] m_arlen_packed;
+        wire [TRANS_DATA_SIZE_W*MST_AMT-1:0] m_arsize_packed;
+        wire [TRANS_BURST_W*MST_AMT-1:0] m_arburst_packed;
+        wire [MST_AMT-1:0] m_arvalid_packed;
+        wire [MST_AMT-1:0] m_arready_packed;
+        
+        // 将内部解包数组重新打包为扁平化向量
+        for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_M2S
+            assign m_awid_packed[W_MID*m +: W_MID] = m_awid[m];
+            assign m_awaddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_awaddr[m];
+            assign m_awlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_awlen[m];
+            assign m_awsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_awsize[m];
+            assign m_awburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_awburst[m];
+            assign m_awvalid_packed[m] = m_awvalid[m];
+            assign m_wdata_packed[DATA_WIDTH*m +: DATA_WIDTH] = m_wdata[m];
+            assign m_wstrb_packed[W_STRB*m +: W_STRB] = m_wstrb[m];
+            assign m_wlast_packed[m] = m_wlast[m];
+            assign m_wvalid_packed[m] = m_wvalid[m];
+            assign m_arid_packed[W_MID*m +: W_MID] = m_arid[m];
+            assign m_araddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_araddr[m];
+            assign m_arlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_arlen[m];
+            assign m_arsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_arsize[m];
+            assign m_arburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_arburst[m];
+            assign m_arvalid_packed[m] = m_arvalid[m];
+            
+            // Ready 输出: 将 M2S 实例 s 对主设备 m 的 ready 写入 2D 数组
+            assign m_awready_m2s[s][m] = m_awready_packed[m];
+            assign m_wready_m2s[s][m]  = m_wready_packed[m];
+            assign m_arready_m2s[s][m] = m_arready_packed[m];
+        end
+
+        // M2S 输出的中间信号 (所有从设备的 awselect_out/arselect_out 均由 M2S 驱动)
+        wire [MST_AMT-1:0] m2s_awsel, m2s_arsel;
+
+        axi_m2s_m_amt #(
+            .ADDR_BASE(SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH]),
+            .ADDR_LENGTH(SLV_ADDR_LEN[8*(s+1)-1 -: 8]),
+            .M_ID_W(MST_ID_W),
+            .W_ID(W_MID),
+            .W_ADDR(ADDR_WIDTH),
+            .W_DATA(DATA_WIDTH),
+            .W_STRB(W_STRB),
+            .W_SID(W_SID),
+            .MST_AMT(MST_AMT),
+            .OUTSTANDING_AMT(OUTSTANDING_AMT),
+            .ALEN_W(TRANS_DATA_LEN_W),
+            .ASIZE_W(TRANS_DATA_SIZE_W),
+            .ABURST_W(TRANS_BURST_W),
+            .SLAVE_DEFAULT(SLV_DEFAULT_MASK[s])
+        ) u_axi_m2s (
+            .AXI_RSTn(AXI_RSTn),
+            .AXI_CLK(AXI_CLK),
+
+            .M_AWID(m_awid_packed),
+            .M_AWADDR(m_awaddr_packed),
+            .M_AWLEN(m_awlen_packed),
+            .M_AWSIZE(m_awsize_packed),
+            .M_AWBURST(m_awburst_packed),
+            .M_AWVALID(m_awvalid_packed),
+            .M_AWREADY(m_awready_packed),
+
+            .M_WDATA(m_wdata_packed),
+            .M_WSTRB(m_wstrb_packed),
+            .M_WLAST(m_wlast_packed),
+            .M_WVALID(m_wvalid_packed),
+            .M_WREADY(m_wready_packed),
+
+            .M_ARID(m_arid_packed),
+            .M_ARADDR(m_araddr_packed),
+            .M_ARLEN(m_arlen_packed),
+            .M_ARSIZE(m_arsize_packed),
+            .M_ARBURST(m_arburst_packed),
+            .M_ARVALID(m_arvalid_packed),
+            .M_ARREADY(m_arready_packed),
+
+            .S_AWID(s_awid[s]),
+            .S_AWADDR(s_awaddr[s]),
+            .S_AWLEN(s_awlen[s]),
+            .S_AWSIZE(s_awsize[s]),
+            .S_AWBURST(s_awburst[s]),
+            .S_AWVALID(s_awvalid[s]),
+            .S_AWREADY(s_awready[s]),
+
+            .S_WDATA(s_wdata[s]),
+            .S_WSTRB(s_wstrb[s]),
+            .S_WLAST(s_wlast[s]),
+            .S_WVALID(s_wvalid[s]),
+            .S_WREADY(s_wready[s]),
+
+            .S_ARID(s_arid[s]),
+            .S_ARADDR(s_araddr[s]),
+            .S_ARLEN(s_arlen[s]),
+            .S_ARSIZE(s_arsize[s]),
+            .S_ARBURST(s_arburst[s]),
+            .S_ARVALID(s_arvalid[s]),
+            .S_ARREADY(s_arready[s]),
+
+            .AWSELECT_OUT(m2s_awsel),
+            .ARSELECT_OUT(m2s_arsel),
+            .AWSELECT_IN(awselect_or_nondefault),
+            .ARSELECT_IN(arselect_or_nondefault),
+            .arbiter_type(arbiter_type),
+            .slv_en(slv_en_i[s])
+        );
+
+        // 默认从设备: 例化 axi_default_slave 驱动 ready / B / R 信号
+        if (SLV_DEFAULT_MASK[s]) begin : GEN_DEFAULT_SLV
+            axi_default_slave #(
+                .W_CID(SLV_ID_W),
+                .W_ID(W_MID),
+                .W_ADDR(ADDR_WIDTH),
+                .W_DATA(DATA_WIDTH),
+                .W_STRB(W_STRB),
+                .W_SID(W_SID)
+            ) u_axi_default_slave (
+                .AXI_RSTn(AXI_RSTn),
+                .AXI_CLK (AXI_CLK),
+
+                .AWID    (s_awid[s]),
+                .AWADDR  (s_awaddr[s]),
+                .AWLEN   (s_awlen[s]),
+                .AWSIZE  (s_awsize[s]),
+                .AWBURST (s_awburst[s]),
+                .AWVALID (s_awvalid[s]),
+                .AWREADY (s_awready[s]),
+
+                .WDATA   (s_wdata[s]),
+                .WSTRB   (s_wstrb[s]),
+                .WLAST   (s_wlast[s]),
+                .WVALID  (s_wvalid[s]),
+                .WREADY  (s_wready[s]),
+
+                .BID     (s_bid[s]),
+                .BRESP   (s_bresp[s]),
+                .BVALID  (s_bvalid[s]),
+                .BREADY  (s_bready[s]),
+
+                .ARID    (s_arid[s]),
+                .ARADDR  (s_araddr[s]),
+                .ARLEN   (s_arlen[s]),
+                .ARSIZE  (s_arsize[s]),
+                .ARBURST (s_arburst[s]),
+                .ARVALID (s_arvalid[s]),
+                .ARREADY (s_arready[s]),
+
+                .RID     (s_rid[s]),
+                .RDATA   (s_rdata[s]),
+                .RRESP   (s_rresp[s]),
+                .RLAST   (s_rlast[s]),
+                .RVALID  (s_rvalid[s]),
+                .RREADY  (s_rready[s])
+            );
+        end
+
+        assign awselect_out[s] = m2s_awsel;
+        assign arselect_out[s] = m2s_arsel;
+    end
+endgenerate
+
+//=============================================================================
+// S2M 模块实例化: 每个主设备一个 (axi_s2m_s_amt)
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : INST_S2M
+        // 构造打包的从设备数组以连接 S2M 模块
+        wire [W_SID*SLV_AMT-1:0] s_bid_packed;
+        wire [TRANS_WR_RESP_W*SLV_AMT-1:0] s_bresp_packed;
+        wire [SLV_AMT-1:0] s_bvalid_packed;
+        wire [SLV_AMT-1:0] s_bready_packed;
+        
+        wire [W_SID*SLV_AMT-1:0] s_rid_packed;
+        wire [DATA_WIDTH*SLV_AMT-1:0] s_rdata_packed;
+        wire [TRANS_WR_RESP_W*SLV_AMT-1:0] s_rresp_packed;
+        wire [SLV_AMT-1:0] s_rlast_packed;
+        wire [SLV_AMT-1:0] s_rvalid_packed;
+        wire [SLV_AMT-1:0] s_rready_packed;
+        
+        for(s = 0; s < SLV_AMT; s = s + 1) begin : PACK_S2M
+            assign s_bid_packed[W_SID*s +: W_SID] = s_bid[s];
+            assign s_bresp_packed[TRANS_WR_RESP_W*s +: TRANS_WR_RESP_W] = s_bresp[s];
+            assign s_bvalid_packed[s] = s_bvalid[s];
+            assign s_rid_packed[W_SID*s +: W_SID] = s_rid[s];
+            assign s_rdata_packed[DATA_WIDTH*s +: DATA_WIDTH] = s_rdata[s];
+            assign s_rresp_packed[TRANS_WR_RESP_W*s +: TRANS_WR_RESP_W] = s_rresp[s];
+            assign s_rlast_packed[s] = s_rlast[s];
+            assign s_rvalid_packed[s] = s_rvalid[s];
+            
+            assign s_bready_s2m[m][s] = s_bready_packed[s];
+            assign s_rready_s2m[m][s] = s_rready_packed[s];
+        end
+
+        axi_s2m_s_amt #(
+            .MASTER_ID(m),
+            .W_CID(MST_ID_W),
+            .W_ID(W_MID),
+            .W_ADDR(ADDR_WIDTH),
+            .W_DATA(DATA_WIDTH),
+            .W_STRB(W_STRB),
+            .W_SID(W_SID),
+            .SLV_AMT(SLV_AMT),
+            .MST_ID_FIELD_MSB(MST_ID_W + W_MID - 1),
+            .MST_ID_FIELD_LSB(W_MID)
+        ) u_axi_s2m (
+            .AXI_RSTn(AXI_RSTn),
+            .AXI_CLK(AXI_CLK),
+            
+            .M_BID(m_bid[m]),
+            .M_BRESP(m_bresp[m]),
+            .M_BVALID(m_bvalid[m]),
+            .M_BREADY(m_bready[m]),
+            
+            .M_RSID(m_rsid[m]),
+            .M_RDATA(m_rdata[m]),
+            .M_RRESP(m_rresp[m]),
+            .M_RLAST(m_rlast[m]),
+            .M_RVALID(m_rvalid[m]),
+            .M_RREADY(m_rready[m]),
+            
+            .S_BID(s_bid_packed),
+            .S_BRESP(s_bresp_packed),
+            .S_BVALID(s_bvalid_packed),
+            .S_BREADY(s_bready_packed),
+            
+            .S_RID(s_rid_packed),
+            .S_RDATA(s_rdata_packed),
+            .S_RRESP(s_rresp_packed),
+            .S_RLAST(s_rlast_packed),
+            .S_RVALID(s_rvalid_packed),
+            .S_RREADY(s_rready_packed),
+            
+            .arbiter_type(arbiter_type)
+        );
+    end
+endgenerate
+
+endmodule
+
+//=============================================================================
+// Testbench: cross_tb
+// Desc     : Testbench for axi_crossbar (4x4 flattened crossbar switch)
+//=============================================================================
+
+module cross_tb;
+
+    //=========================================================================
+    // Parameters (matching DUT defaults)
+    //=========================================================================
+    localparam MST_AMT           = 4;
+    localparam SLV_AMT           = 4;
+    localparam OUTSTANDING_AMT   = 8;
+    localparam W_ID              = 4;
+    localparam TRANS_BURST_W     = 2;
+    localparam TRANS_DATA_LEN_W  = 8;
+    localparam TRANS_DATA_SIZE_W = 3;
+    localparam TRANS_WR_RESP_W   = 2;
+    localparam DATA_WIDTH        = 32;
+    localparam ADDR_WIDTH        = 32;
+    localparam W_STRB            = DATA_WIDTH / 8;
+    localparam MST_ID_W          = $clog2(MST_AMT);
+    localparam SLV_ID_W          = 2;
+    localparam W_MID             = SLV_ID_W + W_ID;            // 6
+    localparam W_SID             = MST_ID_W + SLV_ID_W + W_ID; // 8
+
+    // 4KB address space per slave
+    localparam SLV_MEM_DEPTH = 1024;
+    localparam [0:SLV_AMT*ADDR_WIDTH-1] SLV_ADDR_BASE = {
+        32'h00003000,   // Slave 3: 0x3000-0x3FFF
+        32'h00002000,   // Slave 2: 0x2000-0x2FFF
+        32'h00001000,   // Slave 1: 0x1000-0x1FFF
+        32'h00000000    // Slave 0: 0x0000-0x0FFF
+    };
+    localparam [0:SLV_AMT*8-1] SLV_ADDR_LEN = {
+        8'd12, 8'd12, 8'd12, 8'd12
+    };
+
+    //=========================================================================
+    // Clock and Reset
+    //=========================================================================
+    reg clk;
+    reg rst_n;
+
+    //=========================================================================
+    // Master-side signals (flattened)
+    //=========================================================================
+    // AW
+    reg  [W_MID*MST_AMT-1:0]              m_AWID;
+    reg  [ADDR_WIDTH*MST_AMT-1:0]         m_AWADDR;
+    reg  [TRANS_BURST_W*MST_AMT-1:0]      m_AWBURST;
+    reg  [TRANS_DATA_LEN_W*MST_AMT-1:0]   m_AWLEN;
+    reg  [TRANS_DATA_SIZE_W*MST_AMT-1:0]  m_AWSIZE;
+    reg  [MST_AMT-1:0]                    m_AWVALID;
+    wire [MST_AMT-1:0]                    m_AWREADY;
+    // W
+    reg  [DATA_WIDTH*MST_AMT-1:0]         m_WDATA;
+    reg  [W_STRB*MST_AMT-1:0]             m_WSTRB;
+    reg  [MST_AMT-1:0]                    m_WLAST;
+    reg  [MST_AMT-1:0]                    m_WVALID;
+    wire [MST_AMT-1:0]                    m_WREADY;
+    // B
+    wire [W_SID*MST_AMT-1:0]              m_BID;
+    wire [TRANS_WR_RESP_W*MST_AMT-1:0]    m_BRESP;
+    wire [MST_AMT-1:0]                    m_BVALID;
+    reg  [MST_AMT-1:0]                    m_BREADY;
+    // AR
+    reg  [W_MID*MST_AMT-1:0]              m_ARID;
+    reg  [ADDR_WIDTH*MST_AMT-1:0]         m_ARADDR;
+    reg  [TRANS_BURST_W*MST_AMT-1:0]      m_ARBURST;
+    reg  [TRANS_DATA_LEN_W*MST_AMT-1:0]   m_ARLEN;
+    reg  [TRANS_DATA_SIZE_W*MST_AMT-1:0]  m_ARSIZE;
+    reg  [MST_AMT-1:0]                    m_ARVALID;
+    wire [MST_AMT-1:0]                    m_ARREADY;
+    // R
+    wire [W_SID*MST_AMT-1:0]              m_RID;
+    wire [DATA_WIDTH*MST_AMT-1:0]         m_RDATA;
+    wire [TRANS_WR_RESP_W*MST_AMT-1:0]    m_RRESP;
+    wire [MST_AMT-1:0]                    m_RLAST;
+    wire [MST_AMT-1:0]                    m_RVALID;
+    reg  [MST_AMT-1:0]                    m_RREADY;
+    // RSID
+    wire [W_SID*MST_AMT-1:0]              m_RSID;
+
+    //=========================================================================
+    // Slave-side signals (flattened)
+    //=========================================================================
+    // AW
+    wire [W_SID*SLV_AMT-1:0]              s_AWID;
+    wire [ADDR_WIDTH*SLV_AMT-1:0]         s_AWADDR;
+    wire [TRANS_BURST_W*SLV_AMT-1:0]      s_AWBURST;
+    wire [TRANS_DATA_LEN_W*SLV_AMT-1:0]   s_AWLEN;
+    wire [TRANS_DATA_SIZE_W*SLV_AMT-1:0]  s_AWSIZE;
+    wire [SLV_AMT-1:0]                    s_AWVALID;
+    reg  [SLV_AMT-1:0]                    s_AWREADY;
+    // W
+    wire [DATA_WIDTH*SLV_AMT-1:0]         s_WDATA;
+    wire [W_STRB*SLV_AMT-1:0]             s_WSTRB;
+    wire [SLV_AMT-1:0]                    s_WLAST;
+    wire [SLV_AMT-1:0]                    s_WVALID;
+    reg  [SLV_AMT-1:0]                    s_WREADY;
+    // B
+    reg  [W_SID*SLV_AMT-1:0]              s_BID;
+    reg  [TRANS_WR_RESP_W*SLV_AMT-1:0]    s_BRESP;
+    reg  [SLV_AMT-1:0]                    s_BVALID;
+    wire [SLV_AMT-1:0]                    s_BREADY;
+    // AR
+    wire [W_SID*SLV_AMT-1:0]              s_ARID;
+    wire [ADDR_WIDTH*SLV_AMT-1:0]         s_ARADDR;
+    wire [TRANS_BURST_W*SLV_AMT-1:0]      s_ARBURST;
+    wire [TRANS_DATA_LEN_W*SLV_AMT-1:0]   s_ARLEN;
+    wire [TRANS_DATA_SIZE_W*SLV_AMT-1:0]  s_ARSIZE;
+    wire [SLV_AMT-1:0]                    s_ARVALID;
+    reg  [SLV_AMT-1:0]                    s_ARREADY;
+    // R
+    reg  [W_SID*SLV_AMT-1:0]              s_RID;
+    reg  [DATA_WIDTH*SLV_AMT-1:0]         s_RDATA;
+    reg  [TRANS_WR_RESP_W*SLV_AMT-1:0]    s_RRESP;
+    reg  [SLV_AMT-1:0]                    s_RLAST;
+    reg  [SLV_AMT-1:0]                    s_RVALID;
+    wire [SLV_AMT-1:0]                    s_RREADY;
+
+    //=========================================================================
+    // Control
+    //=========================================================================
+    reg                arbiter_type;
+    reg [SLV_AMT-1:0]  slv_en;
+
+    //=========================================================================
+    // DUT Instantiation
+    //=========================================================================
+    axi_crossbar #(
+        .MST_AMT           (MST_AMT),
+        .SLV_AMT           (SLV_AMT),
+        .OUTSTANDING_AMT   (OUTSTANDING_AMT),
+        .W_ID              (W_ID),
+        .TRANS_BURST_W     (TRANS_BURST_W),
+        .TRANS_DATA_LEN_W  (TRANS_DATA_LEN_W),
+        .TRANS_DATA_SIZE_W (TRANS_DATA_SIZE_W),
+        .TRANS_WR_RESP_W   (TRANS_WR_RESP_W),
+        .DATA_WIDTH        (DATA_WIDTH),
+        .ADDR_WIDTH        (ADDR_WIDTH),
+        .SLV_ADDR_BASE     (SLV_ADDR_BASE),
+        .SLV_ADDR_LEN      (SLV_ADDR_LEN),
+        .DEFAULT_SLV_EN    (1'b0)        // no default slave: all 4 are normal
+    ) u_dut (
+        .AXI_RSTn       (rst_n),
+        .AXI_CLK        (clk),
+        .m_AWID_i       (m_AWID),
+        .m_AWADDR_i     (m_AWADDR),
+        .m_AWBURST_i    (m_AWBURST),
+        .m_AWLEN_i      (m_AWLEN),
+        .m_AWSIZE_i     (m_AWSIZE),
+        .m_AWVALID_i    (m_AWVALID),
+        .m_AWREADY_o    (m_AWREADY),
+        .m_WDATA_i      (m_WDATA),
+        .m_WSTRB_i      (m_WSTRB),
+        .m_WLAST_i      (m_WLAST),
+        .m_WVALID_i     (m_WVALID),
+        .m_WREADY_o     (m_WREADY),
+        .m_BID_o        (m_BID),
+        .m_BRESP_o      (m_BRESP),
+        .m_BVALID_o     (m_BVALID),
+        .m_BREADY_i     (m_BREADY),
+        .m_ARID_i       (m_ARID),
+        .m_ARADDR_i     (m_ARADDR),
+        .m_ARBURST_i    (m_ARBURST),
+        .m_ARLEN_i      (m_ARLEN),
+        .m_ARSIZE_i     (m_ARSIZE),
+        .m_ARVALID_i    (m_ARVALID),
+        .m_ARREADY_o    (m_ARREADY),
+        .m_RID_o        (m_RID),
+        .m_RDATA_o      (m_RDATA),
+        .m_RRESP_o      (m_RRESP),
+        .m_RLAST_o      (m_RLAST),
+        .m_RVALID_o     (m_RVALID),
+        .m_RREADY_i     (m_RREADY),
+        .m_RSID_o       (m_RSID),
+        .s_AWID_o       (s_AWID),
+        .s_AWADDR_o     (s_AWADDR),
+        .s_AWBURST_o    (s_AWBURST),
+        .s_AWLEN_o      (s_AWLEN),
+        .s_AWSIZE_o     (s_AWSIZE),
+        .s_AWVALID_o    (s_AWVALID),
+        .s_AWREADY_i    (s_AWREADY),
+        .s_WDATA_o      (s_WDATA),
+        .s_WSTRB_o      (s_WSTRB),
+        .s_WLAST_o      (s_WLAST),
+        .s_WVALID_o     (s_WVALID),
+        .s_WREADY_i     (s_WREADY),
+        .s_BID_i        (s_BID),
+        .s_BRESP_i      (s_BRESP),
+        .s_BVALID_i     (s_BVALID),
+        .s_BREADY_o     (s_BREADY),
+        .s_ARID_o       (s_ARID),
+        .s_ARADDR_o     (s_ARADDR),
+        .s_ARBURST_o    (s_ARBURST),
+        .s_ARLEN_o      (s_ARLEN),
+        .s_ARSIZE_o     (s_ARSIZE),
+        .s_ARVALID_o    (s_ARVALID),
+        .s_ARREADY_i    (s_ARREADY),
+        .s_RID_i        (s_RID),
+        .s_RDATA_i      (s_RDATA),
+        .s_RRESP_i      (s_RRESP),
+        .s_RLAST_i      (s_RLAST),
+        .s_RVALID_i     (s_RVALID),
+        .s_RREADY_o     (s_RREADY),
+        .arbiter_type   (arbiter_type),
+        .slv_en_i       (slv_en)
+    );
+
+    //=========================================================================
+    // Clock generation (100MHz, 10ns period)
+    //=========================================================================
+    initial clk = 0;
+    always #5 clk = ~clk;
+
+    //=========================================================================
+    // Reset
+    //=========================================================================
+    initial begin
+        rst_n = 0;
+        #100;
+        rst_n = 1;
+    end
+
+    //=========================================================================
+    // Slave Memory Model (4KB per slave = 1024 x 32-bit words)
+    //=========================================================================
+    reg [DATA_WIDTH-1:0] slv_mem [0:SLV_AMT-1][0:SLV_MEM_DEPTH-1];
+
+    integer init_s, init_i;
+    initial begin
+        for (init_s = 0; init_s < SLV_AMT; init_s = init_s + 1) begin
+            for (init_i = 0; init_i < SLV_MEM_DEPTH; init_i = init_i + 1) begin
+                slv_mem[init_s][init_i] = {init_s[1:0], 14'h0, init_i[15:0]};
+            end
+        end
+    end
+
+    //=========================================================================
+    // Shared B-done queues (write handler → B handler, per slave)
+    //=========================================================================
+    reg [W_SID-1:0] b_done_awid [0:SLV_AMT-1][0:3];
+    reg [1:0]       b_done_wr_ptr [0:SLV_AMT-1];
+    reg [1:0]       b_done_rd_ptr [0:SLV_AMT-1];
+    integer         b_done_cnt    [0:SLV_AMT-1];
+
+    integer bq_init_s;
+    initial begin
+        for (bq_init_s = 0; bq_init_s < SLV_AMT; bq_init_s = bq_init_s + 1) begin
+            b_done_wr_ptr[bq_init_s] = 2'b00;
+            b_done_rd_ptr[bq_init_s] = 2'b00;
+            b_done_cnt[bq_init_s]    = 0;
+        end
+    end
+
+    //=========================================================================
+    // Shared AR queues (AR handler → R handler, per slave)
+    //=========================================================================
+    reg [W_SID-1:0] ar_q_arid   [0:SLV_AMT-1][0:3];
+    reg [ADDR_WIDTH-1:0] ar_q_araddr [0:SLV_AMT-1][0:3];
+    reg [7:0]            ar_q_total  [0:SLV_AMT-1][0:3];
+    reg [1:0]       ar_q_wr_ptr [0:SLV_AMT-1];
+    reg [1:0]       ar_q_rd_ptr [0:SLV_AMT-1];
+    integer         ar_q_cnt    [0:SLV_AMT-1];
+
+    integer arq_init_s;
+    initial begin
+        for (arq_init_s = 0; arq_init_s < SLV_AMT; arq_init_s = arq_init_s + 1) begin
+            ar_q_wr_ptr[arq_init_s] = 2'b00;
+            ar_q_rd_ptr[arq_init_s] = 2'b00;
+            ar_q_cnt[arq_init_s]    = 0;
+        end
+    end
+
+    //=========================================================================
+    // Slave Write Handler (with AW→W transaction queue)
+    //=========================================================================
+    task automatic slv_write_handler(int slv_id);
+        // Pending AW transaction queue (depth 4)
+        reg [W_SID-1:0]      q_awid    [0:3];
+        reg [ADDR_WIDTH-1:0] q_awaddr  [0:3];
+        reg [7:0]            q_total   [0:3];
+        integer              q_wr_ptr, q_rd_ptr, q_cnt;
+
+        // Current active transaction (head of queue, being written)
+        reg [W_SID-1:0]      cur_awid;
+        reg [ADDR_WIDTH-1:0] cur_awaddr;
+        reg [7:0]            cur_total;
+        reg [7:0]            cur_beat_cnt;
+        reg                  cur_active;
+
+        reg [DATA_WIDTH-1:0] wdata;
+        reg [W_STRB-1:0]     wstrb;
+        reg                  wlast;
+        reg [ADDR_WIDTH-1:0] word_idx;
+        integer              bi;
+
+        begin
+            q_wr_ptr  = 0;
+            q_rd_ptr  = 0;
+            q_cnt     = 0;
+            cur_active = 1'b0;
+
+            forever begin
+                @(posedge clk);
+
+                // AW handshake → enqueue transaction
+                if (s_AWVALID[slv_id] && s_AWREADY[slv_id]) begin
+                    q_awid[q_wr_ptr]   = s_AWID[W_SID*(slv_id+1)-1 -: W_SID];
+                    q_awaddr[q_wr_ptr] = s_AWADDR[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
+                    q_total[q_wr_ptr]  = s_AWLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W] + 8'd1;
+                    q_wr_ptr = (q_wr_ptr + 1) & 3;
+                    q_cnt    = q_cnt + 1;
+                end
+
+                // Dequeue next transaction if idle
+                if (!cur_active && q_cnt > 0) begin
+                    cur_awid      = q_awid[q_rd_ptr];
+                    cur_awaddr    = q_awaddr[q_rd_ptr];
+                    cur_total     = q_total[q_rd_ptr];
+                    cur_beat_cnt  = 0;
+                    cur_active    = 1'b1;
+                    q_rd_ptr      = (q_rd_ptr + 1) & 3;
+                    q_cnt         = q_cnt - 1;
+                end
+
+                // W data handshake
+                if (cur_active && s_WVALID[slv_id] && s_WREADY[slv_id]) begin
+                    wdata = s_WDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH];
+                    wstrb = s_WSTRB[W_STRB*(slv_id+1)-1 -: W_STRB];
+                    wlast = s_WLAST[slv_id];
+                    word_idx = cur_awaddr[11:2] + cur_beat_cnt;
+                    if (word_idx < SLV_MEM_DEPTH) begin
+                        for (bi = 0; bi < W_STRB; bi = bi + 1) begin
+                            if (wstrb[bi])
+                                slv_mem[slv_id][word_idx][8*bi +: 8] = wdata[8*bi +: 8];
+                        end
+                    end
+                    cur_beat_cnt = cur_beat_cnt + 8'd1;
+                    if (wlast) begin
+                        cur_active = 1'b0;
+                        // Push to shared B-done queue (B handler picks up)
+                        b_done_awid[slv_id][b_done_wr_ptr[slv_id]] = cur_awid;
+                        b_done_wr_ptr[slv_id] = (b_done_wr_ptr[slv_id] + 1) & 3;
+                        b_done_cnt[slv_id]    = b_done_cnt[slv_id] + 1;
+                    end
+                end
+            end
+        end
+    endtask
+
+    //=========================================================================
+    // Slave B Response Handler (pops from shared B-done queue)
+    //=========================================================================
+    task automatic slv_b_handler(int slv_id);
+        forever begin
+            @(posedge clk);
+
+            // BVALID is not currently asserted and queue has pending response
+            if (!s_BVALID[slv_id] && b_done_cnt[slv_id] > 0) begin
+                s_BID[W_SID*(slv_id+1)-1 -: W_SID] <= b_done_awid[slv_id][b_done_rd_ptr[slv_id]];
+                s_BRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
+                s_BVALID[slv_id] <= 1'b1;
+                b_done_rd_ptr[slv_id] = (b_done_rd_ptr[slv_id] + 1) & 3;
+                b_done_cnt[slv_id]    = b_done_cnt[slv_id] - 1;
+            end
+
+            // B handshake complete
+            if (s_BVALID[slv_id] && s_BREADY[slv_id])
+                s_BVALID[slv_id] <= 1'b0;
+        end
+    endtask
+
+    //=========================================================================
+    // Slave AR Handler (only enqueues AR transactions)
+    //=========================================================================
+    task automatic slv_ar_handler(int slv_id);
+        forever begin
+            @(posedge clk);
+            if (s_ARVALID[slv_id] && s_ARREADY[slv_id]) begin
+                ar_q_arid[slv_id][ar_q_wr_ptr[slv_id]]   =  s_ARID[W_SID*(slv_id+1)-1 -: W_SID];
+                ar_q_araddr[slv_id][ar_q_wr_ptr[slv_id]] =  s_ARADDR[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
+                ar_q_total[slv_id][ar_q_wr_ptr[slv_id]]  =  s_ARLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W] + 8'd1;
+                ar_q_wr_ptr[slv_id] = (ar_q_wr_ptr[slv_id] + 1) & 3;
+                ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] + 1;
+            end
+        end
+    endtask
+
+    //=========================================================================
+    // Slave R Data Handler (pops AR queue → drives R beats)
+    //=========================================================================
+    task automatic slv_r_handler(int slv_id);
+        reg [W_SID-1:0]      cur_arid;
+        reg [ADDR_WIDTH-1:0] cur_araddr;
+        reg [7:0]            cur_total;
+        reg [7:0]            cur_beat_cnt;
+        reg                  cur_active;
+        reg [ADDR_WIDTH-1:0] word_idx;
+
+        begin
+            cur_active = 1'b0;
+
+            forever begin
+                @(posedge clk);
+
+                // Dequeue next transaction if idle and R channel clear to drive
+                if (!cur_active && ar_q_cnt[slv_id] > 0 && (!s_RVALID[slv_id] || s_RREADY[slv_id])) begin
+                    cur_arid      = ar_q_arid[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_araddr    = ar_q_araddr[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_total     = ar_q_total[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_beat_cnt  = 0;
+                    cur_active    = 1'b1;
+                    ar_q_rd_ptr[slv_id] = (ar_q_rd_ptr[slv_id] + 1) & 3;
+                    ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] - 1;
+
+                    // Drive first beat
+                    word_idx = cur_araddr[11:2];
+                    s_RID[W_SID*(slv_id+1)-1 -: W_SID] <= cur_arid;
+                    s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <=
+                        (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF;
+                    s_RRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
+                    s_RLAST[slv_id] <= (cur_total == 8'd1);
+                    s_RVALID[slv_id] <= 1'b1;
+                end
+
+                // R handshake: advance or finish
+                if (cur_active && s_RVALID[slv_id] && s_RREADY[slv_id]) begin
+                    if (cur_beat_cnt == cur_total - 1) begin
+                        s_RVALID[slv_id] <= 1'b0;
+                        s_RLAST[slv_id]  <= 1'b0;
+                        cur_active = 1'b0;
+                    end else begin
+                        cur_beat_cnt = cur_beat_cnt + 8'd1;
+                        word_idx = cur_araddr[11:2] + cur_beat_cnt;
+                        s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF;
+                        s_RLAST[slv_id] <= (cur_beat_cnt == cur_total - 1);
+                    end
+                end
+            end
+        end
+    endtask
+
+    //=========================================================================
+    // Master BFM: Write
+    //=========================================================================
+    task automatic axi_write(
+        input int               mst_id,
+        input [ADDR_WIDTH-1:0]  addr,
+        input [7:0]             len,
+        input [2:0]             size,
+        input [1:0]             burst,
+        input [W_MID-1:0]       id,
+        input logic [DATA_WIDTH-1:0] data [0:255]
+    );
+        reg [7:0] total_beats;
+        reg [7:0] b;
+        begin
+            total_beats = len + 8'd1;
+            $display("[%0t] M[%0d] WR: addr=0x%08h len=%0d id=%0h",
+                     $time, mst_id, addr, len, id);
+
+            // AW
+            m_AWID[W_MID*(mst_id+1)-1 -: W_MID] <= id;
+            m_AWADDR[ADDR_WIDTH*(mst_id+1)-1 -: ADDR_WIDTH] <= addr;
+            m_AWLEN[TRANS_DATA_LEN_W*(mst_id+1)-1 -: TRANS_DATA_LEN_W] <= len;
+            m_AWSIZE[TRANS_DATA_SIZE_W*(mst_id+1)-1 -: TRANS_DATA_SIZE_W] <= size;
+            m_AWBURST[TRANS_BURST_W*(mst_id+1)-1 -: TRANS_BURST_W] <= burst;
+            m_AWVALID[mst_id] <= 1'b1;
+
+            @(posedge clk);
+            while (!m_AWREADY[mst_id]) @(posedge clk);
+            m_AWVALID[mst_id] <= 1'b0;
+
+            // W beats
+            for (b = 0; b < total_beats; b = b + 1) begin
+                m_WDATA[DATA_WIDTH*(mst_id+1)-1 -: DATA_WIDTH] <= data[b];
+                m_WSTRB[W_STRB*(mst_id+1)-1 -: W_STRB] <= {W_STRB{1'b1}};
+                m_WLAST[mst_id] <= (b == total_beats - 1);
+                m_WVALID[mst_id] <= 1'b1;
+                @(posedge clk);
+                while (!m_WREADY[mst_id]) @(posedge clk);
+            end
+            m_WVALID[mst_id] <= 1'b0;
+            m_WLAST[mst_id]  <= 1'b0;
+
+            // B response
+            m_BREADY[mst_id] <= 1'b1;
+            @(posedge clk);
+            while (!m_BVALID[mst_id]) @(posedge clk);
+            $display("[%0t] M[%0d] WR BRESP: id=%0h resp=%0d",
+                     $time, mst_id,
+                     m_BID[W_SID*(mst_id+1)-1 -: W_SID],
+                     m_BRESP[TRANS_WR_RESP_W*(mst_id+1)-1 -: TRANS_WR_RESP_W]);
+            m_BREADY[mst_id] <= 1'b0;
+        end
+    endtask
+
+    //=========================================================================
+    // Master BFM: Read
+    //=========================================================================
+    task automatic axi_read(
+        input int               mst_id,
+        input [ADDR_WIDTH-1:0]  addr,
+        input [7:0]             len,
+        input [2:0]             size,
+        input [1:0]             burst,
+        input [W_MID-1:0]       id,
+        output logic [DATA_WIDTH-1:0] rdata [0:255]
+    );
+        reg [7:0] total_beats;
+        reg [7:0] b;
+        begin
+            total_beats = len + 8'd1;
+            $display("[%0t] M[%0d] RD: addr=0x%08h len=%0d id=%0h",
+                     $time, mst_id, addr, len, id);
+
+            // AR
+            m_ARID[W_MID*(mst_id+1)-1 -: W_MID] <= id;
+            m_ARADDR[ADDR_WIDTH*(mst_id+1)-1 -: ADDR_WIDTH] <= addr;
+            m_ARLEN[TRANS_DATA_LEN_W*(mst_id+1)-1 -: TRANS_DATA_LEN_W] <= len;
+            m_ARSIZE[TRANS_DATA_SIZE_W*(mst_id+1)-1 -: TRANS_DATA_SIZE_W] <= size;
+            m_ARBURST[TRANS_BURST_W*(mst_id+1)-1 -: TRANS_BURST_W] <= burst;
+            m_ARVALID[mst_id] <= 1'b1;
+
+            @(posedge clk);
+            while (!m_ARREADY[mst_id]) @(posedge clk);
+            m_ARVALID[mst_id] <= 1'b0;
+
+            // R beats
+            m_RREADY[mst_id] <= 1'b1;
+            for (b = 0; b < total_beats; b = b + 1) begin
+                @(posedge clk);
+                while (!m_RVALID[mst_id]) @(posedge clk);
+                rdata[b] = m_RDATA[DATA_WIDTH*(mst_id+1)-1 -: DATA_WIDTH];
+                $display("[%0t] M[%0d] RD beat[%0d]: data=0x%08h resp=%0d last=%0d",
+                         $time, mst_id, b, rdata[b],
+                         m_RRESP[TRANS_WR_RESP_W*(mst_id+1)-1 -: TRANS_WR_RESP_W],
+                         m_RLAST[mst_id]);
+            end
+            m_RREADY[mst_id] <= 1'b0;
+        end
+    endtask
+
+    //=========================================================================
+    // Helper functions
+    //=========================================================================
+    function automatic [ADDR_WIDTH-1:0] slv_base_addr(input [1:0] slv_id);
+        slv_base_addr = slv_id * 32'h1000;
+    endfunction
+
+    function automatic [DATA_WIDTH-1:0] gen_data(
+        input [ADDR_WIDTH-1:0] addr,
+        input [7:0] beat
+    );
+        gen_data = {addr[15:0], beat[7:0], addr[7:0]};
+    endfunction
+
+    //=========================================================================
+    // Default signal tie-offs
+    //=========================================================================
+    initial begin
+        m_AWVALID = '0;
+        m_WVALID  = '0;
+        m_WLAST   = '0;
+        m_BREADY  = '0;
+        m_ARVALID = '0;
+        m_RREADY  = '0;
+    end
+
+    initial begin
+        s_AWREADY = {SLV_AMT{1'b1}};
+        s_WREADY  = {SLV_AMT{1'b1}};
+        s_ARREADY = {SLV_AMT{1'b1}};
+        s_BID     = '0;
+        s_BRESP   = '0;
+        s_BVALID  = '0;
+        s_RID     = '0;
+        s_RDATA   = '0;
+        s_RRESP   = '0;
+        s_RLAST   = '0;
+        s_RVALID  = '0;
+    end
+
+    initial begin
+        arbiter_type  = 1'b0;               // round-robin
+        slv_en        = {SLV_AMT{1'b1}};    // all slaves enabled
+    end
+
+    //=========================================================================
+    // Fork slave handlers
+    //=========================================================================
+    integer slv_idx;
+    initial begin
+        for (slv_idx = 0; slv_idx < SLV_AMT; slv_idx = slv_idx + 1) begin
+            automatic int sid = slv_idx;
+            fork
+                slv_write_handler(sid);
+                slv_b_handler(sid);
+                slv_ar_handler(sid);
+                slv_r_handler(sid);
+            join_none
+        end
+    end
+
+    //=========================================================================
+    // Main Test Sequence
+    //=========================================================================
+    logic [DATA_WIDTH-1:0] wdata [0:255];
+    logic [DATA_WIDTH-1:0] rdata [0:255];
+    integer    i, b, err_cnt;
+    reg [ADDR_WIDTH-1:0] test_addr;
+    reg [DATA_WIDTH-1:0] expected;
+
+    initial begin
+        err_cnt = 0;
+
+        @(posedge rst_n);
+        repeat (5) @(posedge clk);
+
+        $display("============================================================");
+        $display("[%0t] CROSSBAR TESTBENCH STARTED", $time);
+        $display("============================================================");
+
+        //=================================================================
+        // TEST 1: Single-beat write + read to each slave from M0
+        //=================================================================
+        $display("\n--- TEST 1: Single-beat WR/RD to each slave ---");
+        for (i = 0; i < SLV_AMT; i = i + 1) begin
+            test_addr = slv_base_addr(i[1:0]) + 32'h40;
+            wdata[0] = gen_data(test_addr, 8'd0);
+            axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, wdata);
+            axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, rdata);
+            expected = gen_data(test_addr, 8'd0);
+            if (rdata[0] !== expected) begin
+                $display("[%0t] ERROR: S%0d mismatch! got=0x%08h exp=0x%08h",
+                         $time, i, rdata[0], expected);
+                err_cnt = err_cnt + 1;
+            end
+        end
+        $display("[%0t] TEST 1 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 2: Burst-4 write + read from M1 to S2
+        //=================================================================
+        $display("\n--- TEST 2: Burst-4 WR/RD ---");
+        test_addr = slv_base_addr(2'd2) + 32'h80;
+        for (b = 0; b < 4; b = b + 1)
+            wdata[b] = gen_data(test_addr, b[7:0]);
+        axi_write(1, test_addr, 8'd3, 3'd2, 2'd1, 6'h0A, wdata);
+        axi_read(1, test_addr, 8'd3, 3'd2, 2'd1, 6'h0A, rdata);
+        for (b = 0; b < 4; b = b + 1) begin
+            expected = gen_data(test_addr, b[7:0]);
+            if (rdata[b] !== expected) begin
+                $display("[%0t] ERROR: burst beat=%0d got=0x%08h exp=0x%08h",
+                         $time, b, rdata[b], expected);
+                err_cnt = err_cnt + 1;
+            end
+        end
+        $display("[%0t] TEST 2 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 3: Multi-master concurrent writes (separate slaves)
+        //=================================================================
+        $display("\n--- TEST 3: Multi-master concurrent writes ---");
+        fork
+            begin
+                wdata[0] = 32'hAAAA_0000; wdata[1] = 32'hAAAA_0001;
+                axi_write(0, slv_base_addr(2'd0) + 32'h100, 8'd1, 3'd2, 2'd1, 6'h00, wdata);
+            end
+            begin
+                wdata[0] = 32'hBBBB_0000; wdata[1] = 32'hBBBB_0001;
+                axi_write(1, slv_base_addr(2'd1) + 32'h200, 8'd1, 3'd2, 2'd1, 6'h04, wdata);
+            end
+            begin
+                wdata[0] = 32'hCCCC_0000; wdata[1] = 32'hCCCC_0001;
+                axi_write(2, slv_base_addr(2'd2) + 32'h300, 8'd1, 3'd2, 2'd1, 6'h08, wdata);
+            end
+            begin
+                wdata[0] = 32'hDDDD_0000; wdata[1] = 32'hDDDD_0001;
+                axi_write(3, slv_base_addr(2'd3) + 32'h400, 8'd1, 3'd2, 2'd1, 6'h0C, wdata);
+            end
+        join
+        // Read back from each using corresponding master
+        axi_read(0, slv_base_addr(2'd0) + 32'h100, 8'd1, 3'd2, 2'd1, 6'h00, rdata);
+        if (rdata[0] !== 32'hAAAA_0000) begin
+            $display("[%0t] ERROR: M0 multi-wr data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(1, slv_base_addr(2'd1) + 32'h200, 8'd1, 3'd2, 2'd1, 6'h04, rdata);
+        if (rdata[0] !== 32'hBBBB_0000) begin
+            $display("[%0t] ERROR: M1 multi-wr data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(2, slv_base_addr(2'd2) + 32'h300, 8'd1, 3'd2, 2'd1, 6'h08, rdata);
+        if (rdata[0] !== 32'hCCCC_0000) begin
+            $display("[%0t] ERROR: M2 multi-wr data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(3, slv_base_addr(2'd3) + 32'h400, 8'd1, 3'd2, 2'd1, 6'h0C, rdata);
+        if (rdata[0] !== 32'hDDDD_0000) begin
+            $display("[%0t] ERROR: M3 multi-wr data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        $display("[%0t] TEST 3 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 4: Two masters to same slave (arbitration test)
+        //=================================================================
+        $display("\n--- TEST 4: Multi-master to same slave (arbitration) ---");
+        fork
+            begin
+                wdata[0] = 32'h1111_0000;
+                axi_write(0, slv_base_addr(2'd0) + 32'h500, 8'd0, 3'd2, 2'd1, 6'h10, wdata);
+            end
+            begin
+                wdata[0] = 32'h2222_0000;
+                axi_write(1, slv_base_addr(2'd0) + 32'h504, 8'd0, 3'd2, 2'd1, 6'h14, wdata);
+            end
+        join
+        axi_read(0, slv_base_addr(2'd0) + 32'h500, 8'd0, 3'd2, 2'd1, 6'h10, rdata);
+        if (rdata[0] !== 32'h1111_0000) begin
+            $display("[%0t] ERROR: arbitration M0 data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(1, slv_base_addr(2'd0) + 32'h504, 8'd0, 3'd2, 2'd1, 6'h14, rdata);
+        if (rdata[0] !== 32'h2222_0000) begin
+            $display("[%0t] ERROR: arbitration M1 data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        $display("[%0t] TEST 4 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 5: Back-to-back transactions
+        //=================================================================
+        $display("\n--- TEST 5: Back-to-back ---");
+        test_addr = slv_base_addr(2'd0) + 32'h600;
+        wdata[0] = 32'hB2B0_0001;
+        axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h00, wdata);
+        wdata[0] = 32'hB2B0_0002;
+        axi_write(0, test_addr + 32'd4, 8'd0, 3'd2, 2'd1, 6'h00, wdata);
+        axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h00, rdata);
+        if (rdata[0] !== 32'hB2B0_0001) begin
+            $display("[%0t] ERROR: B2B-1 mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(0, test_addr + 32'd4, 8'd0, 3'd2, 2'd1, 6'h00, rdata);
+        if (rdata[0] !== 32'hB2B0_0002) begin
+            $display("[%0t] ERROR: B2B-2 mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        $display("[%0t] TEST 5 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 6: Long burst (16 beats)
+        //=================================================================
+        $display("\n--- TEST 6: Long burst (16 beats) ---");
+        test_addr = slv_base_addr(2'd2) + 32'h200;
+        for (b = 0; b < 16; b = b + 1)
+            wdata[b] = 32'hC000_0000 + b;
+        axi_write(2, test_addr, 8'd15, 3'd2, 2'd1, 6'h1F, wdata);
+        axi_read(2, test_addr, 8'd15, 3'd2, 2'd1, 6'h1F, rdata);
+        for (b = 0; b < 16; b = b + 1) begin
+            expected = 32'hC000_0000 + b;
+            if (rdata[b] !== expected) begin
+                $display("[%0t] ERROR: long burst beat=%0d got=0x%08h exp=0x%08h",
+                         $time, b, rdata[b], expected);
+                err_cnt = err_cnt + 1;
+            end
+        end
+        $display("[%0t] TEST 6 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 7: Concurrent read + write (different masters/slaves)
+        //=================================================================
+        $display("\n--- TEST 7: Concurrent read+write ---");
+        fork
+            begin
+                wdata[0] = 32'hCAFE_0000; wdata[1] = 32'hCAFE_0001;
+                wdata[2] = 32'hCAFE_0002; wdata[3] = 32'hCAFE_0003;
+                axi_write(0, slv_base_addr(2'd0) + 32'h700, 8'd3, 3'd2, 2'd1, 6'h20, wdata);
+            end
+            begin
+                axi_read(1, slv_base_addr(2'd1) + 32'h100, 8'd3, 3'd2, 2'd1, 6'h24, rdata);
+            end
+        join
+        $display("[%0t] TEST 7 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 8: Fixed-priority arbitration
+        //=================================================================
+        $display("\n--- TEST 8: Fixed-priority arbitration ---");
+        @(posedge clk);
+        arbiter_type <= 1'b1;  // switch to fixed-priority
+        @(posedge clk);
+        fork
+            begin
+                wdata[0] = 32'hF100_0000;
+                axi_write(0, slv_base_addr(2'd0) + 32'h800, 8'd0, 3'd2, 2'd1, 6'h30, wdata);
+            end
+            begin
+                wdata[0] = 32'hF200_0000;
+                axi_write(1, slv_base_addr(2'd0) + 32'h804, 8'd0, 3'd2, 2'd1, 6'h34, wdata);
+            end
+        join
+        arbiter_type <= 1'b0;  // restore round-robin
+        $display("[%0t] TEST 8 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 9: Slave disable / enable
+        //=================================================================
+        $display("\n--- TEST 9: Slave disable ---");
+        @(posedge clk);
+        slv_en[3] <= 1'b0;  // disable slave 3
+        @(posedge clk);
+        // Attempt write to disabled slave (should be blocked/handled gracefully)
+        repeat (10) @(posedge clk);
+        slv_en[3] <= 1'b1;  // re-enable
+        repeat (3) @(posedge clk);
+        // Verify slave 3 still functional after re-enable
+        test_addr = slv_base_addr(2'd3) + 32'h900;
+        wdata[0] = 32'hDEAD_BEEF;
+        axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h3F, wdata);
+        axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h3F, rdata);
+        if (rdata[0] !== 32'hDEAD_BEEF) begin
+            $display("[%0t] ERROR: re-enable S3 data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        $display("[%0t] TEST 9 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // FINAL REPORT
+        //=================================================================
+        $display("\n============================================================");
+        if (err_cnt == 0) begin
+            $display("[%0t] ALL TESTS PASSED!", $time);
+        end else begin
+            $display("[%0t] TESTS FAILED with %0d errors!", $time, err_cnt);
+        end
+        $display("============================================================\n");
+
+        #500;
+        $finish;
+    end
+
+    //=========================================================================
+    // Timeout watchdog (5ms)
+    //=========================================================================
+    initial begin
+        #5000000;
+        $display("[%0t] ERROR: Simulation timeout!", $time);
+        $finish;
+    end
+
+    //=========================================================================
+    // Waveform dump (FSDB for Verdi)
+    //=========================================================================
+    initial begin
+        $fsdbDumpfile("cross_tb.fsdb");
+        $fsdbDumpvars(0, cross_tb);
+        $fsdbDumpMDA();
+    end
+
+endmodule

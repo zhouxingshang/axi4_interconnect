@@ -271,6 +271,11 @@ assign {fifo_mst_idx, fifo_awlen} = aw_fifo_rd_data;
 reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
 assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID) && from_fifo;
 
+// Per-master pending AW counter: gates W FIFO write to prevent stale data
+// in non-targeted M2S instances. Increment on AW handshake, decrement on
+// WLAST completion for the corresponding master.
+integer          pending_aw_cnt [0:MST_AMT-1];
+
 // W beat counter state machine
 always @(posedge AXI_CLK) begin
     if(!AXI_RSTn) begin
@@ -304,6 +309,27 @@ always @(posedge AXI_CLK) begin
 end
 
 //=============================================================================
+// W FIFO write gating: track pending AW count per master
+// Only allow W data into per-master FIFO when this M2S has granted AW to that master
+//=============================================================================
+integer pi;
+always @(posedge AXI_CLK) begin
+    if(!AXI_RSTn) begin
+        for(pi = 0; pi < MST_AMT; pi = pi + 1)
+            pending_aw_cnt[pi] <= 0;
+    end else begin
+        for(pi = 0; pi < MST_AMT; pi = pi + 1) begin
+            if(aw_handshake[pi] && (cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
+                ; // simultaneous AW accept + W last beat → net zero
+            else if(aw_handshake[pi])
+                pending_aw_cnt[pi] <= pending_aw_cnt[pi] + 1;
+            else if((cur_w_mst_id == pi[MST_ID_W-1:0]) && w_transaction_active && S_WREADY && S_WVALID && S_WLAST && (w_beat_cnt == 1'b1))
+                pending_aw_cnt[pi] <= pending_aw_cnt[pi] - 1;
+        end
+    end
+end
+
+//=============================================================================
 // W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
 //=============================================================================
 wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
@@ -318,12 +344,12 @@ generate
             .rstn   (AXI_RSTn),
             .clr    (1'b0),
             .clk    (AXI_CLK),
-            
+
             // Write side: from master
             .wr_rdy (m_wready[m]),
-            .wr_vld (m_wvalid[m]),
+            .wr_vld (m_wvalid[m] && (pending_aw_cnt[m] > 0)),
             .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
-            
+
             // Read side: to slave (gated by W-follows-AW logic)
             .rd_rdy ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active && S_WREADY),
             .rd_vld (w_fifo_vld[m]),
