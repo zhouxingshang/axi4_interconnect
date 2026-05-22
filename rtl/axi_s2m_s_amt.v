@@ -15,34 +15,33 @@ module axi_s2m_s_amt
 (
     input  wire                      AXI_RSTn,
     input  wire                      AXI_CLK,
-    
+
     // Master side ports (single master)
     output reg   [W_SID-1:0]         M_BID,
     output reg   [1:0]               M_BRESP,
     output reg                       M_BVALID,
     input  wire                      M_BREADY,
-    
+
     output reg   [W_SID-1:0]         M_RSID,
     output reg   [W_DATA-1:0]        M_RDATA,
     output reg   [1:0]               M_RRESP,
     output reg                       M_RLAST,
     output reg                       M_RVALID,
     input  wire                      M_RREADY,
-    
+
     // Slave side ports (packed)
     input  wire  [W_SID*SLV_AMT-1:0]  S_BID,
     input  wire  [2*SLV_AMT-1:0]      S_BRESP,
     input  wire  [SLV_AMT-1:0]        S_BVALID,
     output wire  [SLV_AMT-1:0]        S_BREADY,
-    
+
     input  wire  [W_SID*SLV_AMT-1:0]  S_RID,
     input  wire  [W_DATA*SLV_AMT-1:0] S_RDATA,
     input  wire  [2*SLV_AMT-1:0]      S_RRESP,
     input  wire  [SLV_AMT-1:0]        S_RLAST,
     input  wire  [SLV_AMT-1:0]        S_RVALID,
     output wire  [SLV_AMT-1:0]        S_RREADY,
-    
-    input  wire  [SLV_AMT-1:0]        r_order_grant,
+
     input  wire                       arbiter_type
 );
 
@@ -69,7 +68,7 @@ generate
         assign s_bresp[si]  = S_BRESP[2*si +: 2];
         assign s_bvalid[si] = S_BVALID[si];
         assign S_BREADY[si] = s_bready[si];
-        
+
         assign s_rid[si]    = S_RID[W_SID*si +: W_SID];
         assign s_rdata[si]  = S_RDATA[W_DATA*si +: W_DATA];
         assign s_rresp[si]  = S_RRESP[2*si +: 2];
@@ -91,12 +90,11 @@ generate
 endgenerate
 
 // Select logic
-wire [SLV_AMT-1:0] BSELECT, RSELECT, RSELECT_in;
+wire [SLV_AMT-1:0] BSELECT, RSELECT;
 generate
     for(si = 0; si < SLV_AMT; si = si + 1) begin : SELECT
         assign BSELECT[si] = (s_bid_mst_idx[si] == MASTER_ID);
         assign RSELECT[si] = (s_rid_mst_idx[si] == MASTER_ID);
-        assign RSELECT_in[si] = RSELECT[si] & r_order_grant[si];
     end
 endgenerate
 
@@ -108,7 +106,7 @@ axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_b (
 );
 axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
     .clk(AXI_CLK), .rst_n(AXI_RSTn), .arbiter_type(arbiter_type),
-    .req(RSELECT_in & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
+    .req(RSELECT & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
 );
 
 // Delayed grants with handshake-hold: grant only advances when M-side handshake completes

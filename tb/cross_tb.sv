@@ -36,8 +36,6 @@ module cross_tb;
         8'd12, 8'd12, 8'd12, 8'd12
     };
 
-    typedef logic [DATA_WIDTH-1:0] data_buf_t [0:255];
-
     //=========================================================================
     // Clock and Reset
     //=========================================================================
@@ -126,7 +124,6 @@ module cross_tb;
     // Control
     //=========================================================================
     reg                arbiter_type;
-    reg [SLV_AMT-1:0]  r_order_grant;
     reg [SLV_AMT-1:0]  slv_en;
 
     //=========================================================================
@@ -209,7 +206,6 @@ module cross_tb;
         .s_RVALID_i     (s_RVALID),
         .s_RREADY_o     (s_RREADY),
         .arbiter_type   (arbiter_type),
-        .r_order_grant_i(r_order_grant),
         .slv_en_i       (slv_en)
     );
 
@@ -457,7 +453,7 @@ module cross_tb;
         input [2:0]             size,
         input [1:0]             burst,
         input [W_MID-1:0]       id,
-        input data_buf_t        data
+        input logic [DATA_WIDTH-1:0] data [0:255]
     );
         reg [7:0] total_beats;
         reg [7:0] b;
@@ -512,7 +508,7 @@ module cross_tb;
         input [2:0]             size,
         input [1:0]             burst,
         input [W_MID-1:0]       id,
-        output data_buf_t       rdata
+        output logic [DATA_WIDTH-1:0] rdata [0:255]
     );
         reg [7:0] total_beats;
         reg [7:0] b;
@@ -590,7 +586,6 @@ module cross_tb;
 
     initial begin
         arbiter_type  = 1'b0;               // round-robin
-        r_order_grant = '0;                 // use internal reorder
         slv_en        = {SLV_AMT{1'b1}};    // all slaves enabled
     end
 
@@ -613,7 +608,8 @@ module cross_tb;
     //=========================================================================
     // Main Test Sequence
     //=========================================================================
-    data_buf_t wdata, rdata;
+    logic [DATA_WIDTH-1:0] wdata [0:255];
+    logic [DATA_WIDTH-1:0] rdata [0:255];
     integer    i, b, err_cnt;
     reg [ADDR_WIDTH-1:0] test_addr;
     reg [DATA_WIDTH-1:0] expected;

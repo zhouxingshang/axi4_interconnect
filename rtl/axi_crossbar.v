@@ -127,9 +127,6 @@ module axi_crossbar
     // ========== 控制 / 状态端口 ==========
     input   wire                      arbiter_type,           // 0: 轮询 (Round-Robin), 1: 固定优先级 (Fixed-Priority)
 
-    // 读重排序控制: 每从设备 grant，所有 S2M 实例共享
-    input   wire  [SLV_AMT-1              : 0]  r_order_grant_i,
-
     // 可选: 从设备使能掩码
     input   wire  [SLV_AMT-1          : 0]  slv_en_i
 );
@@ -673,7 +670,6 @@ generate
             .S_RVALID(s_rvalid_packed),
             .S_RREADY(s_rready_packed),
             
-            .r_order_grant(r_order_grant_i),
             .arbiter_type(arbiter_type)
         );
     end

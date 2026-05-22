@@ -268,10 +268,10 @@ wire [ALEN_W-1:0]    fifo_awlen;
 assign {fifo_mst_idx, fifo_awlen} = aw_fifo_rd_data;
 
 // FIFO read enable: only pop when current W transaction came from FIFO
+reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
 assign aw_fifo_rd_en = (w_beat_cnt == 1'b1 && S_WLAST && S_WREADY && S_WVALID) && from_fifo;
 
 // W beat counter state machine
-reg from_fifo;  // Flag: current W transaction loaded from FIFO (vs direct Case 1)
 always @(posedge AXI_CLK) begin
     if(!AXI_RSTn) begin
         w_beat_cnt   <= 0;
@@ -353,6 +353,10 @@ end
 //=============================================================================
 wire aw_stall = aw_fifo_full;
 assign m_awready = AWGRANT & {MST_AMT{S_AWREADY}} & ~{MST_AMT{aw_stall}};
+
+// AR Ready: grant held by arbiter, gated by slave ARREADY
+//=============================================================================
+assign m_arready = ARGRANT & {MST_AMT{S_ARREADY}};
 
 //=============================================================================
 // AW/AR Bus Packing & Routing (parameterized Mux)
