@@ -142,7 +142,8 @@ module cross_tb;
         .ADDR_WIDTH        (ADDR_WIDTH),
         .SLV_ADDR_BASE     (SLV_ADDR_BASE),
         .SLV_ADDR_LEN      (SLV_ADDR_LEN),
-        .DEFAULT_SLV_EN    (1'b0)        // no default slave: all 4 are normal
+        .DEFAULT_SLV_IDX   (3),          // slave 3 is the default slave (error responder)
+        .DEFAULT_SLV_EN    (1'b1)        // enable default slave for DECERR responses
     ) u_dut (
         .AXI_RSTn       (rst_n),
         .AXI_CLK        (clk),
@@ -644,7 +645,7 @@ module cross_tb;
         // TEST 1: Single-beat write + read to each slave from M0
         //=================================================================
         $display("\n--- TEST 1: Single-beat WR/RD to each slave ---");
-        for (i = 0; i < SLV_AMT; i = i + 1) begin
+        for (i = 0; i < 3; i = i + 1) begin  // skip S3 (default slave)
             test_addr = slv_base_addr(i[1:0]) + 32'h40;
             wdata[0] = gen_data(test_addr, 8'd0);
             axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, wdata);
@@ -697,7 +698,7 @@ module cross_tb;
             end
             begin
                 wdata[0] = 32'hDDDD_0000; wdata[1] = 32'hDDDD_0001;
-                axi_write(3, slv_base_addr(2'd3) + 32'h400, 8'd1, 3'd2, 2'd1, 6'h0C, wdata);
+                axi_write(3, slv_base_addr(2'd0) + 32'h140, 8'd1, 3'd2, 2'd1, 6'h0C, wdata);
             end
         join
         // Read back from each using corresponding master
@@ -716,7 +717,7 @@ module cross_tb;
             $display("[%0t] ERROR: M2 multi-wr data mismatch! got=0x%08h", $time, rdata[0]);
             err_cnt = err_cnt + 1;
         end
-        axi_read(3, slv_base_addr(2'd3) + 32'h400, 8'd1, 3'd2, 2'd1, 6'h0C, rdata);
+        axi_read(3, slv_base_addr(2'd0) + 32'h140, 8'd1, 3'd2, 2'd1, 6'h0C, rdata);
         if (rdata[0] !== 32'hDDDD_0000) begin
             $display("[%0t] ERROR: M3 multi-wr data mismatch! got=0x%08h", $time, rdata[0]);
             err_cnt = err_cnt + 1;
@@ -826,26 +827,243 @@ module cross_tb;
         $display("[%0t] TEST 8 DONE (errors=%0d)", $time, err_cnt);
 
         //=================================================================
-        // TEST 9: Slave disable / enable
+        // TEST 9: Slave disable / enable (S2)
         //=================================================================
         $display("\n--- TEST 9: Slave disable ---");
         @(posedge clk);
-        slv_en[3] <= 1'b0;  // disable slave 3
+        slv_en[2] <= 1'b0;  // disable slave 2
         @(posedge clk);
-        // Attempt write to disabled slave (should be blocked/handled gracefully)
         repeat (10) @(posedge clk);
-        slv_en[3] <= 1'b1;  // re-enable
-        repeat (3) @(posedge clk);
-        // Verify slave 3 still functional after re-enable
-        test_addr = slv_base_addr(2'd3) + 32'h900;
+        slv_en[2] <= 1'b1;  // re-enable
+        @(posedge clk);
+        // Verify slave 2 still functional after re-enable
+        test_addr = slv_base_addr(2'd2) + 32'h900;
         wdata[0] = 32'hDEAD_BEEF;
         axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h3F, wdata);
         axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h3F, rdata);
         if (rdata[0] !== 32'hDEAD_BEEF) begin
-            $display("[%0t] ERROR: re-enable S3 data mismatch! got=0x%08h", $time, rdata[0]);
+            $display("[%0t] ERROR: re-enable S2 data mismatch! got=0x%08h", $time, rdata[0]);
             err_cnt = err_cnt + 1;
         end
         $display("[%0t] TEST 9 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 10: Multiple outstanding writes (M0 → S0, S1, S2)
+        //=================================================================
+        $display("\n--- TEST 10: Multiple outstanding writes ---");
+        fork
+            begin
+                wdata[0] = 32'hA500_0000; wdata[1] = 32'hA500_0001;
+                axi_write(0, slv_base_addr(2'd0) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h00, wdata);
+            end
+            begin
+                wdata[0] = 32'hA510_0000; wdata[1] = 32'hA510_0001;
+                axi_write(0, slv_base_addr(2'd1) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h01, wdata);
+            end
+            begin
+                wdata[0] = 32'hA520_0000; wdata[1] = 32'hA520_0001;
+                axi_write(0, slv_base_addr(2'd2) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h02, wdata);
+            end
+        join
+        // Read back sequentially to verify all completed correctly
+        axi_read(0, slv_base_addr(2'd0) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h00, rdata);
+        if (rdata[0] !== 32'hA500_0000 || rdata[1] !== 32'hA500_0001) begin
+            $display("[%0t] ERROR: outstanding wr S0 mismatch! got=0x%08h 0x%08h",
+                     $time, rdata[0], rdata[1]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(0, slv_base_addr(2'd1) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h01, rdata);
+        if (rdata[0] !== 32'hA510_0000 || rdata[1] !== 32'hA510_0001) begin
+            $display("[%0t] ERROR: outstanding wr S1 mismatch! got=0x%08h 0x%08h",
+                     $time, rdata[0], rdata[1]);
+            err_cnt = err_cnt + 1;
+        end
+        axi_read(0, slv_base_addr(2'd2) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h02, rdata);
+        if (rdata[0] !== 32'hA520_0000 || rdata[1] !== 32'hA520_0001) begin
+            $display("[%0t] ERROR: outstanding wr S2 mismatch! got=0x%08h 0x%08h",
+                     $time, rdata[0], rdata[1]);
+            err_cnt = err_cnt + 1;
+        end
+        $display("[%0t] TEST 10 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 11: Multiple outstanding reads (M1 → S0, S1, S2)
+        //=================================================================
+        $display("\n--- TEST 11: Multiple outstanding reads ---");
+        // First set up known data
+        test_addr = slv_base_addr(2'd0) + 32'hB00;
+        wdata[0] = 32'hBB00_0000; wdata[1] = 32'hBB00_0001;
+        axi_write(1, test_addr, 8'd1, 3'd2, 2'd1, 6'h10, wdata);
+        test_addr = slv_base_addr(2'd1) + 32'hB00;
+        wdata[0] = 32'hBB10_0000; wdata[1] = 32'hBB10_0001;
+        axi_write(1, test_addr, 8'd1, 3'd2, 2'd1, 6'h11, wdata);
+        test_addr = slv_base_addr(2'd2) + 32'hB00;
+        wdata[0] = 32'hBB20_0000; wdata[1] = 32'hBB20_0001;
+        axi_write(1, test_addr, 8'd1, 3'd2, 2'd1, 6'h12, wdata);
+        // Fork 3 concurrent reads
+        fork
+            begin
+                automatic logic [DATA_WIDTH-1:0] rd_os0 [0:255];
+                axi_read(1, slv_base_addr(2'd0) + 32'hB00, 8'd1, 3'd2, 2'd1, 6'h10, rd_os0);
+                if (rd_os0[0] !== 32'hBB00_0000 || rd_os0[1] !== 32'hBB00_0001) begin
+                    $display("[%0t] ERROR: outstanding rd S0 mismatch!", $time);
+                    err_cnt = err_cnt + 1;
+                end
+            end
+            begin
+                automatic logic [DATA_WIDTH-1:0] rd_os1 [0:255];
+                axi_read(1, slv_base_addr(2'd1) + 32'hB00, 8'd1, 3'd2, 2'd1, 6'h11, rd_os1);
+                if (rd_os1[0] !== 32'hBB10_0000 || rd_os1[1] !== 32'hBB10_0001) begin
+                    $display("[%0t] ERROR: outstanding rd S1 mismatch!", $time);
+                    err_cnt = err_cnt + 1;
+                end
+            end
+            begin
+                automatic logic [DATA_WIDTH-1:0] rd_os2 [0:255];
+                axi_read(1, slv_base_addr(2'd2) + 32'hB00, 8'd1, 3'd2, 2'd1, 6'h12, rd_os2);
+                if (rd_os2[0] !== 32'hBB20_0000 || rd_os2[1] !== 32'hBB20_0001) begin
+                    $display("[%0t] ERROR: outstanding rd S2 mismatch!", $time);
+                    err_cnt = err_cnt + 1;
+                end
+            end
+        join
+        $display("[%0t] TEST 11 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 12: Invalid address — expect DECERR from default slave
+        //=================================================================
+        $display("\n--- TEST 12: Invalid address ---");
+        // Write to 0x5000 (beyond all slave 4KB regions)
+        m_AWID[W_MID*1-1 -: W_MID] <= 6'h50;
+        m_AWADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= 32'h5000;
+        m_AWLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd0;
+        m_AWSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_AWBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_AWVALID[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_AWREADY[0]) @(posedge clk);
+        m_AWVALID[0] <= 1'b0;
+
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'h0;
+        m_WSTRB[W_STRB*1-1 -: W_STRB] <= {W_STRB{1'b1}};
+        m_WLAST[0] <= 1'b1;
+        m_WVALID[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_WREADY[0]) @(posedge clk);
+        m_WVALID[0] <= 1'b0;
+        m_WLAST[0] <= 1'b0;
+
+        m_BREADY[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_BVALID[0]) @(posedge clk);
+        if (m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W] !== 2'b11) begin
+            $display("[%0t] ERROR: invalid addr wr resp=%0d (expected DECERR=2'b11)",
+                     $time, m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W]);
+            err_cnt = err_cnt + 1;
+        end else begin
+            $display("[%0t] Invalid addr wr: BRESP=DECERR (correct)", $time);
+        end
+        m_BREADY[0] <= 1'b0;
+
+        // Read from 0x5000
+        m_ARID[W_MID*1-1 -: W_MID] <= 6'h51;
+        m_ARADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= 32'h5000;
+        m_ARLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd0;
+        m_ARSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_ARBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_ARVALID[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_ARREADY[0]) @(posedge clk);
+        m_ARVALID[0] <= 1'b0;
+
+        m_RREADY[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_RVALID[0]) @(posedge clk);
+        if (m_RRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W] !== 2'b11) begin
+            $display("[%0t] ERROR: invalid addr rd resp=%0d (expected DECERR=2'b11)",
+                     $time, m_RRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W]);
+            err_cnt = err_cnt + 1;
+        end else begin
+            $display("[%0t] Invalid addr rd: RRESP=DECERR (correct)", $time);
+        end
+        m_RREADY[0] <= 1'b0;
+        $display("[%0t] TEST 12 DONE (errors=%0d)", $time, err_cnt);
+
+        //=================================================================
+        // TEST 13: Disabled slave access — expect DECERR from default slave
+        //=================================================================
+        $display("\n--- TEST 13: Disabled slave access ---");
+        @(posedge clk);
+        slv_en[1] <= 1'b0;  // disable slave 1
+        @(posedge clk);
+
+        // Write to disabled S1's address region (0x1000)
+        m_AWID[W_MID*1-1 -: W_MID] <= 6'h60;
+        m_AWADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd1) + 32'hC00;
+        m_AWLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd0;
+        m_AWSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_AWBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_AWVALID[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_AWREADY[0]) @(posedge clk);
+        m_AWVALID[0] <= 1'b0;
+
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'h0;
+        m_WSTRB[W_STRB*1-1 -: W_STRB] <= {W_STRB{1'b1}};
+        m_WLAST[0] <= 1'b1;
+        m_WVALID[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_WREADY[0]) @(posedge clk);
+        m_WVALID[0] <= 1'b0;
+        m_WLAST[0] <= 1'b0;
+
+        m_BREADY[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_BVALID[0]) @(posedge clk);
+        if (m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W] !== 2'b11) begin
+            $display("[%0t] ERROR: disabled S1 wr resp=%0d (expected DECERR=2'b11)",
+                     $time, m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W]);
+            err_cnt = err_cnt + 1;
+        end else begin
+            $display("[%0t] Disabled S1 wr: BRESP=DECERR (correct)", $time);
+        end
+        m_BREADY[0] <= 1'b0;
+
+        // Read from disabled S1's address region
+        m_ARID[W_MID*1-1 -: W_MID] <= 6'h61;
+        m_ARADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd1) + 32'hC00;
+        m_ARLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd0;
+        m_ARSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_ARBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_ARVALID[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_ARREADY[0]) @(posedge clk);
+        m_ARVALID[0] <= 1'b0;
+
+        m_RREADY[0] <= 1'b1;
+        @(posedge clk);
+        while (!m_RVALID[0]) @(posedge clk);
+        if (m_RRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W] !== 2'b11) begin
+            $display("[%0t] ERROR: disabled S1 rd resp=%0d (expected DECERR=2'b11)",
+                     $time, m_RRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W]);
+            err_cnt = err_cnt + 1;
+        end else begin
+            $display("[%0t] Disabled S1 rd: RRESP=DECERR (correct)", $time);
+        end
+        m_RREADY[0] <= 1'b0;
+
+        // Re-enable S1 and verify functional
+        slv_en[1] <= 1'b1;
+        @(posedge clk);
+        test_addr = slv_base_addr(2'd1) + 32'hC10;
+        wdata[0] = 32'hCAFE_F00D;
+        axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h62, wdata);
+        axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h62, rdata);
+        if (rdata[0] !== 32'hCAFE_F00D) begin
+            $display("[%0t] ERROR: S1 re-enable data mismatch! got=0x%08h", $time, rdata[0]);
+            err_cnt = err_cnt + 1;
+        end
+        $display("[%0t] TEST 13 DONE (errors=%0d)", $time, err_cnt);
 
         //=================================================================
         // FINAL REPORT
