@@ -849,23 +849,89 @@ module cross_tb;
 
         //=================================================================
         // TEST 10: Multiple outstanding writes (M0 → S0, S1, S2)
+        //         Send 3 writes pipeline-style: AW+W for each without
+        //         waiting for B response, then collect all B at the end.
         //=================================================================
         $display("\n--- TEST 10: Multiple outstanding writes ---");
-        fork
-            begin
-                wdata[0] = 32'hA500_0000; wdata[1] = 32'hA500_0001;
-                axi_write(0, slv_base_addr(2'd0) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h00, wdata);
+
+        // --- TX0: M0 → S0, burst-2, ID=0x00 ---
+        m_AWID[W_MID*1-1 -: W_MID] <= 6'h00;
+        m_AWADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd0) + 32'hA00;
+        m_AWLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd1;
+        m_AWSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_AWBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_AWVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_AWREADY[0]) @(posedge clk);
+        m_AWVALID[0] <= 1'b0;
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'hA500_0000;
+        m_WSTRB[W_STRB*1-1 -: W_STRB] <= {W_STRB{1'b1}};
+        m_WLAST[0] <= 1'b0;
+        m_WVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_WREADY[0]) @(posedge clk);
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'hA500_0001;
+        m_WLAST[0] <= 1'b1;
+        @(posedge clk); while (!m_WREADY[0]) @(posedge clk);
+        m_WVALID[0] <= 1'b0;
+        m_WLAST[0] <= 1'b0;
+
+        // --- TX1: M0 → S1, burst-2, ID=0x01 ---
+        m_AWID[W_MID*1-1 -: W_MID] <= 6'h01;
+        m_AWADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd1) + 32'hA00;
+        m_AWLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd1;
+        m_AWSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_AWBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_AWVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_AWREADY[0]) @(posedge clk);
+        m_AWVALID[0] <= 1'b0;
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'hA510_0000;
+        m_WSTRB[W_STRB*1-1 -: W_STRB] <= {W_STRB{1'b1}};
+        m_WLAST[0] <= 1'b0;
+        m_WVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_WREADY[0]) @(posedge clk);
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'hA510_0001;
+        m_WLAST[0] <= 1'b1;
+        @(posedge clk); while (!m_WREADY[0]) @(posedge clk);
+        m_WVALID[0] <= 1'b0;
+        m_WLAST[0] <= 1'b0;
+
+        // --- TX2: M0 → S2, burst-2, ID=0x02 ---
+        m_AWID[W_MID*1-1 -: W_MID] <= 6'h02;
+        m_AWADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd2) + 32'hA00;
+        m_AWLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd1;
+        m_AWSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_AWBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_AWVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_AWREADY[0]) @(posedge clk);
+        m_AWVALID[0] <= 1'b0;
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'hA520_0000;
+        m_WSTRB[W_STRB*1-1 -: W_STRB] <= {W_STRB{1'b1}};
+        m_WLAST[0] <= 1'b0;
+        m_WVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_WREADY[0]) @(posedge clk);
+        m_WDATA[DATA_WIDTH*1-1 -: DATA_WIDTH] <= 32'hA520_0001;
+        m_WLAST[0] <= 1'b1;
+        @(posedge clk); while (!m_WREADY[0]) @(posedge clk);
+        m_WVALID[0] <= 1'b0;
+        m_WLAST[0] <= 1'b0;
+
+        // Now collect 3 B responses (all are already outstanding)
+        $display("[%0t] Outstanding wr: waiting for 3 B responses...", $time);
+        m_BREADY[0] <= 1'b1;
+        repeat (3) begin
+            @(posedge clk);
+            while (!m_BVALID[0]) @(posedge clk);
+            $display("[%0t] Outstanding wr B: id=%0h resp=%0d",
+                     $time, m_BID[W_SID*1-1 -: W_SID],
+                     m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W]);
+            if (m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W] !== 2'b00) begin
+                $display("[%0t] ERROR: outstanding wr BRESP=%0d (expected OKAY)",
+                         $time, m_BRESP[TRANS_WR_RESP_W*1-1 -: TRANS_WR_RESP_W]);
+                err_cnt = err_cnt + 1;
             end
-            begin
-                wdata[0] = 32'hA510_0000; wdata[1] = 32'hA510_0001;
-                axi_write(0, slv_base_addr(2'd1) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h01, wdata);
-            end
-            begin
-                wdata[0] = 32'hA520_0000; wdata[1] = 32'hA520_0001;
-                axi_write(0, slv_base_addr(2'd2) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h02, wdata);
-            end
-        join
-        // Read back sequentially to verify all completed correctly
+        end
+        m_BREADY[0] <= 1'b0;
+
+        // Read back to verify data integrity
         axi_read(0, slv_base_addr(2'd0) + 32'hA00, 8'd1, 3'd2, 2'd1, 6'h00, rdata);
         if (rdata[0] !== 32'hA500_0000 || rdata[1] !== 32'hA500_0001) begin
             $display("[%0t] ERROR: outstanding wr S0 mismatch! got=0x%08h 0x%08h",
@@ -887,46 +953,97 @@ module cross_tb;
         $display("[%0t] TEST 10 DONE (errors=%0d)", $time, err_cnt);
 
         //=================================================================
-        // TEST 11: Multiple outstanding reads (M1 → S0, S1, S2)
+        // TEST 11: Multiple outstanding reads (M0 → S0, S1, S2)
+        //         Send 3 ARs back-to-back without waiting for R between
+        //         them, then collect all R beats using RID matching.
         //=================================================================
         $display("\n--- TEST 11: Multiple outstanding reads ---");
-        // First set up known data
+
+        // Set up known data in each slave via M0
         test_addr = slv_base_addr(2'd0) + 32'hB00;
         wdata[0] = 32'hBB00_0000; wdata[1] = 32'hBB00_0001;
-        axi_write(1, test_addr, 8'd1, 3'd2, 2'd1, 6'h10, wdata);
+        axi_write(0, test_addr, 8'd1, 3'd2, 2'd1, 6'h10, wdata);
         test_addr = slv_base_addr(2'd1) + 32'hB00;
         wdata[0] = 32'hBB10_0000; wdata[1] = 32'hBB10_0001;
-        axi_write(1, test_addr, 8'd1, 3'd2, 2'd1, 6'h11, wdata);
+        axi_write(0, test_addr, 8'd1, 3'd2, 2'd1, 6'h11, wdata);
         test_addr = slv_base_addr(2'd2) + 32'hB00;
         wdata[0] = 32'hBB20_0000; wdata[1] = 32'hBB20_0001;
-        axi_write(1, test_addr, 8'd1, 3'd2, 2'd1, 6'h12, wdata);
-        // Fork 3 concurrent reads
-        fork
-            begin
-                automatic logic [DATA_WIDTH-1:0] rd_os0 [0:255];
-                axi_read(1, slv_base_addr(2'd0) + 32'hB00, 8'd1, 3'd2, 2'd1, 6'h10, rd_os0);
-                if (rd_os0[0] !== 32'hBB00_0000 || rd_os0[1] !== 32'hBB00_0001) begin
-                    $display("[%0t] ERROR: outstanding rd S0 mismatch!", $time);
-                    err_cnt = err_cnt + 1;
+        axi_write(0, test_addr, 8'd1, 3'd2, 2'd1, 6'h12, wdata);
+
+        // Send 3 AR requests back-to-back (without waiting for R)
+        // --- AR0: M0 → S0, burst-2, ID=0x10 ---
+        m_ARID[W_MID*1-1 -: W_MID] <= 6'h10;
+        m_ARADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd0) + 32'hB00;
+        m_ARLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd1;
+        m_ARSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_ARBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_ARVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_ARREADY[0]) @(posedge clk);
+        m_ARVALID[0] <= 1'b0;
+
+        // --- AR1: M0 → S1, burst-2, ID=0x11 ---
+        m_ARID[W_MID*1-1 -: W_MID] <= 6'h11;
+        m_ARADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd1) + 32'hB00;
+        m_ARLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd1;
+        m_ARSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_ARBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_ARVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_ARREADY[0]) @(posedge clk);
+        m_ARVALID[0] <= 1'b0;
+
+        // --- AR2: M0 → S2, burst-2, ID=0x12 ---
+        m_ARID[W_MID*1-1 -: W_MID] <= 6'h12;
+        m_ARADDR[ADDR_WIDTH*1-1 -: ADDR_WIDTH] <= slv_base_addr(2'd2) + 32'hB00;
+        m_ARLEN[TRANS_DATA_LEN_W*1-1 -: TRANS_DATA_LEN_W] <= 8'd1;
+        m_ARSIZE[TRANS_DATA_SIZE_W*1-1 -: TRANS_DATA_SIZE_W] <= 3'd2;
+        m_ARBURST[TRANS_BURST_W*1-1 -: TRANS_BURST_W] <= 2'd1;
+        m_ARVALID[0] <= 1'b1;
+        @(posedge clk); while (!m_ARREADY[0]) @(posedge clk);
+        m_ARVALID[0] <= 1'b0;
+
+        // Collect 6 R beats (3 txn × 2 beats), matching by RID[1:0]
+        begin
+            reg [DATA_WIDTH-1:0] rd_out_data [0:2][0:1];
+            reg [7:0]            rd_out_beat [0:2];
+            reg [2:0]            rd_out_done;
+            reg [1:0]            rd_idx;
+
+            for (rd_idx = 0; rd_idx < 3; rd_idx = rd_idx + 1)
+                rd_out_beat[rd_idx] = 0;
+            rd_out_done = 3'b000;
+
+            m_RREADY[0] <= 1'b1;
+            while (rd_out_done !== 3'b111) begin
+                @(posedge clk);
+                if (m_RVALID[0]) begin
+                    rd_idx = m_RID[1:0];
+                    if (rd_idx < 3) begin
+                        rd_out_data[rd_idx][rd_out_beat[rd_idx]] = m_RDATA[DATA_WIDTH*1-1 -: DATA_WIDTH];
+                        rd_out_beat[rd_idx] = rd_out_beat[rd_idx] + 1;
+                        if (m_RLAST[0])
+                            rd_out_done[rd_idx] = 1'b1;
+                    end
                 end
             end
-            begin
-                automatic logic [DATA_WIDTH-1:0] rd_os1 [0:255];
-                axi_read(1, slv_base_addr(2'd1) + 32'hB00, 8'd1, 3'd2, 2'd1, 6'h11, rd_os1);
-                if (rd_os1[0] !== 32'hBB10_0000 || rd_os1[1] !== 32'hBB10_0001) begin
-                    $display("[%0t] ERROR: outstanding rd S1 mismatch!", $time);
-                    err_cnt = err_cnt + 1;
-                end
+            m_RREADY[0] <= 1'b0;
+
+            // Verify each transaction's data
+            if (rd_out_data[0][0] !== 32'hBB00_0000 || rd_out_data[0][1] !== 32'hBB00_0001) begin
+                $display("[%0t] ERROR: outstanding rd S0 mismatch! got=0x%08h 0x%08h",
+                         $time, rd_out_data[0][0], rd_out_data[0][1]);
+                err_cnt = err_cnt + 1;
             end
-            begin
-                automatic logic [DATA_WIDTH-1:0] rd_os2 [0:255];
-                axi_read(1, slv_base_addr(2'd2) + 32'hB00, 8'd1, 3'd2, 2'd1, 6'h12, rd_os2);
-                if (rd_os2[0] !== 32'hBB20_0000 || rd_os2[1] !== 32'hBB20_0001) begin
-                    $display("[%0t] ERROR: outstanding rd S2 mismatch!", $time);
-                    err_cnt = err_cnt + 1;
-                end
+            if (rd_out_data[1][0] !== 32'hBB10_0000 || rd_out_data[1][1] !== 32'hBB10_0001) begin
+                $display("[%0t] ERROR: outstanding rd S1 mismatch! got=0x%08h 0x%08h",
+                         $time, rd_out_data[1][0], rd_out_data[1][1]);
+                err_cnt = err_cnt + 1;
             end
-        join
+            if (rd_out_data[2][0] !== 32'hBB20_0000 || rd_out_data[2][1] !== 32'hBB20_0001) begin
+                $display("[%0t] ERROR: outstanding rd S2 mismatch! got=0x%08h 0x%08h",
+                         $time, rd_out_data[2][0], rd_out_data[2][1]);
+                err_cnt = err_cnt + 1;
+            end
+        end
         $display("[%0t] TEST 11 DONE (errors=%0d)", $time, err_cnt);
 
         //=================================================================
