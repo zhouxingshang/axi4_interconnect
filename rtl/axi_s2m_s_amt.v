@@ -109,28 +109,10 @@ axi_arbiter_param_rr #(.NUM(SLV_AMT)) u_arb_r (
     .req(RSELECT & {S_RVALID[SLV_AMT-1:0]}), .grant(RGRANT)
 );
 
-// Delayed grants with handshake-hold: grant only advances when M-side handshake completes
-// This aligns S_BREADY routing with M_BREADY timing (which is NBA-delayed by 1 cycle)
-reg [SLV_AMT-1:0] bgrant_d;
-reg [SLV_AMT-1:0] rgrant_d;
-always @(posedge AXI_CLK) begin
-    if (!AXI_RSTn) begin
-        bgrant_d <= '0;
-        rgrant_d <= '0;
-    end else begin
-        // B grant: advance when idle, handshake completes, or M-side goes quiet
-        if (|bgrant_d == 0 || !M_BVALID)
-            bgrant_d <= BGRANT;
-        else if (M_BREADY && M_BVALID)
-            bgrant_d <= BGRANT;
-
-        // R grant: same hold mechanism
-        if (|rgrant_d == 0 || !M_RVALID)
-            rgrant_d <= RGRANT;
-        else if (M_RREADY && M_RVALID)
-            rgrant_d <= RGRANT;
-    end
-end
+// S-side ready uses BGRANT/RGRANT directly (no delay register).
+// The delayed grant (bgrant_d/rgrant_d) was removed because it caused
+// slave-side handshake to lag behind master-side data forwarding,
+// resulting in stale S_RVALID blocking the arbiter from advancing.
 
 // Pack bus for muxing
 localparam NUM_B_WIDTH = W_SID + 2 + 1;
@@ -157,12 +139,39 @@ always @(*) begin
     for(int i = 0; i < SLV_AMT; i++) if(RGRANT[i]) `M_RBUS = bus_r[i];
 end
 
-// S-side ready: use held grant to align with M_BREADY/M_RREADY timing
+// S-side ready: use current grant + M-side ready directly
 generate
     for(si = 0; si < SLV_AMT; si = si + 1) begin : READY_GEN
-        assign s_bready[si] = bgrant_d[si] & M_BREADY;
-        assign s_rready[si] = rgrant_d[si] & M_RREADY;
+        assign s_bready[si] = BGRANT[si] & M_BREADY;
+        assign s_rready[si] = RGRANT[si] & M_RREADY;
     end
 endgenerate
+
+//=========================================================================
+// Debug: R channel monitoring
+//=========================================================================
+genvar di;
+generate
+    for (di = 0; di < SLV_AMT; di = di + 1) begin : DBG_S_R
+        always @(posedge AXI_CLK) begin
+            if (s_rvalid[di] && s_rready[di])
+                $display("[%0t] S2M[M%0d] R: slave[%0d] handshake RID=0x%0h RDATA=0x%08h RLAST=%0d RRESP=%0d",
+                         $time, MASTER_ID, di, s_rid[di], s_rdata[di], s_rlast[di], s_rresp[di]);
+        end
+    end
+endgenerate
+
+always @(posedge AXI_CLK) begin
+    if (M_RVALID && M_RREADY)
+        $display("[%0t] S2M[M%0d] R: -> MASTER RID=0x%0h RDATA=0x%08h RLAST=%0d",
+                 $time, MASTER_ID, M_RSID, M_RDATA, M_RLAST);
+end
+
+// Debug: RGRANT / rgrant_d / RSELECT state (only when RSELECT active)
+always @(posedge AXI_CLK) begin
+    if (|RSELECT)
+        $display("[%0t] S2M[M%0d] R: RSELECT=0x%0h RGRANT=0x%0h rgrant_d=0x%0h S_RVALID=0x%0h M_RREADY=%0d M_RVALID=%0d",
+                 $time, MASTER_ID, RSELECT, RGRANT, rgrant_d, S_RVALID, M_RREADY, M_RVALID);
+end
 
 endmodule

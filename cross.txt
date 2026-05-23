@@ -1863,6 +1863,11 @@ endmodule
 // Desc     : Testbench for axi_crossbar (4x4 flattened crossbar switch)
 //=============================================================================
 
+//=============================================================================
+// Testbench: cross_tb
+// Desc     : Testbench for axi_crossbar (4x4 flattened crossbar switch)
+//=============================================================================
+
 module cross_tb;
 
     //=========================================================================
@@ -1885,7 +1890,7 @@ module cross_tb;
     localparam W_SID             = MST_ID_W + SLV_ID_W + W_ID; // 8
 
     // 4KB address space per slave
-    localparam SLV_MEM_DEPTH = 1024;
+    localparam SLV_MEM_DEPTH = 32;
     localparam [SLV_AMT*ADDR_WIDTH-1:0] SLV_ADDR_BASE = {
         32'h00003000,   // Slave 3: 0x3000-0x3FFF
         32'h00002000,   // Slave 2: 0x2000-0x2FFF
@@ -2245,6 +2250,13 @@ module cross_tb;
                 ar_q_total[slv_id][ar_q_wr_ptr[slv_id]]  =  s_ARLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W] + 8'd1;
                 ar_q_wr_ptr[slv_id] = (ar_q_wr_ptr[slv_id] + 1) & 3;
                 ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] + 1;
+                $display("[%0t] AR_HANDLER[S%0d]: enqueue ARID=0x%0h ARADDR=0x%08h ARLEN=%0d total=%0d wr_ptr=%0d q_cnt=%0d",
+                         $time, slv_id,
+                         ar_q_arid[slv_id][(ar_q_wr_ptr[slv_id]-1)&3],
+                         ar_q_araddr[slv_id][(ar_q_wr_ptr[slv_id]-1)&3],
+                         s_ARLEN[TRANS_DATA_LEN_W*(slv_id+1)-1 -: TRANS_DATA_LEN_W],
+                         ar_q_total[slv_id][(ar_q_wr_ptr[slv_id]-1)&3],
+                         ar_q_wr_ptr[slv_id], ar_q_cnt[slv_id]);
             end
         end
     endtask
@@ -2284,11 +2296,16 @@ module cross_tb;
                     s_RRESP[TRANS_WR_RESP_W*(slv_id+1)-1 -: TRANS_WR_RESP_W] <= 2'b00;
                     s_RLAST[slv_id] <= (cur_total == 8'd1);
                     s_RVALID[slv_id] <= 1'b1;
+                    $display("[%0t] R_HANDLER[S%0d]: DEQUEUE RID=0x%0h addr=0x%08h word_idx=%0d total=%0d mem_data=0x%08h rlast=%0d rready=%0d q_cnt=%0d",
+                             $time, slv_id, cur_arid, cur_araddr, word_idx, cur_total,
+                             (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF,
+                             (cur_total == 8'd1), s_RREADY[slv_id], ar_q_cnt[slv_id]);
                 end
 
                 // R handshake: advance or finish
                 if (cur_active && s_RVALID[slv_id] && s_RREADY[slv_id]) begin
                     if (cur_beat_cnt == cur_total - 1) begin
+                        $display("[%0t] R_HANDLER[S%0d]: LAST beat[%0d/%0d] done", $time, slv_id, cur_beat_cnt, cur_total);
                         s_RVALID[slv_id] <= 1'b0;
                         s_RLAST[slv_id]  <= 1'b0;
                         cur_active = 1'b0;
@@ -2297,6 +2314,10 @@ module cross_tb;
                         word_idx = cur_araddr[11:2] + cur_beat_cnt;
                         s_RDATA[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH] <= (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF;
                         s_RLAST[slv_id] <= (cur_beat_cnt == cur_total - 1);
+                        $display("[%0t] R_HANDLER[S%0d]: beat[%0d/%0d] word_idx=%0d data=0x%08h rlast=%0d",
+                                 $time, slv_id, cur_beat_cnt, cur_total, word_idx,
+                                 (word_idx < SLV_MEM_DEPTH) ? slv_mem[slv_id][word_idx] : 32'hDEAD_BEEF,
+                                 (cur_beat_cnt == cur_total - 1));
                     end
                 end
             end
@@ -2491,11 +2512,7 @@ module cross_tb;
         for (i = 0; i < SLV_AMT; i = i + 1) begin
             test_addr = slv_base_addr(i[1:0]) + 32'h40;
             wdata[0] = gen_data(test_addr, 8'd0);
-            $display("[%0t] TEST1: WDATA = 0x%08h (addr=0x%08h, slave=%0d)",
-                     $time, wdata[0], test_addr, i);
             axi_write(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, wdata);
-            $display("[%0t] TEST1: SLV_MEM[%0d][%0d] = 0x%08h",
-                     $time, i, test_addr[11:2], slv_mem[i][test_addr[11:2]]);
             axi_read(0, test_addr, 8'd0, 3'd2, 2'd1, 6'h05, rdata);
             $display("[%0t] TEST1: RDATA[0] = 0x%08h", $time, rdata[0]);
             expected = gen_data(test_addr, 8'd0);
@@ -2729,3 +2746,4 @@ module cross_tb;
     end
 
 endmodule
+
