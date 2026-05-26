@@ -111,8 +111,13 @@ module rmg_tb;
             s_rresp  <= resp_base;
             s_rlast  <= (b == num_beats - 1);
             s_rvalid <= 1'b1;
+            $display("[%0t] R_DRV: mst=%0d split=%0d id=0x%0h beat[%0d/%0d] data=0x%08h last=%0d → asserting",
+                     $time, mst, split_st, orig_id, b, num_beats-1,
+                     {orig_id[3:0], split_st, mst, b[7:0], 16'h0},
+                     (b == num_beats - 1));
             @(posedge clk);
             while (!s_rready) @(posedge clk);
+            $display("[%0t] R_DRV: beat[%0d] accepted (RREADY)", $time, b);
         end
         s_rvalid <= 1'b0;
         s_rlast  <= 1'b0;
@@ -222,41 +227,82 @@ module rmg_tb;
         $display("[%0t] TEST %0d DONE (errors=%0d)", $time, test_num, err_cnt);
 
         //=================================================================
-        // TEST 4: Split R merge, sub2 stalled (sub2 arrives before sub1 done)
-        //   Drive sub2's first beat while sub1 is still in progress.
-        //   DUT should stall sub2 (s_rready=0) until sub1 completes.
-        //   We do this by NOT driving sub1 yet, driving sub2 beat0,
-        //   verifying it's stalled, then driving sub1, then sub2 proceeds.
+        // TEST 4: Split R merge, sub2 stalled (sub2 arrives after sub1 beat0,
+        //   but before sub1 completes).  sub2 must wait for sub1_done before
+        //   it can pass through.
+        //
+        //   Sequential drive to avoid s_rvalid/s_rdata conflict:
+        //     1) sub1 beat0 → allocates slot
+        //     2) sub2 beat0 asserted → s_rready=0 → we de-assert and park sub2
+        //     3) sub1 beat1 → sub1_done=1
+        //     4) sub2 beat0 re-asserted → now s_rready=1 → handshake
+        //     5) sub2 beat1 → deallocation
         //=================================================================
         test_num = test_num + 1;
         $display("\n--- TEST %0d: Split R merge (sub2 stalled) ---", test_num);
         fork
-            begin   // sub1: drive after a delay (simulates arriving later)
-                repeat (10) @(posedge clk);
-                $display("[%0t] Driving sub1 now (sub2 should be stalled)...", $time);
-                drive_r_beats(2'd2, 2'b01, 4'h6, 8'd2, 2'b00);
-            end
-            begin   // sub2: drive immediately, first beat should stall
-                @(posedge clk);
-                $display("[%0t] Driving sub2 (expect stall)...", $time);
-                // sub2 beat0 — should be stalled (s_rready=0 initially)
-                s_rid    <= {2'd2, 2'b10, 4'h6};
+            // Collector: captures all 4 beats in parallel
+            collect_r_beats(8'd4, rdata_buf, rresp_buf, got_cnt);
+
+            // Driver: sequential, single-thread, no signal sharing
+            begin
+                // Step 1: sub1 beat0 → allocates slot
+                s_rid    <= {2'd2, 2'b01, 4'h6};
                 s_rdata  <= 32'h6000_0000;
                 s_rresp  <= 2'b00;
                 s_rlast  <= 1'b0;
                 s_rvalid <= 1'b1;
                 @(posedge clk);
                 while (!s_rready) @(posedge clk);
-                $display("[%0t] Sub2 beat0 accepted (unstalled)", $time);
-                // sub2 beat1 (last)
+                s_rvalid <= 1'b0;
+                $display("[%0t] Sub1 beat0 done (slot allocated)", $time);
+
+                // Step 2: sub2 beat0 — assert, see stall, then park (de-assert)
+                s_rid    <= {2'd2, 2'b10, 4'h6};
+                s_rdata  <= 32'h6000_0002;
+                s_rresp  <= 2'b00;
+                s_rlast  <= 1'b0;
+                s_rvalid <= 1'b1;
+                @(posedge clk);
+                $display("[%0t] Sub2 beat0 asserted (expect stall)...", $time);
+                if (s_rready)
+                    log_error("TEST 4: sub2 beat0 should be stalled but s_rready=1");
+                // Park sub2: de-assert valid, sub1_done is still 0
+                s_rvalid <= 1'b0;
+                @(posedge clk);
+
+                // Step 3: sub1 beat1 → sets sub1_done=1
+                s_rid    <= {2'd2, 2'b01, 4'h6};
                 s_rdata  <= 32'h6000_0001;
                 s_rlast  <= 1'b1;
+                s_rvalid <= 1'b1;
                 @(posedge clk);
                 while (!s_rready) @(posedge clk);
                 s_rvalid <= 1'b0;
                 s_rlast  <= 1'b0;
+                $display("[%0t] Sub1 beat1 done (sub1 completed)", $time);
+
+                // Step 4: re-assert sub2 beat0 — now s_rready=1, should pass
+                s_rid    <= {2'd2, 2'b10, 4'h6};
+                s_rdata  <= 32'h6000_0002;
+                s_rresp  <= 2'b00;
+                s_rlast  <= 1'b0;
+                s_rvalid <= 1'b1;
+                @(posedge clk);
+                while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0;
+                $display("[%0t] Sub2 beat0 accepted (unstalled)", $time);
+
+                // Step 5: sub2 beat1 — last beat, triggers deallocation
+                s_rdata  <= 32'h6000_0003;
+                s_rlast  <= 1'b1;
+                s_rvalid <= 1'b1;
+                @(posedge clk);
+                while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0;
+                s_rlast  <= 1'b0;
+                $display("[%0t] Sub2 beat1 done (sub2 completed)", $time);
             end
-            collect_r_beats(8'd4, rdata_buf, rresp_buf, got_cnt);
         join
         if (got_cnt != 4)
             log_error($sformatf("TEST 4: beat count mismatch: got=%0d exp=4", got_cnt));
@@ -296,24 +342,85 @@ module rmg_tb;
 
         //=================================================================
         // TEST 6: Multiple concurrent split R transactions
-        //   Interleave beats from TX0 and TX1
+        //   Sequential interleave: TX0 sub1 → TX1 sub1 (both slots live),
+        //   then complete TX0, then TX1.  Verifies independent slot tracking.
         //=================================================================
         test_num = test_num + 1;
         $display("\n--- TEST %0d: Multiple concurrent split R ---", test_num);
-        // Drive TX0 sub1 + TX1 sub1, then TX0 sub2 + TX1 sub2
         fork
-            begin   // TX0: id=0xC, sub1
-                drive_r_beats(2'd0, 2'b01, 4'hC, 8'd2, 2'b00);
-                @(posedge clk); @(posedge clk);
-                drive_r_beats(2'd0, 2'b10, 4'hC, 8'd2, 2'b00);
-            end
-            begin   // TX1: id=0xD, sub1
-                @(posedge clk);
-                drive_r_beats(2'd1, 2'b01, 4'hD, 8'd2, 2'b00);
-                @(posedge clk); @(posedge clk);
-                drive_r_beats(2'd1, 2'b10, 4'hD, 8'd2, 2'b00);
+            collect_r_beats(8'd8, rdata_buf, rresp_buf, got_cnt);
+            begin
+                // --- TX0 sub1 beat0 → slot0 allocated ---
+                s_rid    <= {2'd0, 2'b01, 4'hC};
+                s_rdata  <= 32'hC000_0000;
+                s_rresp  <= 2'b00;
+                s_rlast  <= 1'b0;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0;
+                $display("[%0t] TX0 sub1 beat0 done", $time);
+
+                // --- TX1 sub1 beat0 → slot1 allocated ---
+                s_rid    <= {2'd1, 2'b01, 4'hD};
+                s_rdata  <= 32'hD000_0000;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0;
+                $display("[%0t] TX1 sub1 beat0 done (2 slots live)", $time);
+
+                // --- TX0 sub1 beat1 (last) → sub1_done[0]=1 ---
+                s_rid    <= {2'd0, 2'b01, 4'hC};
+                s_rdata  <= 32'hC000_0001;
+                s_rlast  <= 1'b1;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0; s_rlast <= 1'b0;
+                $display("[%0t] TX0 sub1 completed", $time);
+
+                // --- TX0 sub2 beat0 → passes (sub1_done=1) ---
+                s_rid    <= {2'd0, 2'b10, 4'hC};
+                s_rdata  <= 32'hC000_0002;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0;
+                $display("[%0t] TX0 sub2 beat0 done", $time);
+
+                // --- TX0 sub2 beat1 → slot0 freed ---
+                s_rdata  <= 32'hC000_0003;
+                s_rlast  <= 1'b1;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0; s_rlast <= 1'b0;
+                $display("[%0t] TX0 sub2 completed (slot freed)", $time);
+
+                // --- TX1 sub1 beat1 (last) → sub1_done[1]=1 ---
+                s_rid    <= {2'd1, 2'b01, 4'hD};
+                s_rdata  <= 32'hD000_0001;
+                s_rlast  <= 1'b1;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0; s_rlast <= 1'b0;
+                $display("[%0t] TX1 sub1 completed", $time);
+
+                // --- TX1 sub2 beat0 → passes ---
+                s_rid    <= {2'd1, 2'b10, 4'hD};
+                s_rdata  <= 32'hD000_0002;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0;
+                $display("[%0t] TX1 sub2 beat0 done", $time);
+
+                // --- TX1 sub2 beat1 → slot freed ---
+                s_rdata  <= 32'hD000_0003;
+                s_rlast  <= 1'b1;
+                s_rvalid <= 1'b1;
+                @(posedge clk); while (!s_rready) @(posedge clk);
+                s_rvalid <= 1'b0; s_rlast <= 1'b0;
+                $display("[%0t] TX1 sub2 completed (slot freed)", $time);
             end
         join
+        if (got_cnt != 8)
+            log_error($sformatf("TEST 6: beat count mismatch: got=%0d exp=8", got_cnt));
         $display("[%0t] TEST %0d DONE (errors=%0d)", $time, test_num, err_cnt);
 
         //=================================================================
