@@ -1,61 +1,212 @@
-[145000] M[0] WR: addr=0x00000040 len=0 id=5
-[145000] S2M[M0] R: RSELECT=0xf RGRANT=0x0 rgrant_d=0x0 S_RVALID=0x0 M_RREADY=0 M_RVALID=0
-[155000] S2M[M0] R: RSELECT=0xf RGRANT=0x0 rgrant_d=0x0 S_RVALID=0x0 M_RREADY=0 M_RVALID=0
-[165000] S2M[M0] R: RSELECT=0xf RGRANT=0x0 rgrant_d=0x0 S_RVALID=0x0 M_RREADY=0 M_RVALID=0
-[175000] S2M[M0] R: RSELECT=0xf RGRANT=0x0 rgrant_d=0x0 S_RVALID=0x0 M_RREADY=0 M_RVALID=0
-[185000] M[0] WR BRESP: id=5 resp=0
-[185000] M[0] RD: addr=0x00000040 len=0 id=5
-[185000] S2M[M0] R: RSELECT=0xf RGRANT=0x0 rgrant_d=0x0 S_RVALID=0x0 M_RREADY=0 M_RVALID=0
-[195000] AR_HANDLER[S0]: enqueue ARID=0x5 ARADDR=0x00000040 ARLEN=0 total=1 wr_ptr=1 q_cnt=1
-[195000] R_HANDLER[S0]: DEQUEUE RID=0x5 addr=0x00000040 word_idx=16 total=1 mem_data=0x00400040 rlast=1 rready=0 q_cnt=0
-[195000] S2M[M0] R: RSELECT=0xf RGRANT=0x0 rgrant_d=0x0 S_RVALID=0x0 M_RREADY=0 M_RVALID=0
-[205000] M[0] RD beat[0]: data=0x00400040 resp=0 last=1
-[205000] TEST1: RDATA[0] = 0x00400040
- 
-[205000] M[0] WR: addr=0x00001040 len=0 id=5
-[205000] S2M[M0] R: -> MASTER RID=0x5 RDATA=0x00400040 RLAST=1
-[205000] S2M[M0] R: RSELECT=0xf RGRANT=0x1 rgrant_d=0x0 S_RVALID=0x1 M_RREADY=1 M_RVALID=1
-[215000] S2M[M0] R: RSELECT=0xf RGRANT=0x1 rgrant_d=0x1 S_RVALID=0x1 M_RREADY=0 M_RVALID=1
-[225000] S2M[M0] R: RSELECT=0xf RGRANT=0x1 rgrant_d=0x1 S_RVALID=0x1 M_RREADY=0 M_RVALID=1
-[235000] M[0] WR BRESP: id=5 resp=0
-[235000] M[0] RD: addr=0x00001040 len=0 id=5
-[235000] S2M[M0] R: RSELECT=0xf RGRANT=0x1 rgrant_d=0x1 S_RVALID=0x1 M_RREADY=0 M_RVALID=1
-[245000] AR_HANDLER[S1]: enqueue ARID=0x5 ARADDR=0x00001040 ARLEN=0 total=1 wr_ptr=1 q_cnt=1
-[245000] R_HANDLER[S1]: DEQUEUE RID=0x5 addr=0x00001040 word_idx=16 total=1 mem_data=0x10400040 rlast=1 rready=0 q_cnt=0
-[245000] S2M[M0] R: RSELECT=0xf RGRANT=0x1 rgrant_d=0x1 S_RVALID=0x1 M_RREADY=0 M_RVALID=1
-[255000] R_HANDLER[S0]: LAST beat[0/1] done
-[255000] M[0] RD beat[0]: data=0x10400040 resp=0 last=1
-[255000] TEST1: RDATA[0] = 0x10400040
- 
-[255000] M[0] WR: addr=0x00002040 len=0 id=5
-[255000] S2M[M0] R: -> MASTER RID=0x5 RDATA=0x10400040 RLAST=1
-[255000] S2M[M0] R: RSELECT=0xf RGRANT=0x2 rgrant_d=0x1 S_RVALID=0x3 M_RREADY=1 M_RVALID=1
-[255000] S2M[M0] R: slave[0] handshake RID=0x5 RDATA=0x00400040 RLAST=1 RRESP=0
-[265000] S2M[M0] R: RSELECT=0xf RGRANT=0x2 rgrant_d=0x2 S_RVALID=0x2 M_RREADY=0 M_RVALID=1
-[275000] S2M[M0] R: RSELECT=0xf RGRANT=0x2 rgrant_d=0x2 S_RVALID=0x2 M_RREADY=0 M_RVALID=1
-[285000] M[0] WR BRESP: id=5 resp=0
-[285000] M[0] RD: addr=0x00002040 len=0 id=5
-[285000] S2M[M0] R: RSELECT=0xf RGRANT=0x2 rgrant_d=0x2 S_RVALID=0x2 M_RREADY=0 M_RVALID=1
-[295000] AR_HANDLER[S2]: enqueue ARID=0x5 ARADDR=0x00002040 ARLEN=0 total=1 wr_ptr=1 q_cnt=1
-[295000] R_HANDLER[S2]: DEQUEUE RID=0x5 addr=0x00002040 word_idx=16 total=1 mem_data=0x20400040 rlast=1 rready=0 q_cnt=0
-[295000] S2M[M0] R: RSELECT=0xf RGRANT=0x2 rgrant_d=0x2 S_RVALID=0x2 M_RREADY=0 M_RVALID=1
-[305000] R_HANDLER[S1]: LAST beat[0/1] done
-[305000] M[0] RD beat[0]: data=0x10400040 resp=0 last=1
-[305000] TEST1: RDATA[0] = 0x10400040
-[305000] ERROR: S2 mismatch! got=0x10400040 exp=0x20400040
- 
-[305000] M[0] WR: addr=0x00003040 len=0 id=5
-[305000] S2M[M0] R: -> MASTER RID=0x5 RDATA=0x10400040 RLAST=1
-[305000] S2M[M0] R: RSELECT=0xf RGRANT=0x2 rgrant_d=0x2 S_RVALID=0x6 M_RREADY=1 M_RVALID=1
-[305000] S2M[M0] R: slave[1] handshake RID=0x5 RDATA=0x10400040 RLAST=1 RRESP=0
-[315000] S2M[M0] R: RSELECT=0xf RGRANT=0x4 rgrant_d=0x2 S_RVALID=0x4 M_RREADY=0 M_RVALID=1
-[325000] S2M[M0] R: RSELECT=0xf RGRANT=0x4 rgrant_d=0x2 S_RVALID=0x4 M_RREADY=0 M_RVALID=1
-[335000] M[0] WR BRESP: id=5 resp=0
-[335000] M[0] RD: addr=0x00003040 len=0 id=5
-[335000] S2M[M0] R: RSELECT=0xf RGRANT=0x4 rgrant_d=0x2 S_RVALID=0x4 M_RREADY=0 M_RVALID=1
-[345000] AR_HANDLER[S3]: enqueue ARID=0x5 ARADDR=0x00003040 ARLEN=0 total=1 wr_ptr=1 q_cnt=1
-[345000] R_HANDLER[S3]: DEQUEUE RID=0x5 addr=0x00003040 word_idx=16 total=1 mem_data=0x30400040 rlast=1 rready=0 q_cnt=0
-[345000] S2M[M0] R: RSELECT=0xf RGRANT=0x4 rgrant_d=0x2 S_RVALID=0x4 M_RREADY=0 M_RVALID=1
-[355000] M[0] RD beat[0]: data=0x20400040 resp=0 last=1
-[355000] TEST1: RDATA[0] = 0x20400040
-[355000] ERROR: S3 mismatch! got=0x20400040 exp=0x30400040
+--- TEST 1: Non-split AR, single beat ---
+[155000] AR: id=0xa addr=0x00000100 len=0 size=2 → ARREADY
+[155000] S_AR: id=0xa (pref=0) addr=0x00000100 len=0 size=2
+[165000] TEST 1 DONE (errors=0)
+
+--- TEST 2: Non-split AR, burst within 4KB ---
+[175000] AR: id=0xb addr=0x00000100 len=7 size=2 → ARREADY
+[175000] S_AR: id=0xb (pref=0) addr=0x00000100 len=7 size=2
+[185000] TEST 2 DONE (errors=0)
+
+--- TEST 3: Split AR, crosses 4KB ---
+[205000] S_AR: id=0x1c (pref=1) addr=0x00000ffc len=0 size=2
+[215000] AR: id=0xc addr=0x00000ffc len=1 size=2 → ARREADY
+[215000] S_AR: id=0x2c (pref=2) addr=0x00001000 len=0 size=2
+[225000] TEST 3 DONE (errors=0)
+
+--- TEST 4: Split AR, many beats ---
+[235000] S_AR: id=0x1d (pref=1) addr=0x00000ff0 len=3 size=2
+[245000] AR: id=0xd addr=0x00000ff0 len=7 size=2 → ARREADY
+[245000] S_AR: id=0x2d (pref=2) addr=0x00001000 len=3 size=2
+[255000] TEST 4 DONE (errors=0)
+
+--- TEST 5: Non-split AW+W, single beat ---
+[265000] AW: id=0x1 addr=0x00000200 len=0 size=2 → AWREADY
+[265000] S_AR: id=0x1d (pref=1) addr=0x00000ff0 len=3 size=2
+[265000] S_AW: id=0x1 (pref=0) addr=0x00000200 len=0 size=2
+[275000] TEST 5 DONE (errors=0)
+
+--- TEST 6: Non-split AW+W, burst within 4KB ---
+[275000] S_AR: id=0x2d (pref=2) addr=0x00001000 len=3 size=2
+[275000] S_W: beat[0] data=0x02000000 last=1
+[285000] AW: id=0x2 addr=0x00000200 len=3 size=2 → AWREADY
+[285000] S_AW: id=0x2 (pref=0) addr=0x00000200 len=3 size=2
+[295000] S_W: beat[0] data=0x02000000 last=0
+[305000] S_W: beat[1] data=0x02000100 last=0
+[315000] S_W: beat[2] data=0x02000200 last=0
+[325000] TEST 6 DONE (errors=0)
+
+--- TEST 7: Split AW+W, crosses 4KB ---
+[325000] S_W: beat[3] data=0x02000300 last=1
+[345000] S_AW: id=0x13 (pref=1) addr=0x00000ff8 len=1 size=2
+[355000] AW: id=0x3 addr=0x00000ff8 len=3 size=2 → AWREADY
+[355000] S_AW: id=0x23 (pref=2) addr=0x00001000 len=1 size=2
+[365000] S_W: beat[0] data=0x0ff80000 last=0
+[375000] S_AW: id=0x13 (pref=1) addr=0x00000ff8 len=1 size=2
+[375000] S_W: beat[1] data=0x0ff80100 last=1
+[385000] S_AW: id=0x23 (pref=2) addr=0x00001000 len=1 size=2
+[385000] S_W: beat[0] data=0x0ff80200 last=0
+[405000] S_AW: id=0x13 (pref=1) addr=0x00000ff8 len=1 size=2
+[415000] TEST 7 DONE (errors=0)
+
+--- TEST 8: Split AW+W, long burst ---
+[415000] S_AW: id=0x23 (pref=2) addr=0x00001000 len=1 size=2
+[415000] S_W: beat[1] data=0x0ff80300 last=1
+[435000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[445000] AW: id=0x4 addr=0x00000fe0 len=15 size=2 → AWREADY
+[445000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[455000] S_W: beat[0] data=0x0fe00000 last=0
+[465000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[465000] S_W: beat[1] data=0x0fe00100 last=0
+[475000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[475000] S_W: beat[2] data=0x0fe00200 last=0
+[485000] S_W: beat[3] data=0x0fe00300 last=0
+[495000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[495000] S_W: beat[4] data=0x0fe00400 last=0
+[505000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[505000] S_W: beat[5] data=0x0fe00500 last=0
+[515000] S_W: beat[6] data=0x0fe00600 last=0
+[525000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[525000] S_W: beat[7] data=0x0fe00700 last=1
+[535000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[535000] S_W: beat[0] data=0x0fe00800 last=0
+[555000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[565000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[565000] S_W: beat[1] data=0x0fe00900 last=0
+[575000] S_W: beat[2] data=0x0fe00a00 last=0
+[585000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[585000] S_W: beat[3] data=0x0fe00b00 last=0
+[595000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[595000] S_W: beat[4] data=0x0fe00c00 last=0
+[605000] S_W: beat[5] data=0x0fe00d00 last=0
+[615000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
+[615000] S_W: beat[6] data=0x0fe00e00 last=0
+[625000] ERROR: TEST 8: S_AW[0] addr: got=0x00001000 exp=0x00000fe0
+[625000] ERROR: TEST 8: S_AW[0] len: got=1 exp=7
+[625000] ERROR: TEST 8: S_AW[1] addr: got=0x00000fe0 exp=0x00001000
+[625000] TEST 8 DONE (errors=3)
+
+--- TEST 9: Back-to-back AR ---
+[625000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
+[625000] S_W: beat[7] data=0x0fe00f00 last=1
+[635000] AR: id=0xe addr=0x00000500 len=3 size=2 → ARREADY
+[635000] S_AR: id=0xe (pref=0) addr=0x00000500 len=3 size=2
+[665000] S_AR: id=0x1f (pref=1) addr=0x00000ff0 len=3 size=2
+[675000] AR: id=0xf addr=0x00000ff0 len=7 size=2 → ARREADY
+[675000] S_AR: id=0x2f (pref=2) addr=0x00001000 len=3 size=2
+[695000] S_AR: id=0x1f (pref=1) addr=0x00000ff0 len=3 size=2
+[705000] S_AR: id=0x2f (pref=2) addr=0x00001000 len=3 size=2
+[725000] S_AR: id=0x1f (pref=1) addr=0x00000ff0 len=3 size=2
+[725000] TEST 9 DONE (errors=3)
+
+--- TEST 10: Back-to-back AW+W ---
+[735000] AW: id=0x5 addr=0x00000f00 len=63 size=2 → AWREADY
+[735000] S_AR: id=0x2f (pref=2) addr=0x00001000 len=3 size=2
+[735000] S_AW: id=0x5 (pref=0) addr=0x00000f00 len=63 size=2
+[745000] S_W: beat[0] data=0x0f000000 last=0
+[755000] S_W: beat[1] data=0x0f000100 last=0
+[765000] S_W: beat[2] data=0x0f000200 last=0
+[775000] S_W: beat[3] data=0x0f000300 last=0
+[785000] S_W: beat[4] data=0x0f000400 last=0
+[795000] S_W: beat[5] data=0x0f000500 last=0
+[805000] S_W: beat[6] data=0x0f000600 last=0
+[815000] S_W: beat[7] data=0x0f000700 last=0
+[825000] S_W: beat[8] data=0x0f000800 last=0
+[835000] S_W: beat[9] data=0x0f000900 last=0
+[845000] S_W: beat[10] data=0x0f000a00 last=0
+[855000] S_W: beat[11] data=0x0f000b00 last=0
+[865000] S_W: beat[12] data=0x0f000c00 last=0
+[875000] S_W: beat[13] data=0x0f000d00 last=0
+[885000] S_W: beat[14] data=0x0f000e00 last=0
+[895000] S_W: beat[15] data=0x0f000f00 last=0
+[905000] S_W: beat[16] data=0x0f001000 last=0
+[915000] S_W: beat[17] data=0x0f001100 last=0
+[925000] S_W: beat[18] data=0x0f001200 last=0
+[935000] S_W: beat[19] data=0x0f001300 last=0
+[945000] S_W: beat[20] data=0x0f001400 last=0
+[955000] S_W: beat[21] data=0x0f001500 last=0
+[965000] S_W: beat[22] data=0x0f001600 last=0
+[975000] S_W: beat[23] data=0x0f001700 last=0
+[985000] S_W: beat[24] data=0x0f001800 last=0
+[995000] S_W: beat[25] data=0x0f001900 last=0
+[1005000] S_W: beat[26] data=0x0f001a00 last=0
+[1015000] S_W: beat[27] data=0x0f001b00 last=0
+[1025000] S_W: beat[28] data=0x0f001c00 last=0
+[1035000] S_W: beat[29] data=0x0f001d00 last=0
+[1045000] S_W: beat[30] data=0x0f001e00 last=0
+[1055000] S_W: beat[31] data=0x0f001f00 last=0
+[1065000] S_W: beat[32] data=0x0f002000 last=0
+[1075000] S_W: beat[33] data=0x0f002100 last=0
+[1085000] S_W: beat[34] data=0x0f002200 last=0
+[1095000] S_W: beat[35] data=0x0f002300 last=0
+[1105000] S_W: beat[36] data=0x0f002400 last=0
+[1115000] S_W: beat[37] data=0x0f002500 last=0
+[1125000] S_W: beat[38] data=0x0f002600 last=0
+[1135000] S_W: beat[39] data=0x0f002700 last=0
+[1145000] S_W: beat[40] data=0x0f002800 last=0
+[1155000] S_W: beat[41] data=0x0f002900 last=0
+[1165000] S_W: beat[42] data=0x0f002a00 last=0
+[1175000] S_W: beat[43] data=0x0f002b00 last=0
+[1185000] S_W: beat[44] data=0x0f002c00 last=0
+[1195000] S_W: beat[45] data=0x0f002d00 last=0
+[1205000] S_W: beat[46] data=0x0f002e00 last=0
+[1215000] S_W: beat[47] data=0x0f002f00 last=0
+[1225000] S_W: beat[48] data=0x0f003000 last=0
+[1235000] S_W: beat[49] data=0x0f003100 last=0
+[1245000] S_W: beat[50] data=0x0f003200 last=0
+[1255000] S_W: beat[51] data=0x0f003300 last=0
+[1265000] S_W: beat[52] data=0x0f003400 last=0
+[1275000] S_W: beat[53] data=0x0f003500 last=0
+[1285000] S_W: beat[54] data=0x0f003600 last=0
+[1295000] S_W: beat[55] data=0x0f003700 last=0
+[1305000] S_W: beat[56] data=0x0f003800 last=0
+[1315000] S_W: beat[57] data=0x0f003900 last=0
+[1325000] S_W: beat[58] data=0x0f003a00 last=0
+[1335000] S_W: beat[59] data=0x0f003b00 last=0
+[1345000] S_W: beat[60] data=0x0f003c00 last=0
+[1355000] S_W: beat[61] data=0x0f003d00 last=0
+[1365000] S_W: beat[62] data=0x0f003e00 last=0
+[1375000] S_W: beat[63] data=0x0f003f00 last=1
+[1395000] AW: id=0x6 addr=0x00000800 len=3 size=2 → AWREADY
+[1395000] S_AW: id=0x6 (pref=0) addr=0x00000800 len=3 size=2
+[1405000] S_W: beat[0] data=0x08000000 last=0
+[1415000] S_W: beat[1] data=0x08000100 last=0
+[1425000] S_W: beat[2] data=0x08000200 last=0
+[1435000] S_W: beat[3] data=0x08000300 last=1
+[1485000] TEST 10 DONE (errors=3)
+
+--- TEST 11: AR at 4KB boundary (no split) ---
+[1495000] AR: id=0xa addr=0x00001000 len=1 size=2 → ARREADY
+[1495000] S_AR: id=0xa (pref=0) addr=0x00001000 len=1 size=2
+[1505000] TEST 11 DONE (errors=3)
+
+--- TEST 12: AW+W ending at 0xFFF (no split) ---
+[1515000] AW: id=0x7 addr=0x00000ffc len=0 size=2 → AWREADY
+[1515000] S_AW: id=0x7 (pref=0) addr=0x00000ffc len=0 size=2
+[1525000] TEST 12 DONE (errors=3)
+
+--- TEST 13: Back-to-back split ARs ---
+[1525000] S_W: beat[0] data=0x0ffc0000 last=1
+[1545000] S_AR: id=0x1a (pref=1) addr=0x00000ff0 len=3 size=2
+[1555000] AR: id=0xa addr=0x00000ff0 len=7 size=2 → ARREADY
+[1555000] S_AR: id=0x2a (pref=2) addr=0x00001000 len=3 size=2
+[1575000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
+[1585000] AR: id=0xb addr=0x00001ff0 len=7 size=2 → ARREADY
+[1585000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
+[1605000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
+[1615000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
+[1635000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
+[1645000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
+[1665000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
+[1665000] TEST 13 DONE (errors=3)
+
+--- TEST 14: AR high addr, no split ---
+[1675000] AR: id=0xc addr=0xfffff000 len=0 size=2 → ARREADY
+[1675000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
+[1685000] ERROR: TEST 14: S_AR[0] addr: got=0x00002000 exp=0xfffff000
+[1685000] ERROR: TEST 14: S_AR[0] len: got=3 exp=0
+[1685000] TEST 14 DONE (errors=5)
+
+============================================================
+[1685000] TESTS FAILED with 5 errors in 14 tests!
+============================================================

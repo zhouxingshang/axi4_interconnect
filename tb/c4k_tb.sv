@@ -356,8 +356,9 @@ module c4k_tb;
                 if (cap_s_arlen[1] !== exp_len1)
                     log_error($sformatf("%s: S_AR[1] len: got=%0d exp=%0d", test_name, cap_s_arlen[1], exp_len1));
             end
-            m_araddr <= '0;   // prevent stale cross4k from re-triggering AR FSM
-            clear_cap();
+            m_araddr <= '0;   // kill cross4k_flag
+            repeat(2) @(posedge clk);   // wait for FSM to settle (TRANS1→TRANS2→IDLE)
+            clear_cap();               // now clear residual captures
         end
     endtask
 
@@ -393,8 +394,9 @@ module c4k_tb;
                 if (cap_s_awlen[1] !== exp_len1)
                     log_error($sformatf("%s: S_AW[1] len: got=%0d exp=%0d", test_name, cap_s_awlen[1], exp_len1));
             end
-            m_awaddr <= '0;   // prevent stale cross4k from re-triggering AW FSM
-            clear_cap();
+            m_awaddr <= '0;   // kill cross4k_flag
+            repeat(2) @(posedge clk);   // wait for FSM to settle (TRANS1→TRANS2→IDLE)
+            clear_cap();               // now clear residual captures
         end
     endtask
 
@@ -524,6 +526,7 @@ module c4k_tb;
             if (cap_s_arlen[2] !== 8'd3)        log_error($sformatf("TEST 9: S_AR[2] len: got=%0d exp=3", cap_s_arlen[2]));
         end
         m_araddr <= '0;
+        repeat(2) @(posedge clk);
         clear_cap();
         $display("[%0t] TEST %0d DONE (errors=%0d)", $time, test_num, err_cnt);
 
@@ -548,6 +551,7 @@ module c4k_tb;
             if (cap_s_awlen[1] !== 8'd3)        log_error($sformatf("TEST 10: S_AW[1] len: got=%0d exp=3", cap_s_awlen[1]));
         end
         m_awaddr <= '0;
+        repeat(2) @(posedge clk);
         clear_cap();
         $display("[%0t] TEST %0d DONE (errors=%0d)", $time, test_num, err_cnt);
 
@@ -602,6 +606,7 @@ module c4k_tb;
             if (cap_s_arlen[3] !== 8'd3)        log_error($sformatf("TEST 13: S_AR[3] len: got=%0d exp=3", cap_s_arlen[3]));
         end
         m_araddr <= '0;
+        repeat(2) @(posedge clk);
         clear_cap();
         $display("[%0t] TEST %0d DONE (errors=%0d)", $time, test_num, err_cnt);
 
