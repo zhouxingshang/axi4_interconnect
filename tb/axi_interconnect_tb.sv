@@ -128,7 +128,6 @@ module axi_interconnect_tb;
     // Control Signals
     //=========================================================================
     reg                             arbiter_type;
-    reg  [SLV_AMT-1             : 0]  r_order_grant;
 
     //=========================================================================
     // DUT Instantiation
@@ -221,8 +220,7 @@ module axi_interconnect_tb;
         .S_AXI_RREADY_o (S_AXI_RREADY),
 
         // Control
-        .arbiter_type   (arbiter_type),
-        .r_order_grant_i(r_order_grant)
+        .arbiter_type   (arbiter_type)
     );
 
     //=========================================================================
@@ -596,7 +594,6 @@ module axi_interconnect_tb;
     // Default control signals
     initial begin
         arbiter_type  = 1'b0;     // Round-Robin
-        r_order_grant = {SLV_AMT{1'b0}};  // Use internal reorder
     end
 
     //=========================================================================

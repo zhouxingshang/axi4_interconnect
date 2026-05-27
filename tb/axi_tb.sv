@@ -228,9 +228,13 @@ module axi_tb;
         .S_AXI_RREADY_o (S_AXI_RREADY_o),
 
         // Control
-        .arbiter_type   (1'b0),            // round-robin
-        .r_order_grant_i({SLV_AMT{1'b0}})  // use internal reorder
+        .arbiter_type   (1'b0)             // round-robin
     );
+
+    //=========================================================
+    // Global error counter
+    //=========================================================
+    integer error_cnt;
 
     //=========================================================
     // Slave Memory Model (per-slave byte-addressable storage)
@@ -248,220 +252,422 @@ module axi_tb;
     end
 
     //=========================================================
-    // Slave Write State Machine (per slave)
+    // Slave Channel-Handler Queue Data Structures
     //=========================================================
-    localparam SW_IDLE   = 2'd0;
-    localparam SW_WAIT_W = 2'd1;
-    localparam SW_SEND_B = 2'd2;
 
-    reg [1:0]                      sw_state   [0:SLV_AMT-1];
-    reg [W_SID-1:0]                sw_awid    [0:SLV_AMT-1];
-    reg [ADDR_WIDTH-1:0]           sw_awaddr  [0:SLV_AMT-1];
-    reg [LEN_W-1:0]                sw_awlen   [0:SLV_AMT-1];
-    reg [SIZE_W-1:0]               sw_awsize  [0:SLV_AMT-1];
-    reg [LEN_W:0]                  sw_beat    [0:SLV_AMT-1];  // beats remaining+1
+    // -- B-done queue (write handler → B handler, per slave, depth 4) --
+    reg [W_SID-1:0] b_done_awid    [0:SLV_AMT-1][0:3];
+    reg [1:0]       b_done_wr_ptr  [0:SLV_AMT-1];
+    reg [1:0]       b_done_rd_ptr  [0:SLV_AMT-1];
+    integer         b_done_cnt     [0:SLV_AMT-1];
 
-    genvar si;
-    generate
-        for (si = 0; si < SLV_AMT; si = si + 1) begin : GEN_SLV_WRITE
-            // Extract per-slave signals from packed vectors
-            wire [W_SID-1:0]       s_awid   = S_AXI_AWID_o   [W_SID*(si+1)-1 -: W_SID];
-            wire [ADDR_WIDTH-1:0]  s_awaddr = S_AXI_AWADDR_o [ADDR_WIDTH*(si+1)-1 -: ADDR_WIDTH];
-            wire [LEN_W-1:0]       s_awlen  = S_AXI_AWLEN_o  [LEN_W*(si+1)-1 -: LEN_W];
-            wire [SIZE_W-1:0]      s_awsize = S_AXI_AWSIZE_o [SIZE_W*(si+1)-1 -: SIZE_W];
-            wire                   s_awvalid = S_AXI_AWVALID_o[si];
-            wire [DATA_WIDTH-1:0]  s_wdata  = S_AXI_WDATA_o  [DATA_WIDTH*(si+1)-1 -: DATA_WIDTH];
-            wire [W_STRB-1:0]      s_wstrb  = S_AXI_WSTRB_o  [W_STRB*(si+1)-1 -: W_STRB];
-            wire                   s_wlast  = S_AXI_WLAST_o  [si];
-            wire                   s_wvalid = S_AXI_WVALID_o [si];
-            wire                   s_bready = S_AXI_BREADY_o [si];
+    // -- AR queue (AR handler → R handler, per slave, depth 4) --
+    reg [W_SID-1:0]      ar_q_arid   [0:SLV_AMT-1][0:3];
+    reg [ADDR_WIDTH-1:0] ar_q_araddr [0:SLV_AMT-1][0:3];
+    reg [LEN_W:0]        ar_q_total  [0:SLV_AMT-1][0:3];  // beats = AWLEN+1
+    reg [SIZE_W-1:0]     ar_q_arsize [0:SLV_AMT-1][0:3];
+    reg [1:0]            ar_q_wr_ptr [0:SLV_AMT-1];
+    reg [1:0]            ar_q_rd_ptr [0:SLV_AMT-1];
+    integer              ar_q_cnt    [0:SLV_AMT-1];
 
-            // Helper: bytes per beat (use captured size, not live DUT output)
-            wire [7:0] bpb = 8'd1 << sw_awsize[si];
+    integer q_init_s;
+    initial begin
+        for (q_init_s = 0; q_init_s < SLV_AMT; q_init_s = q_init_s + 1) begin
+            b_done_wr_ptr[q_init_s] = 2'b00;
+            b_done_rd_ptr[q_init_s] = 2'b00;
+            b_done_cnt[q_init_s]    = 0;
+            ar_q_wr_ptr[q_init_s]   = 2'b00;
+            ar_q_rd_ptr[q_init_s]   = 2'b00;
+            ar_q_cnt[q_init_s]      = 0;
+        end
+    end
 
-            always @(posedge AXI_CLK) begin
-                if (!AXI_RSTn) begin
-                    sw_state[si]   <= SW_IDLE;
-                    S_AXI_AWREADY_i[si] <= 1'b0;
-                    S_AXI_WREADY_i[si]  <= 1'b0;
-                    S_AXI_BVALID_i [si] <= 1'b0;
-                    S_AXI_BID_i   [W_SID*(si+1)-1 -: W_SID]  <= '0;
-                    S_AXI_BRESP_i [RESP_W*(si+1)-1 -: RESP_W] <= 2'b00;
-                end else begin
-                    case (sw_state[si])
-
-                        SW_IDLE: begin
-                            S_AXI_AWREADY_i[si] <= 1'b1;
-                            S_AXI_WREADY_i[si]  <= 1'b0;
-                            S_AXI_BVALID_i [si] <= 1'b0;
-
-                            if (s_awvalid && S_AXI_AWREADY_i[si]) begin
-                                sw_awid  [si] <= s_awid;
-                                sw_awaddr[si] <= s_awaddr;
-                                sw_awlen [si] <= s_awlen;
-                                sw_awsize[si] <= s_awsize;
-                                sw_beat  [si] <= {1'b0, s_awlen} + 1'b1; // beats = AWLEN+1
-                                S_AXI_AWREADY_i[si] <= 1'b0;
-                                S_AXI_WREADY_i[si]  <= 1'b1;
-                                sw_state[si] <= SW_WAIT_W;
-                                $display("[%0t] SLAVE[%0d] AW accepted: addr=0x%08h len=%0d size=%0d id=0x%0h",
-                                         $time, si, s_awaddr, s_awlen, s_awsize, s_awid);
-                            end
-                        end
-
-                        SW_WAIT_W: begin
-                            if (s_wvalid && S_AXI_WREADY_i[si]) begin
-                                // Write data bytes to memory where strobe is set
-                                for (int b = 0; b < W_STRB; b = b + 1) begin
-                                    if (s_wstrb[b]) begin
-                                        slv_mem[si][(sw_awaddr[si][SLV_MEM_AW-1:0] + b) & (SLV_MEM_DEPTH-1)]
-                                            <= s_wdata[8*b +: 8];
-                                    end
-                                end
-                                $display("[%0t] SLAVE[%0d] W beat: data=0x%08h strb=0x%0h last=%0d beat_left=%0d",
-                                         $time, si, s_wdata, s_wstrb, s_wlast, sw_beat[si]-1);
-
-                                if (s_wlast) begin
-                                    S_AXI_WREADY_i[si]  <= 1'b0;
-                                    S_AXI_BVALID_i [si] <= 1'b1;
-                                    S_AXI_BID_i   [W_SID*(si+1)-1 -: W_SID]  <= sw_awid[si];
-                                    S_AXI_BRESP_i [RESP_W*(si+1)-1 -: RESP_W] <= 2'b00; // OKAY
-                                    sw_state[si] <= SW_SEND_B;
-                                end else begin
-                                    // Advance address for next beat
-                                    sw_awaddr[si] <= sw_awaddr[si] + bpb;
-                                    sw_beat[si]   <= sw_beat[si] - 1'b1;
-                                end
-                            end
-                        end
-
-                        SW_SEND_B: begin
-                            if (s_bready && S_AXI_BVALID_i[si]) begin
-                                S_AXI_BVALID_i[si] <= 1'b0;
-                                sw_state[si] <= SW_IDLE;
-                                $display("[%0t] SLAVE[%0d] B sent: id=0x%0h", $time, si,
-                                         S_AXI_BID_i[W_SID*(si+1)-1 -: W_SID]);
-                            end
-                        end
-
-                        default: sw_state[si] <= SW_IDLE;
-                    endcase
-                end
+    //=========================================================
+    // Helper: reconstruct read data from byte memory
+    //=========================================================
+    function [DATA_WIDTH-1:0] build_rdata;
+        input [ADDR_WIDTH-1:0] addr;
+        input integer slv_idx;
+        integer b;
+        begin
+            build_rdata = '0;
+            for (b = 0; b < W_STRB; b = b + 1) begin
+                build_rdata[8*b +: 8] = slv_mem[slv_idx][(addr[SLV_MEM_AW-1:0] + b) & (SLV_MEM_DEPTH-1)];
             end
         end
-    endgenerate
+    endfunction
 
     //=========================================================
-    // Slave Read State Machine (per slave)
+    // Slave Write Handler (AW → W queue → memory → B queue)
     //=========================================================
-    localparam SR_IDLE   = 2'd0;
-    localparam SR_SEND_R = 2'd1;
+    task automatic slv_write_handler(int slv_id);
+        // Pending AW transaction queue (depth 4)
+        reg [W_SID-1:0]      q_awid    [0:3];
+        reg [ADDR_WIDTH-1:0] q_awaddr  [0:3];
+        reg [LEN_W:0]        q_total   [0:3];  // beats = AWLEN+1
+        reg [SIZE_W-1:0]     q_awsize  [0:3];
+        integer              q_wr_ptr, q_rd_ptr, q_cnt;
 
-    reg [1:0]                      sr_state   [0:SLV_AMT-1];
-    reg [W_SID-1:0]                sr_arid    [0:SLV_AMT-1];
-    reg [ADDR_WIDTH-1:0]           sr_araddr  [0:SLV_AMT-1];
-    reg [LEN_W-1:0]                sr_arlen   [0:SLV_AMT-1];
-    reg [SIZE_W-1:0]               sr_arsize  [0:SLV_AMT-1];
-    reg [LEN_W:0]                  sr_beat    [0:SLV_AMT-1];  // beats remaining+1
+        // Current active transaction (being written)
+        reg [W_SID-1:0]      cur_awid;
+        reg [ADDR_WIDTH-1:0] cur_awaddr;
+        reg [SIZE_W-1:0]     cur_awsize;
+        reg [LEN_W:0]        cur_total;
+        reg [LEN_W:0]        cur_beat_cnt;
+        reg                  cur_active;
 
-    generate
-        for (si = 0; si < SLV_AMT; si = si + 1) begin : GEN_SLV_READ
-            wire [W_SID-1:0]       s_arid   = S_AXI_ARID_o   [W_SID*(si+1)-1 -: W_SID];
-            wire [ADDR_WIDTH-1:0]  s_araddr = S_AXI_ARADDR_o [ADDR_WIDTH*(si+1)-1 -: ADDR_WIDTH];
-            wire [LEN_W-1:0]       s_arlen  = S_AXI_ARLEN_o  [LEN_W*(si+1)-1 -: LEN_W];
-            wire [SIZE_W-1:0]      s_arsize = S_AXI_ARSIZE_o [SIZE_W*(si+1)-1 -: SIZE_W];
-            wire                   s_arvalid = S_AXI_ARVALID_o[si];
-            wire                   s_rready = S_AXI_RREADY_o [si];
+        reg [DATA_WIDTH-1:0] wdata;
+        reg [W_STRB-1:0]     wstrb;
+        reg                  wlast;
+        integer              bi;
+        begin
+            q_wr_ptr   = 0;
+            q_rd_ptr   = 0;
+            q_cnt      = 0;
+            cur_active = 1'b0;
 
-            wire [7:0] bpb = 8'd1 << sr_arsize[si];
+            forever begin
+                @(posedge AXI_CLK);
 
-            // Reconstruct read data from byte memory
-            function [DATA_WIDTH-1:0] build_rdata;
-                input [ADDR_WIDTH-1:0] addr;
-                input integer slv_idx;
-                integer b;
-                begin
-                    build_rdata = '0;
-                    for (b = 0; b < W_STRB; b = b + 1) begin
-                        build_rdata[8*b +: 8] = slv_mem[slv_idx][(addr[SLV_MEM_AW-1:0] + b) & (SLV_MEM_DEPTH-1)];
+                // Backpressure: deassert AWREADY when queue full
+                S_AXI_AWREADY_i[slv_id] <= (q_cnt < 4);
+
+                // AW handshake → enqueue transaction
+                if (S_AXI_AWVALID_o[slv_id] && S_AXI_AWREADY_i[slv_id]) begin
+                    q_awid  [q_wr_ptr] = S_AXI_AWID_o  [W_SID*(slv_id+1)-1 -: W_SID];
+                    q_awaddr[q_wr_ptr] = S_AXI_AWADDR_o[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
+                    q_awsize[q_wr_ptr] = S_AXI_AWSIZE_o[SIZE_W*(slv_id+1)-1 -: SIZE_W];
+                    q_total [q_wr_ptr] = {1'b0, S_AXI_AWLEN_o[LEN_W*(slv_id+1)-1 -: LEN_W]} + 1'b1;
+                    q_wr_ptr = (q_wr_ptr + 1) & 3;
+                    q_cnt    = q_cnt + 1;
+                    $display("[%0t] SLAVE[%0d] AW accepted: addr=0x%08h len=%0d size=%0d id=0x%0h",
+                             $time, slv_id, q_awaddr[(q_wr_ptr-1)&3], S_AXI_AWLEN_o[LEN_W*(slv_id+1)-1 -: LEN_W],
+                             q_awsize[(q_wr_ptr-1)&3], q_awid[(q_wr_ptr-1)&3]);
+                end
+
+                // Dequeue next transaction if idle
+                if (!cur_active && q_cnt > 0) begin
+                    cur_awid     = q_awid  [q_rd_ptr];
+                    cur_awaddr   = q_awaddr[q_rd_ptr];
+                    cur_awsize   = q_awsize[q_rd_ptr];
+                    cur_total    = q_total [q_rd_ptr];
+                    cur_beat_cnt = 0;
+                    cur_active   = 1'b1;
+                    q_rd_ptr = (q_rd_ptr + 1) & 3;
+                    q_cnt    = q_cnt - 1;
+                end
+
+                // W data handshake
+                if (cur_active && S_AXI_WVALID_o[slv_id] && S_AXI_WREADY_i[slv_id]) begin
+                    wdata = S_AXI_WDATA_o[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH];
+                    wstrb = S_AXI_WSTRB_o[W_STRB*(slv_id+1)-1 -: W_STRB];
+                    wlast = S_AXI_WLAST_o[slv_id];
+
+                    // Write data bytes to memory where strobe is set
+                    for (bi = 0; bi < W_STRB; bi = bi + 1) begin
+                        if (wstrb[bi]) begin
+                            slv_mem[slv_id][(cur_awaddr[SLV_MEM_AW-1:0] + bi) & (SLV_MEM_DEPTH-1)]
+                                <= wdata[8*bi +: 8];
+                        end
+                    end
+
+                    $display("[%0t] SLAVE[%0d] W beat: data=0x%08h strb=0x%0h last=%0d beat_left=%0d",
+                             $time, slv_id, wdata, wstrb, wlast, cur_total - cur_beat_cnt - 1);
+
+                    if (wlast) begin
+                        cur_active = 1'b0;
+                        // Push to shared B-done queue
+                        b_done_awid[slv_id][b_done_wr_ptr[slv_id]] = cur_awid;
+                        b_done_wr_ptr[slv_id] = (b_done_wr_ptr[slv_id] + 1) & 3;
+                        b_done_cnt[slv_id]    = b_done_cnt[slv_id] + 1;
+                    end else begin
+                        // Advance address for next beat
+                        cur_awaddr   = cur_awaddr + (8'd1 << cur_awsize);
+                        cur_beat_cnt = cur_beat_cnt + 1;
                     end
                 end
-            endfunction
+            end
+        end
+    endtask
 
-            reg ar_handshake_done;  // flag: AR accepted, transition next cycle
+    //=========================================================
+    // Slave B Response Handler (pops from B-done queue)
+    //=========================================================
+    task automatic slv_b_handler(int slv_id);
+        forever begin
+            @(posedge AXI_CLK);
 
-            always @(posedge AXI_CLK) begin
-                if (!AXI_RSTn) begin
-                    sr_state[si]   <= SR_IDLE;
-                    ar_handshake_done <= 1'b0;
-                    S_AXI_ARREADY_i[si] <= 1'b0;
-                    S_AXI_RVALID_i [si] <= 1'b0;
-                    S_AXI_RLAST_i  [si] <= 1'b0;
-                    S_AXI_RID_i   [W_SID*(si+1)-1 -: W_SID]   <= '0;
-                    S_AXI_RDATA_i [DATA_WIDTH*(si+1)-1 -: DATA_WIDTH] <= '0;
-                    S_AXI_RRESP_i [RESP_W*(si+1)-1 -: RESP_W] <= 2'b00;
-                end else begin
-                    case (sr_state[si])
+            // Drive B response if queue has pending
+            if (!S_AXI_BVALID_i[slv_id] && b_done_cnt[slv_id] > 0) begin
+                S_AXI_BID_i  [W_SID*(slv_id+1)-1 -: W_SID] <= b_done_awid[slv_id][b_done_rd_ptr[slv_id]];
+                S_AXI_BRESP_i[RESP_W*(slv_id+1)-1 -: RESP_W] <= 2'b00;
+                S_AXI_BVALID_i[slv_id] <= 1'b1;
+                b_done_rd_ptr[slv_id] = (b_done_rd_ptr[slv_id] + 1) & 3;
+                b_done_cnt[slv_id]    = b_done_cnt[slv_id] - 1;
+            end
 
-                        SR_IDLE: begin
-                            S_AXI_ARREADY_i[si] <= 1'b0;
-                            S_AXI_RVALID_i [si] <= 1'b0;
-                            S_AXI_RLAST_i  [si] <= 1'b0;
+            // B handshake complete
+            if (S_AXI_BVALID_i[slv_id] && S_AXI_BREADY_o[slv_id]) begin
+                S_AXI_BVALID_i[slv_id] <= 1'b0;
+                $display("[%0t] SLAVE[%0d] B sent: id=0x%0h", $time, slv_id,
+                         S_AXI_BID_i[W_SID*(slv_id+1)-1 -: W_SID]);
+            end
+        end
+    endtask
 
-                            if (ar_handshake_done) begin
-                                // AR was accepted last cycle, transition to send
-                                ar_handshake_done <= 1'b0;
-                                sr_state[si] <= SR_SEND_R;
-                            end else if (s_arvalid) begin
-                                S_AXI_ARREADY_i[si] <= 1'b1;
-                                sr_arid  [si] <= s_arid;
-                                sr_araddr[si] <= s_araddr;
-                                sr_arlen [si] <= s_arlen;
-                                sr_arsize[si] <= s_arsize;
-                                sr_beat  [si] <= {1'b0, s_arlen} + 1'b1;
-                                ar_handshake_done <= 1'b1;
-                                $display("[%0t] SLAVE[%0d] AR accepted: addr=0x%08h len=%0d size=%0d id=0x%0h",
-                                         $time, si, s_araddr, s_arlen, s_arsize, s_arid);
-                            end
-                        end
+    //=========================================================
+    // Slave AR Handler (enqueues AR transactions)
+    //=========================================================
+    task automatic slv_ar_handler(int slv_id);
+        forever begin
+            @(posedge AXI_CLK);
 
-                        SR_SEND_R: begin
-                            S_AXI_ARREADY_i[si] <= 1'b0;
-                            S_AXI_RVALID_i [si] <= 1'b1;
-                            S_AXI_RID_i   [W_SID*(si+1)-1 -: W_SID]   <= sr_arid[si];
-                            S_AXI_RDATA_i [DATA_WIDTH*(si+1)-1 -: DATA_WIDTH]
-                                <= build_rdata(sr_araddr[si], si);
-                            S_AXI_RRESP_i [RESP_W*(si+1)-1 -: RESP_W] <= 2'b00; // OKAY
+            // Backpressure: deassert ARREADY when queue full
+            S_AXI_ARREADY_i[slv_id] <= (ar_q_cnt[slv_id] < 4);
 
-                            if (sr_beat[si] == 1'b1) begin
-                                S_AXI_RLAST_i[si] <= 1'b1;
-                            end else begin
-                                S_AXI_RLAST_i[si] <= 1'b0;
-                            end
+            if (S_AXI_ARVALID_o[slv_id] && S_AXI_ARREADY_i[slv_id]) begin
+                ar_q_arid  [slv_id][ar_q_wr_ptr[slv_id]] = S_AXI_ARID_o  [W_SID*(slv_id+1)-1 -: W_SID];
+                ar_q_araddr[slv_id][ar_q_wr_ptr[slv_id]] = S_AXI_ARADDR_o[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH];
+                ar_q_arsize[slv_id][ar_q_wr_ptr[slv_id]] = S_AXI_ARSIZE_o[SIZE_W*(slv_id+1)-1 -: SIZE_W];
+                ar_q_total [slv_id][ar_q_wr_ptr[slv_id]] = {1'b0, S_AXI_ARLEN_o[LEN_W*(slv_id+1)-1 -: LEN_W]} + 1'b1;
+                ar_q_wr_ptr[slv_id] = (ar_q_wr_ptr[slv_id] + 1) & 3;
+                ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] + 1;
+                $display("[%0t] SLAVE[%0d] AR accepted: addr=0x%08h len=%0d size=%0d id=0x%0h",
+                         $time, slv_id,
+                         S_AXI_ARADDR_o[ADDR_WIDTH*(slv_id+1)-1 -: ADDR_WIDTH],
+                         S_AXI_ARLEN_o[LEN_W*(slv_id+1)-1 -: LEN_W],
+                         S_AXI_ARSIZE_o[SIZE_W*(slv_id+1)-1 -: SIZE_W],
+                         S_AXI_ARID_o[W_SID*(slv_id+1)-1 -: W_SID]);
+            end
+        end
+    endtask
 
-                            if (s_rready && S_AXI_RVALID_i[si]) begin
-                                $display("[%0t] SLAVE[%0d] R beat: data=0x%08h last=%0d beat_left=%0d",
-                                         $time, si,
-                                         S_AXI_RDATA_i[DATA_WIDTH*(si+1)-1 -: DATA_WIDTH],
-                                         S_AXI_RLAST_i[si], sr_beat[si]-1);
+    //=========================================================
+    // Slave R Data Handler (pops AR queue → drives R beats)
+    //=========================================================
+    task automatic slv_r_handler(int slv_id);
+        reg [W_SID-1:0]      cur_arid;
+        reg [ADDR_WIDTH-1:0] cur_araddr;
+        reg [SIZE_W-1:0]     cur_arsize;
+        reg [LEN_W:0]        cur_total;
+        reg [LEN_W:0]        cur_beat_cnt;
+        reg                  cur_active;
 
-                                if (S_AXI_RLAST_i[si]) begin
-                                    S_AXI_RVALID_i[si] <= 1'b0;
-                                    S_AXI_RLAST_i [si] <= 1'b0;
-                                    sr_state[si] <= SR_IDLE;
-                                end else begin
-                                    sr_araddr[si] <= sr_araddr[si] + bpb;
-                                    sr_beat[si]   <= sr_beat[si] - 1'b1;
-                                end
-                            end
-                        end
+        begin
+            cur_active = 1'b0;
 
-                        default: sr_state[si] <= SR_IDLE;
-                    endcase
+            forever begin
+                @(posedge AXI_CLK);
+
+                // Dequeue next transaction if idle
+                if (!cur_active && ar_q_cnt[slv_id] > 0) begin
+                    cur_arid     = ar_q_arid  [slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_araddr   = ar_q_araddr[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_arsize   = ar_q_arsize[slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_total    = ar_q_total [slv_id][ar_q_rd_ptr[slv_id]];
+                    cur_beat_cnt = 0;
+                    cur_active   = 1'b1;
+                    ar_q_rd_ptr[slv_id] = (ar_q_rd_ptr[slv_id] + 1) & 3;
+                    ar_q_cnt[slv_id]    = ar_q_cnt[slv_id] - 1;
+
+                    // Drive first R beat
+                    S_AXI_RVALID_i[slv_id] <= 1'b1;
+                    S_AXI_RID_i  [W_SID*(slv_id+1)-1 -: W_SID] <= cur_arid;
+                    S_AXI_RDATA_i[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH]
+                        <= build_rdata(cur_araddr, slv_id);
+                    S_AXI_RRESP_i[RESP_W*(slv_id+1)-1 -: RESP_W] <= 2'b00;
+                    S_AXI_RLAST_i[slv_id] <= (cur_total == 1'b1);
+                end
+
+                // R handshake: advance or finish
+                if (cur_active && S_AXI_RVALID_i[slv_id] && S_AXI_RREADY_o[slv_id]) begin
+                    if (S_AXI_RLAST_i[slv_id]) begin
+                        S_AXI_RVALID_i[slv_id] <= 1'b0;
+                        S_AXI_RLAST_i [slv_id] <= 1'b0;
+                        cur_active = 1'b0;
+                        $display("[%0t] SLAVE[%0d] R last beat done: id=0x%0h", $time, slv_id, cur_arid);
+                    end else begin
+                        cur_beat_cnt = cur_beat_cnt + 1;
+                        cur_araddr   = cur_araddr + (8'd1 << cur_arsize);
+                        S_AXI_RDATA_i[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH]
+                            <= build_rdata(cur_araddr, slv_id);
+                        S_AXI_RLAST_i[slv_id] <= (cur_beat_cnt == cur_total - 1);
+                        $display("[%0t] SLAVE[%0d] R beat: data=0x%08h last=%0d beat_left=%0d",
+                                 $time, slv_id,
+                                 build_rdata(cur_araddr, slv_id),
+                                 (cur_beat_cnt == cur_total - 1), cur_total - cur_beat_cnt - 1);
+                    end
                 end
             end
         end
-    endgenerate
+    endtask
+
+    //=========================================================
+    // Fork per-slave handler tasks
+    //=========================================================
+    integer slv_fork_idx;
+    initial begin
+        for (slv_fork_idx = 0; slv_fork_idx < SLV_AMT; slv_fork_idx = slv_fork_idx + 1) begin
+            automatic int sid = slv_fork_idx;
+            fork
+                slv_write_handler(sid);
+                slv_b_handler(sid);
+                slv_ar_handler(sid);
+                slv_r_handler(sid);
+            join_none
+        end
+    end
+
+    //=========================================================
+    // Master-Side Background W/B Infrastructure
+    //=========================================================
+
+    // -- Per-master W data queue (depth 4, circular buffer) --
+    reg [DATA_WIDTH-1:0] m_wr_data_q  [0:MST_AMT-1][0:3][0:255];
+    reg [W_STRB-1:0]     m_wr_strb_q  [0:MST_AMT-1][0:3][0:255];
+    reg [LEN_W-1:0]      m_wr_len_q   [0:MST_AMT-1][0:3];
+    reg [1:0]            m_wr_q_wr_ptr [0:MST_AMT-1];
+    reg [1:0]            m_wr_q_rd_ptr [0:MST_AMT-1];
+    integer              m_wr_q_cnt    [0:MST_AMT-1];
+
+    // -- Per-master B response queue (depth 4, circular buffer) --
+    reg [RESP_W-1:0]     m_b_resp_q   [0:MST_AMT-1][0:3];
+    reg [1:0]            m_b_q_wr_ptr [0:MST_AMT-1];
+    reg [1:0]            m_b_q_rd_ptr [0:MST_AMT-1];
+    integer              m_b_q_cnt    [0:MST_AMT-1];
+
+    integer mst_q_init;
+    initial begin
+        for (mst_q_init = 0; mst_q_init < MST_AMT; mst_q_init = mst_q_init + 1) begin
+            m_wr_q_wr_ptr[mst_q_init] = 2'b00;
+            m_wr_q_rd_ptr[mst_q_init] = 2'b00;
+            m_wr_q_cnt[mst_q_init]    = 0;
+            m_b_q_wr_ptr[mst_q_init]  = 2'b00;
+            m_b_q_rd_ptr[mst_q_init]  = 2'b00;
+            m_b_q_cnt[mst_q_init]     = 0;
+            m_rd_q_wr_ptr[mst_q_init] = 2'b00;
+            m_rd_q_rd_ptr[mst_q_init] = 2'b00;
+            m_rd_q_cnt[mst_q_init]    = 0;
+        end
+    end
+
+    // -- Per-master R data queue (depth 4, each entry = one burst) --
+    reg [DATA_WIDTH-1:0] m_rd_data_q  [0:MST_AMT-1][0:3][0:255];
+    reg [RESP_W-1:0]     m_rd_resp_q  [0:MST_AMT-1][0:3][0:255];
+    reg [7:0]            m_rd_len_q   [0:MST_AMT-1][0:3];  // total beats stored
+    reg [1:0]            m_rd_q_wr_ptr [0:MST_AMT-1];
+    reg [1:0]            m_rd_q_rd_ptr [0:MST_AMT-1];
+    integer              m_rd_q_cnt    [0:MST_AMT-1];
+
+    // -- Per-master W driver (background, drains W queue) --
+    task automatic mst_w_driver(int mst);
+        reg [DATA_WIDTH-1:0] wdata_arr [0:255];
+        reg [W_STRB-1:0]     wstrb_arr [0:255];
+        reg [LEN_W-1:0]      wlen;
+        integer beat;
+        begin
+            forever begin
+                @(posedge AXI_CLK);
+                if (!M_AXI_WVALID_i[mst] && m_wr_q_cnt[mst] > 0) begin
+                    wlen = m_wr_len_q[mst][m_wr_q_rd_ptr[mst]];
+                    for (beat = 0; beat <= wlen; beat = beat + 1) begin
+                        wdata_arr[beat] = m_wr_data_q[mst][m_wr_q_rd_ptr[mst]][beat];
+                        wstrb_arr[beat] = m_wr_strb_q[mst][m_wr_q_rd_ptr[mst]][beat];
+                    end
+                    m_wr_q_rd_ptr[mst] = (m_wr_q_rd_ptr[mst] + 1) & 3;
+                    m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] - 1;
+
+                    for (beat = 0; beat <= wlen; beat = beat + 1) begin
+                        @(posedge AXI_CLK);
+                        M_AXI_WDATA_i [DATA_WIDTH*(mst+1)-1 -: DATA_WIDTH] <= wdata_arr[beat];
+                        M_AXI_WSTRB_i [W_STRB*(mst+1)-1 -: W_STRB]         <= wstrb_arr[beat];
+                        M_AXI_WLAST_i [mst] <= (beat == wlen);
+                        M_AXI_WVALID_i[mst] <= 1'b1;
+                        fork
+                            begin wait(M_AXI_WREADY_o[mst]); end
+                            begin repeat(10000) @(posedge AXI_CLK);
+                                  $fatal(1, "[%0t] W_DRIVER[%0d] TIMEOUT beat=%0d", $time, mst, beat); end
+                        join_any
+                        disable fork;
+                    end
+                    @(posedge AXI_CLK);
+                    M_AXI_WVALID_i[mst] <= 1'b0;
+                    M_AXI_WLAST_i [mst] <= 1'b0;
+                end
+            end
+        end
+    endtask
+
+    // -- Per-master B listener (background, BREADY=1, captures B to queue) --
+    task automatic mst_b_listener(int mst);
+        forever begin
+            @(posedge AXI_CLK);
+            M_AXI_BREADY_i[mst] <= 1'b1;
+            if (M_AXI_BVALID_o[mst] && M_AXI_BREADY_i[mst]) begin
+                m_b_resp_q  [mst][m_b_q_wr_ptr[mst]]
+                    = M_AXI_BRESP_o[RESP_W*(mst+1)-1 -: RESP_W];
+                m_b_q_wr_ptr[mst] = (m_b_q_wr_ptr[mst] + 1) & 3;
+                m_b_q_cnt[mst]    = m_b_q_cnt[mst] + 1;
+                $display("[%0t] B_LISTENER[%0d]: B resp=0x%0h BID=0x%0h",
+                         $time, mst, M_AXI_BRESP_o[RESP_W*(mst+1)-1 -: RESP_W],
+                         M_AXI_BID_o[W_ID*(mst+1)-1 -: W_ID]);
+            end
+        end
+    endtask
+
+    // -- Per-master R listener (background, RREADY=1, captures R beats to queue) --
+    task automatic mst_r_listener(int mst);
+        reg [DATA_WIDTH-1:0] cur_data [0:255];
+        reg [RESP_W-1:0]     cur_resp [0:255];
+        reg [7:0]            cur_len;
+        reg                  cur_active;
+        integer              beat;
+        begin
+            cur_active = 0;
+            forever begin
+                @(posedge AXI_CLK);
+                M_AXI_RREADY_i[mst] <= 1'b1;
+
+                if (M_AXI_RVALID_o[mst] && M_AXI_RREADY_i[mst]) begin
+                    if (!cur_active) begin
+                        cur_len    = 0;
+                        cur_active = 1;
+                    end
+                    cur_data[cur_len] = M_AXI_RDATA_o[DATA_WIDTH*(mst+1)-1 -: DATA_WIDTH];
+                    cur_resp[cur_len] = M_AXI_RRESP_o[RESP_W*(mst+1)-1 -: RESP_W];
+                    cur_len = cur_len + 1;
+
+                    $display("[%0t] R_LISTENER[%0d]: beat=%0d data=0x%08h rlast=%0d",
+                             $time, mst, cur_len-1, cur_data[cur_len-1], M_AXI_RLAST_o[mst]);
+
+                    if (M_AXI_RLAST_o[mst]) begin
+                        // Push completed burst to shared queue
+                        m_rd_len_q[mst][m_rd_q_wr_ptr[mst]] = cur_len;
+                        for (beat = 0; beat < cur_len; beat = beat + 1) begin
+                            m_rd_data_q[mst][m_rd_q_wr_ptr[mst]][beat] = cur_data[beat];
+                            m_rd_resp_q[mst][m_rd_q_wr_ptr[mst]][beat] = cur_resp[beat];
+                        end
+                        m_rd_q_wr_ptr[mst] = (m_rd_q_wr_ptr[mst] + 1) & 3;
+                        m_rd_q_cnt[mst]    = m_rd_q_cnt[mst] + 1;
+                        cur_active = 0;
+                    end
+                end
+            end
+        end
+    endtask
+
+    // Fork per-master background tasks
+    integer mst_bg_idx;
+    initial begin
+        for (mst_bg_idx = 0; mst_bg_idx < MST_AMT; mst_bg_idx = mst_bg_idx + 1) begin
+            automatic int mid = mst_bg_idx;
+            fork
+                mst_w_driver(mid);
+                mst_b_listener(mid);
+                mst_r_listener(mid);
+            join_none
+        end
+    end
 
     //=========================================================
     // Master BFM Tasks
@@ -474,16 +680,18 @@ module axi_tb;
         input [ADDR_WIDTH-1:0] addr;
         input [DATA_WIDTH-1:0] data;
         input [W_STRB-1:0]  strb;
-        reg   [DATA_WIDTH-1:0] data_arr [0:0];
-        reg   [W_STRB-1:0]     strb_arr [0:0];
+        reg   [DATA_WIDTH-1:0] data_arr [];
+        reg   [W_STRB-1:0]     strb_arr [];
         begin
+            data_arr = new[1];
+            strb_arr = new[1];
             data_arr[0] = data;
             strb_arr[0] = strb;
             axi_write_burst(mst, id, addr, 8'd0, 3'b010, 2'b01, data_arr, strb_arr);
         end
     endtask
 
-    // -- Write burst --
+    // -- Write burst (AW/W separated: AW sent immediately, W queued to background driver) --
     task automatic axi_write_burst;
         input integer       mst;
         input [W_ID-1:0]    id;
@@ -493,12 +701,108 @@ module axi_tb;
         input [BURST_W-1:0] burst;
         input [DATA_WIDTH-1:0] data_arr [];
         input [W_STRB-1:0]     strb_arr [];
+        reg [RESP_W-1:0] bresp;
         integer beat;
         begin
             $display("[%0t] MASTER[%0d] WRITE START: addr=0x%08h len=%0d id=0x%0h",
                      $time, mst, addr, len, id);
 
-            // --- AW channel ---
+            // Queue W data → background mst_w_driver sends it independently
+            while (m_wr_q_cnt[mst] >= 4) @(posedge AXI_CLK);
+            m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
+            for (beat = 0; beat <= len; beat = beat + 1) begin
+                m_wr_data_q[mst][m_wr_q_wr_ptr[mst]][beat] = data_arr[beat];
+                m_wr_strb_q[mst][m_wr_q_wr_ptr[mst]][beat] = strb_arr[beat];
+            end
+            m_wr_q_wr_ptr[mst] = (m_wr_q_wr_ptr[mst] + 1) & 3;
+            m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] + 1;
+
+            // Send AW immediately (non-blocking, does not wait for W)
+            axi_aw_send(mst, id, addr, len, size, burst);
+
+            // Wait for B response from shared queue (filled by background mst_b_listener)
+            while (m_b_q_cnt[mst] == 0) @(posedge AXI_CLK);
+            bresp = m_b_resp_q[mst][m_b_q_rd_ptr[mst]];
+            m_b_q_rd_ptr[mst] = (m_b_q_rd_ptr[mst] + 1) & 3;
+            m_b_q_cnt[mst]    = m_b_q_cnt[mst] - 1;
+
+            if (bresp != 2'b00) begin
+                $display("[%0t] MASTER[%0d] WARNING: BRESP=0x%0h (expected OKAY)",
+                         $time, mst, bresp);
+            end
+
+            $display("[%0t] MASTER[%0d] WRITE DONE: addr=0x%08h BID=0x%0h",
+                     $time, mst, addr, M_AXI_BID_o[W_ID*(mst+1)-1 -: W_ID]);
+        end
+    endtask
+
+    // -- Read single beat --
+    task automatic axi_read_single;
+        input integer       mst;
+        input [W_ID-1:0]    id;
+        input [ADDR_WIDTH-1:0] addr;
+        output [DATA_WIDTH-1:0] data;
+        reg [DATA_WIDTH-1:0] data_arr [];
+        begin
+            data_arr = new[1];
+            axi_read_burst(mst, id, addr, 8'd0, 3'b010, 2'b01, data_arr);
+            data = data_arr[0];
+        end
+    endtask
+
+    // -- Read burst (AR/R separated: AR sent immediately, R captured by background listener) --
+    task automatic axi_read_burst;
+        input integer       mst;
+        input [W_ID-1:0]    id;
+        input [ADDR_WIDTH-1:0] addr;
+        input [LEN_W-1:0]   len;
+        input [SIZE_W-1:0]  size;
+        input [BURST_W-1:0] burst;
+        output [DATA_WIDTH-1:0] data_arr [];
+        reg [7:0] rlen;
+        integer beat;
+        begin
+            $display("[%0t] MASTER[%0d] READ START: addr=0x%08h len=%0d id=0x%0h",
+                     $time, mst, addr, len, id);
+
+            // Send AR immediately (non-blocking)
+            axi_ar_send(mst, id, addr, len, size, burst);
+
+            // Wait for R data from shared queue (filled by background mst_r_listener)
+            while (m_rd_q_cnt[mst] == 0) @(posedge AXI_CLK);
+            rlen = m_rd_len_q[mst][m_rd_q_rd_ptr[mst]];
+
+            for (beat = 0; beat < rlen; beat = beat + 1) begin
+                data_arr[beat] = m_rd_data_q[mst][m_rd_q_rd_ptr[mst]][beat];
+                if (m_rd_resp_q[mst][m_rd_q_rd_ptr[mst]][beat] != 2'b00) begin
+                    $display("[%0t] MASTER[%0d] WARNING: RRESP=0x%0h beat=%0d",
+                             $time, mst, m_rd_resp_q[mst][m_rd_q_rd_ptr[mst]][beat], beat);
+                end
+                $display("[%0t] MASTER[%0d] R beat: data=0x%08h last=%0d",
+                         $time, mst, data_arr[beat], (beat == rlen - 1));
+            end
+
+            m_rd_q_rd_ptr[mst] = (m_rd_q_rd_ptr[mst] + 1) & 3;
+            m_rd_q_cnt[mst]    = m_rd_q_cnt[mst] - 1;
+
+            $display("[%0t] MASTER[%0d] READ DONE: addr=0x%08h RID=0x%0h",
+                     $time, mst, addr, M_AXI_RID_o[W_ID*(mst+1)-1 -: W_ID]);
+        end
+    endtask
+
+    //=========================================================
+    // Split Master BFM Tasks (non-blocking per-channel operations)
+    //=========================================================
+
+    // -- Send AW channel only, return after handshake --
+    task automatic axi_aw_send;
+        input integer       mst;
+        input [W_ID-1:0]    id;
+        input [ADDR_WIDTH-1:0] addr;
+        input [LEN_W-1:0]   len;
+        input [SIZE_W-1:0]  size;
+        input [BURST_W-1:0] burst;
+        begin
             @(posedge AXI_CLK);
             M_AXI_AWID_i   [W_ID*(mst+1)-1 -: W_ID]          <= id;
             M_AXI_AWADDR_i [ADDR_WIDTH*(mst+1)-1 -: ADDR_WIDTH] <= addr;
@@ -520,87 +824,75 @@ module axi_tb;
 
             @(posedge AXI_CLK);
             M_AXI_AWVALID_i[mst] <= 1'b0;
-
-            // --- W channel ---
-            for (beat = 0; beat <= len; beat = beat + 1) begin
-                @(posedge AXI_CLK);
-                M_AXI_WDATA_i [DATA_WIDTH*(mst+1)-1 -: DATA_WIDTH] <= data_arr[beat];
-                M_AXI_WSTRB_i [W_STRB*(mst+1)-1 -: W_STRB]         <= strb_arr[beat];
-                M_AXI_WLAST_i [mst] <= (beat == len);
-                M_AXI_WVALID_i[mst] <= 1'b1;
-
-                fork
-                    begin
-                        wait(M_AXI_WREADY_o[mst]);
-                    end
-                    begin
-                        repeat(10000) @(posedge AXI_CLK);
-                        $fatal(1, "[%0t] MASTER[%0d] W TIMEOUT beat=%0d", $time, mst, beat);
-                    end
-                join_any
-                disable fork;
-            end
-
-            @(posedge AXI_CLK);
-            M_AXI_WVALID_i[mst] <= 1'b0;
-            M_AXI_WLAST_i [mst] <= 1'b0;
-
-            // --- B channel ---
-            M_AXI_BREADY_i[mst] <= 1'b1;
-
-            fork
-                begin
-                    wait(M_AXI_BVALID_o[mst]);
-                end
-                begin
-                    repeat(10000) @(posedge AXI_CLK);
-                    $fatal(1, "[%0t] MASTER[%0d] B TIMEOUT", $time, mst);
-                end
-            join_any
-            disable fork;
-
-            // Check B response
-            if (M_AXI_BRESP_o[RESP_W*(mst+1)-1 -: RESP_W] != 2'b00) begin
-                $display("[%0t] MASTER[%0d] WARNING: BRESP=0x%0h (expected OKAY)",
-                         $time, mst, M_AXI_BRESP_o[RESP_W*(mst+1)-1 -: RESP_W]);
-            end
-
-            $display("[%0t] MASTER[%0d] WRITE DONE: addr=0x%08h BID=0x%0h",
-                     $time, mst, addr, M_AXI_BID_o[W_ID*(mst+1)-1 -: W_ID]);
-
-            @(posedge AXI_CLK);
-            M_AXI_BREADY_i[mst] <= 1'b0;
         end
     endtask
 
-    // -- Read single beat --
-    task automatic axi_read_single;
+    // -- Wait for B response, return BRESP (reads from shared B queue) --
+    task automatic axi_b_recv;
         input integer       mst;
-        input [W_ID-1:0]    id;
-        input [ADDR_WIDTH-1:0] addr;
-        output [DATA_WIDTH-1:0] data;
-        reg [DATA_WIDTH-1:0] data_arr [0:0];
+        output [RESP_W-1:0] bresp;
         begin
-            axi_read_burst(mst, id, addr, 8'd0, 3'b010, 2'b01, data_arr);
-            data = data_arr[0];
+            // B listener (background) always has BREADY=1 and fills the queue
+            while (m_b_q_cnt[mst] == 0) @(posedge AXI_CLK);
+            bresp = m_b_resp_q[mst][m_b_q_rd_ptr[mst]];
+            m_b_q_rd_ptr[mst] = (m_b_q_rd_ptr[mst] + 1) & 3;
+            m_b_q_cnt[mst]    = m_b_q_cnt[mst] - 1;
         end
     endtask
 
-    // -- Read burst --
-    task automatic axi_read_burst;
+    // -- Combined pipelined write (AW → queued W → B, same architecture as axi_write_burst) --
+    task automatic axi_write_pipelined;
         input integer       mst;
         input [W_ID-1:0]    id;
         input [ADDR_WIDTH-1:0] addr;
         input [LEN_W-1:0]   len;
         input [SIZE_W-1:0]  size;
         input [BURST_W-1:0] burst;
-        output [DATA_WIDTH-1:0] data_arr [];
+        input [DATA_WIDTH-1:0] data_arr [];
+        input [W_STRB-1:0]     strb_arr [];
+        reg [RESP_W-1:0] bresp;
         integer beat;
         begin
-            $display("[%0t] MASTER[%0d] READ START: addr=0x%08h len=%0d id=0x%0h",
+            $display("[%0t] MASTER[%0d] WRITE START: addr=0x%08h len=%0d id=0x%0h",
                      $time, mst, addr, len, id);
 
-            // --- AR channel ---
+            // Queue W data → background mst_w_driver sends it
+            while (m_wr_q_cnt[mst] >= 4) @(posedge AXI_CLK);
+            m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
+            for (beat = 0; beat <= len; beat = beat + 1) begin
+                m_wr_data_q[mst][m_wr_q_wr_ptr[mst]][beat] = data_arr[beat];
+                m_wr_strb_q[mst][m_wr_q_wr_ptr[mst]][beat] = strb_arr[beat];
+            end
+            m_wr_q_wr_ptr[mst] = (m_wr_q_wr_ptr[mst] + 1) & 3;
+            m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] + 1;
+
+            // Send AW immediately (non-blocking)
+            axi_aw_send(mst, id, addr, len, size, burst);
+
+            // Wait for B from shared queue
+            while (m_b_q_cnt[mst] == 0) @(posedge AXI_CLK);
+            bresp = m_b_resp_q[mst][m_b_q_rd_ptr[mst]];
+            m_b_q_rd_ptr[mst] = (m_b_q_rd_ptr[mst] + 1) & 3;
+            m_b_q_cnt[mst]    = m_b_q_cnt[mst] - 1;
+
+            if (bresp != 2'b00) begin
+                $display("[%0t] MASTER[%0d] WARNING: BRESP=0x%0h (expected OKAY)",
+                         $time, mst, bresp);
+            end
+            $display("[%0t] MASTER[%0d] WRITE DONE: addr=0x%08h BID=0x%0h",
+                     $time, mst, addr, M_AXI_BID_o[W_ID*(mst+1)-1 -: W_ID]);
+        end
+    endtask
+
+    // -- Send AR channel only, return after handshake --
+    task automatic axi_ar_send;
+        input integer       mst;
+        input [W_ID-1:0]    id;
+        input [ADDR_WIDTH-1:0] addr;
+        input [LEN_W-1:0]   len;
+        input [SIZE_W-1:0]  size;
+        input [BURST_W-1:0] burst;
+        begin
             @(posedge AXI_CLK);
             M_AXI_ARID_i   [W_ID*(mst+1)-1 -: W_ID]          <= id;
             M_AXI_ARADDR_i [ADDR_WIDTH*(mst+1)-1 -: ADDR_WIDTH] <= addr;
@@ -622,38 +914,51 @@ module axi_tb;
 
             @(posedge AXI_CLK);
             M_AXI_ARVALID_i[mst] <= 1'b0;
+        end
+    endtask
 
-            // --- R channel ---
-            M_AXI_RREADY_i[mst] <= 1'b1;
+    // -- Receive R beats, fill data_arr (reads from shared R queue) --
+    task automatic axi_r_recv;
+        input integer       mst;
+        output [DATA_WIDTH-1:0] data_arr [];
+        input [LEN_W-1:0]   len;
+        reg [7:0] rlen;
+        integer beat;
+        begin
+            // R listener (background) always has RREADY=1 and fills the queue
+            while (m_rd_q_cnt[mst] == 0) @(posedge AXI_CLK);
+            rlen = m_rd_len_q[mst][m_rd_q_rd_ptr[mst]];
+            data_arr = new[rlen];
 
-            for (beat = 0; beat <= len; beat = beat + 1) begin
-                fork
-                    begin
-                        wait(M_AXI_RVALID_o[mst]);
-                    end
-                    begin
-                        repeat(10000) @(posedge AXI_CLK);
-                        $fatal(1, "[%0t] MASTER[%0d] R TIMEOUT beat=%0d", $time, mst, beat);
-                    end
-                join_any
-                disable fork;
-
-                data_arr[beat] = M_AXI_RDATA_o[DATA_WIDTH*(mst+1)-1 -: DATA_WIDTH];
-
-                if (M_AXI_RRESP_o[RESP_W*(mst+1)-1 -: RESP_W] != 2'b00) begin
+            for (beat = 0; beat < rlen; beat = beat + 1) begin
+                data_arr[beat] = m_rd_data_q[mst][m_rd_q_rd_ptr[mst]][beat];
+                if (m_rd_resp_q[mst][m_rd_q_rd_ptr[mst]][beat] != 2'b00) begin
                     $display("[%0t] MASTER[%0d] WARNING: RRESP=0x%0h beat=%0d",
-                             $time, mst, M_AXI_RRESP_o[RESP_W*(mst+1)-1 -: RESP_W], beat);
+                             $time, mst, m_rd_resp_q[mst][m_rd_q_rd_ptr[mst]][beat], beat);
                 end
-
                 $display("[%0t] MASTER[%0d] R beat: data=0x%08h last=%0d",
-                         $time, mst, data_arr[beat], M_AXI_RLAST_o[mst]);
-
-                @(posedge AXI_CLK);
-                if (M_AXI_RLAST_o[mst]) break;
+                         $time, mst, data_arr[beat], (beat == rlen - 1));
             end
 
-            M_AXI_RREADY_i[mst] <= 1'b0;
+            m_rd_q_rd_ptr[mst] = (m_rd_q_rd_ptr[mst] + 1) & 3;
+            m_rd_q_cnt[mst]    = m_rd_q_cnt[mst] - 1;
+        end
+    endtask
 
+    // -- Combined pipelined read (AR → R using split tasks) --
+    task automatic axi_read_pipelined;
+        input integer       mst;
+        input [W_ID-1:0]    id;
+        input [ADDR_WIDTH-1:0] addr;
+        input [LEN_W-1:0]   len;
+        input [SIZE_W-1:0]  size;
+        input [BURST_W-1:0] burst;
+        output [DATA_WIDTH-1:0] data_arr [];
+        begin
+            $display("[%0t] MASTER[%0d] READ START: addr=0x%08h len=%0d id=0x%0h",
+                     $time, mst, addr, len, id);
+            axi_ar_send(mst, id, addr, len, size, burst);
+            axi_r_recv(mst, data_arr, len);
             $display("[%0t] MASTER[%0d] READ DONE: addr=0x%08h RID=0x%0h",
                      $time, mst, addr, M_AXI_RID_o[W_ID*(mst+1)-1 -: W_ID]);
         end
@@ -672,7 +977,8 @@ module axi_tb;
             for (s = 0; s < SLV_AMT; s = s + 1) begin
                 dec_len = SLV_ADDR_LEN[8*(s+1)-1 -: 8];
                 base    = SLV_ADDR_BASE[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH];
-                if (addr[ADDR_WIDTH-1:dec_len] == base[ADDR_WIDTH-1:dec_len]) begin
+                // Use shift instead of variable part-select
+                if ((addr >> dec_len) == (base >> dec_len)) begin
                     get_slave_idx = s;
                     break;
                 end
@@ -750,14 +1056,26 @@ module axi_tb;
         M_AXI_WSTRB_i   = '0;
         M_AXI_WLAST_i   = '0;
         M_AXI_WVALID_i  = '0;
-        M_AXI_BREADY_i  = '0;
+        M_AXI_BREADY_i  = {MST_AMT{1'b1}};  // B listener maintains this
         M_AXI_ARID_i    = '0;
         M_AXI_ARADDR_i  = '0;
         M_AXI_ARLEN_i   = '0;
         M_AXI_ARSIZE_i  = '0;
         M_AXI_ARBURST_i = '0;
         M_AXI_ARVALID_i = '0;
-        M_AXI_RREADY_i  = '0;
+        // BREADY driven by mst_b_listener; AWREADY/ARREADY driven by slave handler tasks
+        M_AXI_RREADY_i  = {MST_AMT{1'b1}};  // R listener maintains this
+
+        // Slave-side signals
+        S_AXI_WREADY_i  = {SLV_AMT{1'b1}};
+        S_AXI_BVALID_i  = '0;
+        S_AXI_BID_i     = '0;
+        S_AXI_BRESP_i   = '0;
+        S_AXI_RVALID_i  = '0;
+        S_AXI_RLAST_i   = '0;
+        S_AXI_RID_i     = '0;
+        S_AXI_RDATA_i   = '0;
+        S_AXI_RRESP_i   = '0;
     end
 
     //=========================================================
@@ -768,11 +1086,6 @@ module axi_tb;
         $fsdbDumpvars(0, axi_tb);
         $fsdbDumpMDA();
     end
-
-    //=========================================================
-    // Global error counter
-    //=========================================================
-    integer error_cnt = 0;
 
     //=========================================================
     // ======================  TEST SUITE  =====================
@@ -790,10 +1103,13 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 1: Basic Single-Beat Sanity ==========");
         begin
-            reg [DATA_WIDTH-1:0] rdata_arr [0:0];
-            reg [DATA_WIDTH-1:0] wdata_arr [0:0];
-            reg [W_STRB-1:0]     strb_arr  [0:0];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
             integer pm, ps;
+            rdata_arr = new[1];
+            wdata_arr = new[1];
+            strb_arr  = new[1];
 
             for (pm = 0; pm < MST_AMT; pm = pm + 1) begin
                 for (ps = 0; ps < SLV_AMT; ps = ps + 1) begin
@@ -821,32 +1137,35 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 2: Multi-Beat INCR Burst ==========");
         begin
-            reg [DATA_WIDTH-1:0] wdata_arr [0:15];
-            reg [DATA_WIDTH-1:0] rdata_arr [0:15];
-            reg [W_STRB-1:0]     strb_arr  [0:15];
-            integer b;
-            integer burst_lens [] = '{0, 1, 3, 7, 15};  // AWLEN values
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
+            integer bi, b, blen;
+            wdata_arr = new[16];
+            rdata_arr = new[16];
+            strb_arr  = new[16];
 
-            foreach (burst_lens[i]) begin
+            for (bi = 0; bi < 5; bi = bi + 1) begin
+                blen = (bi == 0) ? 0 : (bi == 1) ? 1 : (bi == 2) ? 3 : (bi == 3) ? 7 : 15;
                 $display("--- Burst len=%0d (AWLEN=%0d, %0d beats) ---",
-                         burst_lens[i], burst_lens[i], burst_lens[i]+1);
+                         blen, blen, blen+1);
 
                 // Master 0 writes to Slave 0
-                for (b = 0; b <= burst_lens[i]; b = b + 1) begin
+                for (b = 0; b <= blen; b = b + 1) begin
                     wdata_arr[b] = gen_test_data(0, b);
                     strb_arr[b]  = 4'hF;
                 end
                 axi_write_burst(0, 4'hA, 32'h0000_1000,
-                                burst_lens[i][LEN_W-1:0], 3'b010, 2'b01,
+                                blen[LEN_W-1:0], 3'b010, 2'b01,
                                 wdata_arr, strb_arr);
                 wait_cycles(5);
 
                 // Read back and check
                 axi_read_burst(0, 4'hA, 32'h0000_1000,
-                               burst_lens[i][LEN_W-1:0], 3'b010, 2'b01,
+                               blen[LEN_W-1:0], 3'b010, 2'b01,
                                rdata_arr);
                 check_read_data(0, 32'h0000_1000,
-                                burst_lens[i][LEN_W-1:0], 3'b010, rdata_arr);
+                                blen[LEN_W-1:0], 3'b010, rdata_arr);
                 wait_cycles(10);
             end
         end
@@ -856,10 +1175,13 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 3: Data Size Variants ==========");
         begin
-            reg [DATA_WIDTH-1:0] wdata_arr [0:3];
-            reg [DATA_WIDTH-1:0] rdata_arr [0:3];
-            reg [W_STRB-1:0]     strb_arr  [0:3];
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
             integer s;
+            wdata_arr = new[4];
+            rdata_arr = new[4];
+            strb_arr  = new[4];
 
             // 32-bit (SIZE=2), 16-bit (SIZE=1), 8-bit (SIZE=0)
             for (s = 0; s < 3; s = s + 1) begin
@@ -871,8 +1193,12 @@ module axi_tb;
                 wait_cycles(5);
                 axi_read_burst(0, s[3:0], 32'h0000_2000 + s * 32'h100,
                               8'd0, s[2:0], 2'b01, rdata_arr);
-                // Mask expected data to valid bytes only
-                rdata_arr[0] = rdata_arr[0] & {{(32-8*(1<<s)){1'b0}}, {(8*(1<<s)){1'b1}}};
+                // Mask read data to valid bytes only (generate mask via shift)
+                begin
+                    reg [31:0] mask;
+                    mask = (32'hFFFF_FFFF >> (32 - 8*(1<<s)));
+                    rdata_arr[0] = rdata_arr[0] & mask;
+                end
                 check_read_data(0, 32'h0000_2000 + s * 32'h100,
                                8'd0, s[2:0], rdata_arr);
                 wait_cycles(5);
@@ -888,26 +1214,30 @@ module axi_tb;
             $display("--- 4 Masters → Slave 0 (write, concurrent) ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hAAAA_0001; _s[0] = 4'hF;
                     axi_write_burst(0, 4'h0, 32'h0000_0100, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hBBBB_0002; _s[0] = 4'hF;
                     axi_write_burst(1, 4'h0, 32'h0000_0104, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hCCCC_0003; _s[0] = 4'hF;
                     axi_write_burst(2, 4'h0, 32'h0000_0108, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hDDDD_0004; _s[0] = 4'hF;
                     axi_write_burst(3, 4'h0, 32'h0000_010C, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
@@ -917,22 +1247,26 @@ module axi_tb;
             $display("--- 4 Masters ← Slave 0 (read, concurrent) ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'h0, 32'h0000_0100, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_0100, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(1, 4'h0, 32'h0000_0104, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(1, 32'h0000_0104, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(2, 4'h0, 32'h0000_0108, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(2, 32'h0000_0108, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(3, 4'h0, 32'h0000_010C, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(3, 32'h0000_010C, 8'd0, 3'b010, _d);
                 end
@@ -948,26 +1282,30 @@ module axi_tb;
             $display("--- 4 Masters → 4 Slaves (write, concurrent) ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'h1111_1111; _s[0] = 4'hF;
                     axi_write_burst(0, 4'h1, 32'h0000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'h2222_2222; _s[0] = 4'hF;
                     axi_write_burst(1, 4'h1, 32'h1000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'h3333_3333; _s[0] = 4'hF;
                     axi_write_burst(2, 4'h1, 32'h2000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'h4444_4444; _s[0] = 4'hF;
                     axi_write_burst(3, 4'h1, 32'h3000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
@@ -976,22 +1314,26 @@ module axi_tb;
             $display("--- 4 Masters ← 4 Slaves (read, concurrent) ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'h1, 32'h0000_0300, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_0300, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(1, 4'h1, 32'h1000_0300, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(1, 32'h1000_0300, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(2, 4'h1, 32'h2000_0300, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(2, 32'h2000_0300, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(3, 4'h1, 32'h3000_0300, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(3, 32'h3000_0300, 8'd0, 3'b010, _d);
                 end
@@ -1003,30 +1345,32 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 6: 4KB Boundary Crossing ==========");
         begin
-            reg [DATA_WIDTH-1:0] wdata_arr [0:15];
-            reg [DATA_WIDTH-1:0] rdata_arr [0:15];
-            reg [W_STRB-1:0]     strb_arr  [0:15];
-            integer b;
-            integer cross_lens [] = '{1, 3, 7};
-
-            foreach (cross_lens[i]) begin
-                $display("--- Cross-4K: len=%0d, addr=0x0FF0 ---", cross_lens[i]);
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
+            integer b, bi, blen;
+            wdata_arr = new[16];
+            rdata_arr = new[16];
+            strb_arr  = new[16];
+            for (bi = 0; bi < 3; bi = bi + 1) begin
+                blen = (bi == 0) ? 1 : (bi == 1) ? 3 : 7;
+                $display("--- Cross-4K: len=%0d, addr=0x0FF0 ---", blen);
                 // Start near 4KB boundary, SIZE=2 (4 bytes/beat)
                 // 0x0FF0 + (len+1)*4 → crosses 0x1000 if len >= 3
-                for (b = 0; b <= cross_lens[i]; b = b + 1) begin
-                    wdata_arr[b] = gen_test_data(0, b) ^ 32'hCROSS_0000;
+                for (b = 0; b <= blen; b = b + 1) begin
+                    wdata_arr[b] = gen_test_data(0, b) ^ 32'hC000_0000;
                     strb_arr[b]  = 4'hF;
                 end
                 axi_write_burst(0, 4'h7, 32'h0000_0FF0,
-                                cross_lens[i][LEN_W-1:0], 3'b010, 2'b01,
+                                blen[LEN_W-1:0], 3'b010, 2'b01,
                                 wdata_arr, strb_arr);
                 wait_cycles(10);
 
                 axi_read_burst(0, 4'h7, 32'h0000_0FF0,
-                               cross_lens[i][LEN_W-1:0], 3'b010, 2'b01,
+                               blen[LEN_W-1:0], 3'b010, 2'b01,
                                rdata_arr);
                 check_read_data(0, 32'h0000_0FF0,
-                                cross_lens[i][LEN_W-1:0], 3'b010, rdata_arr);
+                                blen[LEN_W-1:0], 3'b010, rdata_arr);
                 wait_cycles(10);
             end
         end
@@ -1038,14 +1382,16 @@ module axi_tb;
         begin
             // Pre-write data for reads
             begin
-                reg [DATA_WIDTH-1:0] _d [0:0];
-                reg [W_STRB-1:0]     _s [0:0];
+                reg [DATA_WIDTH-1:0] _d [];
+                reg [W_STRB-1:0]     _s [];
+                _d = new[1]; _s = new[1];
                 _d[0] = 32'hCAFE_C0DE; _s[0] = 4'hF;
                 axi_write_burst(0, 4'hF, 32'h0000_0500, 8'd0, 3'b010, 2'b01, _d, _s);
             end
             begin
-                reg [DATA_WIDTH-1:0] _d [0:0];
-                reg [W_STRB-1:0]     _s [0:0];
+                reg [DATA_WIDTH-1:0] _d [];
+                reg [W_STRB-1:0]     _s [];
+                _d = new[1]; _s = new[1];
                 _d[0] = 32'hFEED_FACE; _s[0] = 4'hF;
                 axi_write_burst(1, 4'hF, 32'h1000_0500, 8'd0, 3'b010, 2'b01, _d, _s);
             end
@@ -1056,25 +1402,29 @@ module axi_tb;
             $display("--- M0 read Slave0, M1 write Slave1, M2 write Slave2, M3 read Slave3 ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'hF, 32'h0000_0500, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_0500, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hBEEF_0001; _s[0] = 4'hF;
                     axi_write_burst(1, 4'hE, 32'h1000_0600, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hBEEF_0002; _s[0] = 4'hF;
                     axi_write_burst(2, 4'hE, 32'h2000_0600, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     // Pre-write then read on M3
                     _d[0] = 32'hDEAD_BEEF; _s[0] = 4'hF;
                     axi_write_burst(3, 4'hE, 32'h3000_0500, 8'd0, 3'b010, 2'b01, _d, _s);
@@ -1094,26 +1444,30 @@ module axi_tb;
             $display("--- M0: 4 writes with different IDs → Slave 0 ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hA001_A001; _s[0] = 4'hF;
                     axi_write_burst(0, 4'h0, 32'h0000_0700, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hA002_A002; _s[0] = 4'hF;
                     axi_write_burst(0, 4'h2, 32'h0000_0704, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hA003_A003; _s[0] = 4'hF;
                     axi_write_burst(0, 4'h4, 32'h0000_0708, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
-                    reg [W_STRB-1:0]     _s [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    reg [W_STRB-1:0]     _s [];
+                    _d = new[1]; _s = new[1];
                     _d[0] = 32'hA004_A004; _s[0] = 4'hF;
                     axi_write_burst(0, 4'h6, 32'h0000_070C, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
@@ -1124,22 +1478,26 @@ module axi_tb;
             $display("--- M0: 4 reads with different IDs ← Slave 0 ---");
             fork
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'h0, 32'h0000_0700, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_0700, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'h2, 32'h0000_0704, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_0704, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'h4, 32'h0000_0708, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_0708, 8'd0, 3'b010, _d);
                 end
                 begin
-                    reg [DATA_WIDTH-1:0] _d [0:0];
+                    reg [DATA_WIDTH-1:0] _d [];
+                    _d = new[1];
                     axi_read_burst(0, 4'h6, 32'h0000_070C, 8'd0, 3'b010, 2'b01, _d);
                     check_read_data(0, 32'h0000_070C, 8'd0, 3'b010, _d);
                 end
@@ -1151,9 +1509,12 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 9: Partial Byte Write (WSTRB) ==========");
         begin
-            reg [DATA_WIDTH-1:0] wdata_arr [0:0];
-            reg [DATA_WIDTH-1:0] rdata_arr [0:0];
-            reg [W_STRB-1:0]     strb_arr  [0:0];
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
+            wdata_arr = new[1];
+            rdata_arr = new[1];
+            strb_arr  = new[1];
 
             // Write all 1s first
             wdata_arr[0] = 32'hFFFF_FFFF;
@@ -1194,10 +1555,13 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 10: Long Burst Stress ==========");
         begin
-            reg [DATA_WIDTH-1:0] wdata_arr [0:255];
-            reg [DATA_WIDTH-1:0] rdata_arr [0:255];
-            reg [W_STRB-1:0]     strb_arr  [0:255];
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
             integer b;
+            wdata_arr = new[256];
+            rdata_arr = new[256];
+            strb_arr  = new[256];
 
             // 16-beat burst (AWLEN=15)
             for (b = 0; b < 16; b = b + 1) begin
@@ -1218,11 +1582,14 @@ module axi_tb;
         //---------------------------------------------------------
         $display("\n========== PHASE 11: Random Stress Test ==========");
         begin
-            reg [DATA_WIDTH-1:0] wdata_arr [0:7];
-            reg [DATA_WIDTH-1:0] rdata_arr [0:7];
-            reg [W_STRB-1:0]     strb_arr  [0:7];
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
             integer t, rm, rs, rlen, b;
             reg [ADDR_WIDTH-1:0] raddr;
+            wdata_arr = new[8];
+            rdata_arr = new[8];
+            strb_arr  = new[8];
 
             for (t = 0; t < 50; t = t + 1) begin
                 rm   = $urandom % MST_AMT;

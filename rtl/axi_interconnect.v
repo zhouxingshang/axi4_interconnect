@@ -103,8 +103,7 @@ module axi_interconnect
     output  wire  [SLV_AMT-1                  : 0]  S_AXI_RREADY_o,
 
     // ========== Control Ports ==========
-    input   wire                      arbiter_type,
-    input   wire  [SLV_AMT-1              : 0]  r_order_grant_i
+    input   wire                      arbiter_type
 );
 
 //=============================================================================
@@ -302,8 +301,6 @@ wire                        s_rready_in     [0:SLV_AMT-1];   // to top
 //=============================================================================
 wire [W_SID-1:0]            sid_buf_out         [0:3];          // DEPTH=4
 wire [SLV_AMT-1:0]          reorder_grant;
-wire [SLV_AMT-1:0]          internal_r_order_grant;
-wire [SLV_AMT-1:0]          effective_r_order_grant;
 
 // sid_buffer backpressure: s_push_rdy per slave, gated AR ready
 wire [SLV_AMT-1:0]          sid_buf_push_rdy;                   // per-slave
@@ -797,11 +794,6 @@ reorder #(
     .order_grant (reorder_grant)
 );
 
-//=============================================================================
-// Bypass logic: external r_order_grant_i overrides internal reorder
-//=============================================================================
-assign internal_r_order_grant = reorder_grant;
-assign effective_r_order_grant = (|r_order_grant_i) ? r_order_grant_i : internal_r_order_grant;
 
 //=============================================================================
 // Unpack crossbar M_RSID output
@@ -1063,7 +1055,6 @@ axi_crossbar #(
 
     // Control
     .arbiter_type(arbiter_type),
-    .r_order_grant_i(effective_r_order_grant),
     .slv_en_i({SLV_AMT{1'b1}})
 );
 

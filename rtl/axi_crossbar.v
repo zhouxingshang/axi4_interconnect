@@ -28,7 +28,7 @@ module axi_crossbar
 
     // ========== 从设备地址基址数组 ==========
     // 格式: {SLV_AMT{ADDR_WIDTH{1'b0}}} - 用户需按从设备逐一覆写
-    parameter [(SLV_AMT*ADDR_WIDTH)-1:0] SLV_ADDR_BASE = {SLV_AMT{ADDR_WIDTH{1'b0}}},
+    parameter [(SLV_AMT*ADDR_WIDTH)-1:0] SLV_ADDR_BASE = 'b0,
     parameter [(SLV_AMT*8)-1:0]          SLV_ADDR_LEN  = {SLV_AMT{8'd12}}, // 默认 12 位译码
 
     // ========== 默认从设备配置 ==========

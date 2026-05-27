@@ -137,8 +137,7 @@ module axi_tb;
         .M_AXI_RREADY_i    (M_AXI_RREADY_i),
 
         // 新增控制端口
-        .arbiter_type      (1'b0),
-        .r_order_grant_i   ({SLV_AMT{1'b1}})
+        .arbiter_type      (1'b0)
     );
 
     //=========================================================
