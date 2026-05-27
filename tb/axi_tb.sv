@@ -33,21 +33,22 @@ module axi_tb;
     localparam W_MID           = W_ID + 2;            // 6
     localparam W_SID           = $clog2(MST_AMT) + W_CID + W_ID; // 8
 
-    localparam SLV_MEM_AW      = 16;                  // 64 KB per slave
-    localparam SLV_MEM_DEPTH   = 1 << SLV_MEM_AW;
+    localparam SLV_MEM_AW      = 13;                  // 8 KB per slave (byte addr)
+    localparam SLV_MEM_WORD     = 2048;                // 2048 × 32-bit = 8 KB
+    localparam SLV_MEM_DEPTH   = SLV_MEM_WORD;
 
-    // Address map: upper 4 bits select slave → 256 MB per slave
+    // Address map: bits [31:13] select slave → 8 KB per slave
     localparam [(SLV_AMT*ADDR_WIDTH)-1:0] SLV_ADDR_BASE = {
-        32'h3000_0000,   // slave 3
-        32'h2000_0000,   // slave 2
-        32'h1000_0000,   // slave 1
-        32'h0000_0000    // slave 0
+        32'h0000_6000,   // slave 3  (addr[31:13] = 3)
+        32'h0000_4000,   // slave 2  (addr[31:13] = 2)
+        32'h0000_2000,   // slave 1  (addr[31:13] = 1)
+        32'h0000_0000    // slave 0  (addr[31:13] = 0)
     };
     localparam [(SLV_AMT*8)-1:0] SLV_ADDR_LEN = {
-        8'd28,           // slave 3
-        8'd28,           // slave 2
-        8'd28,           // slave 1
-        8'd28            // slave 0
+        8'd13,           // slave 3
+        8'd13,           // slave 2
+        8'd13,           // slave 1
+        8'd13            // slave 0
     };
 
     //=========================================================
@@ -237,16 +238,16 @@ module axi_tb;
     integer error_cnt;
 
     //=========================================================
-    // Slave Memory Model (per-slave byte-addressable storage)
+    // Slave Memory Model (per-slave 32-bit word storage)
     //=========================================================
-    reg [7:0] slv_mem [0:SLV_AMT-1][0:SLV_MEM_DEPTH-1];
+    reg [DATA_WIDTH-1:0] slv_mem [0:SLV_AMT-1][0:SLV_MEM_DEPTH-1];
 
     // Initialize memory to known pattern
     integer mem_init_s, mem_init_a;
     initial begin
         for (mem_init_s = 0; mem_init_s < SLV_AMT; mem_init_s = mem_init_s + 1) begin
             for (mem_init_a = 0; mem_init_a < SLV_MEM_DEPTH; mem_init_a = mem_init_a + 1) begin
-                slv_mem[mem_init_s][mem_init_a] = 8'h00;
+                slv_mem[mem_init_s][mem_init_a] = 32'h0000_0000;
             end
         end
     end
@@ -283,17 +284,13 @@ module axi_tb;
     end
 
     //=========================================================
-    // Helper: reconstruct read data from byte memory
+    // Helper: reconstruct read data from word memory
     //=========================================================
     function [DATA_WIDTH-1:0] build_rdata;
         input [ADDR_WIDTH-1:0] addr;
         input integer slv_idx;
-        integer b;
         begin
-            build_rdata = '0;
-            for (b = 0; b < W_STRB; b = b + 1) begin
-                build_rdata[8*b +: 8] = slv_mem[slv_idx][(addr[SLV_MEM_AW-1:0] + b) & (SLV_MEM_DEPTH-1)];
-            end
+            build_rdata = slv_mem[slv_idx][addr[SLV_MEM_AW-1:2] & (SLV_MEM_DEPTH-1)];
         end
     endfunction
 
@@ -317,9 +314,7 @@ module axi_tb;
         reg                  cur_active;
 
         reg [DATA_WIDTH-1:0] wdata;
-        reg [W_STRB-1:0]     wstrb;
         reg                  wlast;
-        integer              bi;
         begin
             q_wr_ptr   = 0;
             q_rd_ptr   = 0;
@@ -360,19 +355,14 @@ module axi_tb;
                 // W data handshake
                 if (cur_active && S_AXI_WVALID_o[slv_id] && S_AXI_WREADY_i[slv_id]) begin
                     wdata = S_AXI_WDATA_o[DATA_WIDTH*(slv_id+1)-1 -: DATA_WIDTH];
-                    wstrb = S_AXI_WSTRB_o[W_STRB*(slv_id+1)-1 -: W_STRB];
                     wlast = S_AXI_WLAST_o[slv_id];
 
-                    // Write data bytes to memory where strobe is set
-                    for (bi = 0; bi < W_STRB; bi = bi + 1) begin
-                        if (wstrb[bi]) begin
-                            slv_mem[slv_id][(cur_awaddr[SLV_MEM_AW-1:0] + bi) & (SLV_MEM_DEPTH-1)]
-                                <= wdata[8*bi +: 8];
-                        end
-                    end
+                    // Write full word to memory
+                    slv_mem[slv_id][cur_awaddr[SLV_MEM_AW-1:2] & (SLV_MEM_DEPTH-1)]
+                        <= wdata;
 
-                    $display("[%0t] SLAVE[%0d] W beat: data=0x%08h strb=0x%0h last=%0d beat_left=%0d",
-                             $time, slv_id, wdata, wstrb, wlast, cur_total - cur_beat_cnt - 1);
+                    $display("[%0t] SLAVE[%0d] W beat: data=0x%08h last=%0d beat_left=%0d",
+                             $time, slv_id, wdata, wlast, cur_total - cur_beat_cnt - 1);
 
                     if (wlast) begin
                         cur_active = 1'b0;
@@ -386,6 +376,9 @@ module axi_tb;
                         cur_beat_cnt = cur_beat_cnt + 1;
                     end
                 end
+
+                // Gate WREADY: only accept W data when actively processing a transaction
+                S_AXI_WREADY_i[slv_id] <= cur_active;
             end
         end
     endtask
@@ -524,7 +517,6 @@ module axi_tb;
 
     // -- Per-master W data queue (depth 4, circular buffer) --
     reg [DATA_WIDTH-1:0] m_wr_data_q  [0:MST_AMT-1][0:3][0:255];
-    reg [W_STRB-1:0]     m_wr_strb_q  [0:MST_AMT-1][0:3][0:255];
     reg [LEN_W-1:0]      m_wr_len_q   [0:MST_AMT-1][0:3];
     reg [1:0]            m_wr_q_wr_ptr [0:MST_AMT-1];
     reg [1:0]            m_wr_q_rd_ptr [0:MST_AMT-1];
@@ -535,6 +527,14 @@ module axi_tb;
     reg [1:0]            m_b_q_wr_ptr [0:MST_AMT-1];
     reg [1:0]            m_b_q_rd_ptr [0:MST_AMT-1];
     integer              m_b_q_cnt    [0:MST_AMT-1];
+
+    // -- Per-master R data queue (depth 4, each entry = one burst) --
+    reg [DATA_WIDTH-1:0] m_rd_data_q  [0:MST_AMT-1][0:3][0:255];
+    reg [RESP_W-1:0]     m_rd_resp_q  [0:MST_AMT-1][0:3][0:255];
+    reg [7:0]            m_rd_len_q   [0:MST_AMT-1][0:3];  // total beats stored
+    reg [1:0]            m_rd_q_wr_ptr [0:MST_AMT-1];
+    reg [1:0]            m_rd_q_rd_ptr [0:MST_AMT-1];
+    integer              m_rd_q_cnt    [0:MST_AMT-1];
 
     integer mst_q_init;
     initial begin
@@ -551,18 +551,9 @@ module axi_tb;
         end
     end
 
-    // -- Per-master R data queue (depth 4, each entry = one burst) --
-    reg [DATA_WIDTH-1:0] m_rd_data_q  [0:MST_AMT-1][0:3][0:255];
-    reg [RESP_W-1:0]     m_rd_resp_q  [0:MST_AMT-1][0:3][0:255];
-    reg [7:0]            m_rd_len_q   [0:MST_AMT-1][0:3];  // total beats stored
-    reg [1:0]            m_rd_q_wr_ptr [0:MST_AMT-1];
-    reg [1:0]            m_rd_q_rd_ptr [0:MST_AMT-1];
-    integer              m_rd_q_cnt    [0:MST_AMT-1];
-
-    // -- Per-master W driver (background, drains W queue) --
+    // -- Per-master W driver (background, drains W queue, WSTRB always 4'hF) --
     task automatic mst_w_driver(int mst);
         reg [DATA_WIDTH-1:0] wdata_arr [0:255];
-        reg [W_STRB-1:0]     wstrb_arr [0:255];
         reg [LEN_W-1:0]      wlen;
         integer beat;
         begin
@@ -572,7 +563,6 @@ module axi_tb;
                     wlen = m_wr_len_q[mst][m_wr_q_rd_ptr[mst]];
                     for (beat = 0; beat <= wlen; beat = beat + 1) begin
                         wdata_arr[beat] = m_wr_data_q[mst][m_wr_q_rd_ptr[mst]][beat];
-                        wstrb_arr[beat] = m_wr_strb_q[mst][m_wr_q_rd_ptr[mst]][beat];
                     end
                     m_wr_q_rd_ptr[mst] = (m_wr_q_rd_ptr[mst] + 1) & 3;
                     m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] - 1;
@@ -580,7 +570,7 @@ module axi_tb;
                     for (beat = 0; beat <= wlen; beat = beat + 1) begin
                         @(posedge AXI_CLK);
                         M_AXI_WDATA_i [DATA_WIDTH*(mst+1)-1 -: DATA_WIDTH] <= wdata_arr[beat];
-                        M_AXI_WSTRB_i [W_STRB*(mst+1)-1 -: W_STRB]         <= wstrb_arr[beat];
+                        M_AXI_WSTRB_i [W_STRB*(mst+1)-1 -: W_STRB]         <= {W_STRB{1'b1}};
                         M_AXI_WLAST_i [mst] <= (beat == wlen);
                         M_AXI_WVALID_i[mst] <= 1'b1;
                         fork
@@ -712,7 +702,6 @@ module axi_tb;
             m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
             for (beat = 0; beat <= len; beat = beat + 1) begin
                 m_wr_data_q[mst][m_wr_q_wr_ptr[mst]][beat] = data_arr[beat];
-                m_wr_strb_q[mst][m_wr_q_wr_ptr[mst]][beat] = strb_arr[beat];
             end
             m_wr_q_wr_ptr[mst] = (m_wr_q_wr_ptr[mst] + 1) & 3;
             m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] + 1;
@@ -758,7 +747,7 @@ module axi_tb;
         input [LEN_W-1:0]   len;
         input [SIZE_W-1:0]  size;
         input [BURST_W-1:0] burst;
-        output [DATA_WIDTH-1:0] data_arr [];
+        ref [DATA_WIDTH-1:0] data_arr [];
         reg [7:0] rlen;
         integer beat;
         begin
@@ -861,7 +850,6 @@ module axi_tb;
             m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
             for (beat = 0; beat <= len; beat = beat + 1) begin
                 m_wr_data_q[mst][m_wr_q_wr_ptr[mst]][beat] = data_arr[beat];
-                m_wr_strb_q[mst][m_wr_q_wr_ptr[mst]][beat] = strb_arr[beat];
             end
             m_wr_q_wr_ptr[mst] = (m_wr_q_wr_ptr[mst] + 1) & 3;
             m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] + 1;
@@ -920,7 +908,7 @@ module axi_tb;
     // -- Receive R beats, fill data_arr (reads from shared R queue) --
     task automatic axi_r_recv;
         input integer       mst;
-        output [DATA_WIDTH-1:0] data_arr [];
+        ref [DATA_WIDTH-1:0] data_arr [];
         input [LEN_W-1:0]   len;
         reg [7:0] rlen;
         integer beat;
@@ -953,7 +941,7 @@ module axi_tb;
         input [LEN_W-1:0]   len;
         input [SIZE_W-1:0]  size;
         input [BURST_W-1:0] burst;
-        output [DATA_WIDTH-1:0] data_arr [];
+        ref [DATA_WIDTH-1:0] data_arr [];
         begin
             $display("[%0t] MASTER[%0d] READ START: addr=0x%08h len=%0d id=0x%0h",
                      $time, mst, addr, len, id);
@@ -995,17 +983,14 @@ module axi_tb;
         input [LEN_W-1:0] len;
         input [SIZE_W-1:0] size;
         input [DATA_WIDTH-1:0] rdata [];
-        integer s, beat, b;
+        integer s, beat;
         reg [ADDR_WIDTH-1:0] cur_addr;
         reg [DATA_WIDTH-1:0] expected;
         begin
             s = get_slave_idx(addr);
             cur_addr = addr;
             for (beat = 0; beat <= len; beat = beat + 1) begin
-                expected = '0;
-                for (b = 0; b < W_STRB; b = b + 1) begin
-                    expected[8*b +: 8] = slv_mem[s][(cur_addr[SLV_MEM_AW-1:0] + b) & (SLV_MEM_DEPTH-1)];
-                end
+                expected = slv_mem[s][cur_addr[SLV_MEM_AW-1:2] & (SLV_MEM_DEPTH-1)];
                 if (rdata[beat] !== expected) begin
                     $display("[%0t] ERROR: M[%0d] read data mismatch @ addr=0x%08h beat=%0d",
                              $time, mst, cur_addr, beat);
@@ -1088,6 +1073,44 @@ module axi_tb;
     end
 
     //=========================================================
+    // Deadlock Watchdog: finish if no AXI activity for 50000 cycles
+    //=========================================================
+    integer watchdog_cnt;
+    reg     watchdog_active;
+    initial begin
+        watchdog_cnt    = 0;
+        watchdog_active = 0;
+        wait(AXI_RSTn);
+        wait_cycles(20);
+        watchdog_active = 1;
+    end
+
+    always @(posedge AXI_CLK) begin
+        if (watchdog_active) begin
+            // Any handshake on any channel resets the watchdog
+            if (|(M_AXI_AWVALID_i & M_AXI_AWREADY_o) ||
+                |(M_AXI_WVALID_i & M_AXI_WREADY_o) ||
+                |(M_AXI_BVALID_o & M_AXI_BREADY_i) ||
+                |(M_AXI_ARVALID_i & M_AXI_ARREADY_o) ||
+                |(M_AXI_RVALID_o & M_AXI_RREADY_i)) begin
+                watchdog_cnt = 0;
+            end else begin
+                watchdog_cnt = watchdog_cnt + 1;
+                if (watchdog_cnt >= 50000) begin
+                    $display("\n[%0t] DEADLOCK: no AXI activity for 50000 cycles", $time);
+                    $display("  m_wr_q_cnt = {%0d,%0d,%0d,%0d}",
+                             m_wr_q_cnt[0], m_wr_q_cnt[1], m_wr_q_cnt[2], m_wr_q_cnt[3]);
+                    $display("  m_b_q_cnt  = {%0d,%0d,%0d,%0d}",
+                             m_b_q_cnt[0], m_b_q_cnt[1], m_b_q_cnt[2], m_b_q_cnt[3]);
+                    $display("  m_rd_q_cnt = {%0d,%0d,%0d,%0d}",
+                             m_rd_q_cnt[0], m_rd_q_cnt[1], m_rd_q_cnt[2], m_rd_q_cnt[3]);
+                    $finish;
+                end
+            end
+        end
+    end
+
+    //=========================================================
     // ======================  TEST SUITE  =====================
     //=========================================================
     initial begin
@@ -1115,7 +1138,7 @@ module axi_tb;
                 for (ps = 0; ps < SLV_AMT; ps = ps + 1) begin
                     wdata_arr[0] = {16'd0, pm[3:0], ps[3:0], 8'hA5};
                     strb_arr[0]  = 4'hF;  // all bytes valid
-                    axi_write_burst(pm, pm[3:0], ps * 32'h1000_0000 + pm * 32'h100,
+                    axi_write_burst(pm, pm[3:0], ps * 32'h0000_2000 + pm * 32'h100,
                                     8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
                     wait_cycles(5);
                 end
@@ -1123,9 +1146,9 @@ module axi_tb;
 
             for (pm = 0; pm < MST_AMT; pm = pm + 1) begin
                 for (ps = 0; ps < SLV_AMT; ps = ps + 1) begin
-                    axi_read_burst(pm, pm[3:0], ps * 32'h1000_0000 + pm * 32'h100,
+                    axi_read_burst(pm, pm[3:0], ps * 32'h0000_2000 + pm * 32'h100,
                                   8'd0, 3'b010, 2'b01, rdata_arr);
-                    check_read_data(pm, ps * 32'h1000_0000 + pm * 32'h100,
+                    check_read_data(pm, ps * 32'h0000_2000 + pm * 32'h100,
                                    8'd0, 3'b010, rdata_arr);
                     wait_cycles(5);
                 end
@@ -1293,21 +1316,21 @@ module axi_tb;
                     reg [W_STRB-1:0]     _s [];
                     _d = new[1]; _s = new[1];
                     _d[0] = 32'h2222_2222; _s[0] = 4'hF;
-                    axi_write_burst(1, 4'h1, 32'h1000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
+                    axi_write_burst(1, 4'h1, 32'h0000_2300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
                     reg [W_STRB-1:0]     _s [];
                     _d = new[1]; _s = new[1];
                     _d[0] = 32'h3333_3333; _s[0] = 4'hF;
-                    axi_write_burst(2, 4'h1, 32'h2000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
+                    axi_write_burst(2, 4'h1, 32'h0000_4300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
                     reg [W_STRB-1:0]     _s [];
                     _d = new[1]; _s = new[1];
                     _d[0] = 32'h4444_4444; _s[0] = 4'hF;
-                    axi_write_burst(3, 4'h1, 32'h3000_0300, 8'd0, 3'b010, 2'b01, _d, _s);
+                    axi_write_burst(3, 4'h1, 32'h0000_6300, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
             join
 
@@ -1322,20 +1345,20 @@ module axi_tb;
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
                     _d = new[1];
-                    axi_read_burst(1, 4'h1, 32'h1000_0300, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(1, 32'h1000_0300, 8'd0, 3'b010, _d);
+                    axi_read_burst(1, 4'h1, 32'h0000_2300, 8'd0, 3'b010, 2'b01, _d);
+                    check_read_data(1, 32'h0000_2300, 8'd0, 3'b010, _d);
                 end
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
                     _d = new[1];
-                    axi_read_burst(2, 4'h1, 32'h2000_0300, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(2, 32'h2000_0300, 8'd0, 3'b010, _d);
+                    axi_read_burst(2, 4'h1, 32'h0000_4300, 8'd0, 3'b010, 2'b01, _d);
+                    check_read_data(2, 32'h0000_4300, 8'd0, 3'b010, _d);
                 end
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
                     _d = new[1];
-                    axi_read_burst(3, 4'h1, 32'h3000_0300, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(3, 32'h3000_0300, 8'd0, 3'b010, _d);
+                    axi_read_burst(3, 4'h1, 32'h0000_6300, 8'd0, 3'b010, 2'b01, _d);
+                    check_read_data(3, 32'h0000_6300, 8'd0, 3'b010, _d);
                 end
             join
         end
@@ -1393,7 +1416,7 @@ module axi_tb;
                 reg [W_STRB-1:0]     _s [];
                 _d = new[1]; _s = new[1];
                 _d[0] = 32'hFEED_FACE; _s[0] = 4'hF;
-                axi_write_burst(1, 4'hF, 32'h1000_0500, 8'd0, 3'b010, 2'b01, _d, _s);
+                axi_write_burst(1, 4'hF, 32'h0000_2500, 8'd0, 3'b010, 2'b01, _d, _s);
             end
 
             wait_cycles(10);
@@ -1412,14 +1435,14 @@ module axi_tb;
                     reg [W_STRB-1:0]     _s [];
                     _d = new[1]; _s = new[1];
                     _d[0] = 32'hBEEF_0001; _s[0] = 4'hF;
-                    axi_write_burst(1, 4'hE, 32'h1000_0600, 8'd0, 3'b010, 2'b01, _d, _s);
+                    axi_write_burst(1, 4'hE, 32'h0000_2600, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
                     reg [W_STRB-1:0]     _s [];
                     _d = new[1]; _s = new[1];
                     _d[0] = 32'hBEEF_0002; _s[0] = 4'hF;
-                    axi_write_burst(2, 4'hE, 32'h2000_0600, 8'd0, 3'b010, 2'b01, _d, _s);
+                    axi_write_burst(2, 4'hE, 32'h0000_4600, 8'd0, 3'b010, 2'b01, _d, _s);
                 end
                 begin
                     reg [DATA_WIDTH-1:0] _d [];
@@ -1427,10 +1450,10 @@ module axi_tb;
                     _d = new[1]; _s = new[1];
                     // Pre-write then read on M3
                     _d[0] = 32'hDEAD_BEEF; _s[0] = 4'hF;
-                    axi_write_burst(3, 4'hE, 32'h3000_0500, 8'd0, 3'b010, 2'b01, _d, _s);
+                    axi_write_burst(3, 4'hE, 32'h0000_6500, 8'd0, 3'b010, 2'b01, _d, _s);
                     wait_cycles(3);
-                    axi_read_burst(3, 4'hE, 32'h3000_0500, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(3, 32'h3000_0500, 8'd0, 3'b010, _d);
+                    axi_read_burst(3, 4'hE, 32'h0000_6500, 8'd0, 3'b010, 2'b01, _d);
+                    check_read_data(3, 32'h0000_6500, 8'd0, 3'b010, _d);
                 end
             join
         end
@@ -1505,55 +1528,9 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 9: WSTRB Partial Byte Write Test
+        // PHASE 9: Long Burst Stress Test
         //---------------------------------------------------------
-        $display("\n========== PHASE 9: Partial Byte Write (WSTRB) ==========");
-        begin
-            reg [DATA_WIDTH-1:0] wdata_arr [];
-            reg [DATA_WIDTH-1:0] rdata_arr [];
-            reg [W_STRB-1:0]     strb_arr  [];
-            wdata_arr = new[1];
-            rdata_arr = new[1];
-            strb_arr  = new[1];
-
-            // Write all 1s first
-            wdata_arr[0] = 32'hFFFF_FFFF;
-            strb_arr[0]  = 4'hF;
-            axi_write_burst(0, 4'h9, 32'h0000_0800, 8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
-
-            // Write only byte 0 and byte 2
-            wdata_arr[0] = 32'hAB00_CD00;
-            strb_arr[0]  = 4'b0101;
-            axi_write_burst(0, 4'h9, 32'h0000_0800, 8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
-
-            wait_cycles(5);
-
-            // Read back: bytes 0,2 should be AB,CD; bytes 1,3 should be FF,FF
-            axi_read_burst(0, 4'h9, 32'h0000_0800, 8'd0, 3'b010, 2'b01, rdata_arr);
-
-            if (rdata_arr[0][7:0]   !== 8'hAB) begin
-                $display("ERROR: byte0 expected 0xAB got 0x%0h", rdata_arr[0][7:0]);
-                error_cnt = error_cnt + 1;
-            end
-            if (rdata_arr[0][15:8]  !== 8'hFF) begin
-                $display("ERROR: byte1 expected 0xFF got 0x%0h", rdata_arr[0][15:8]);
-                error_cnt = error_cnt + 1;
-            end
-            if (rdata_arr[0][23:16] !== 8'hCD) begin
-                $display("ERROR: byte2 expected 0xCD got 0x%0h", rdata_arr[0][23:16]);
-                error_cnt = error_cnt + 1;
-            end
-            if (rdata_arr[0][31:24] !== 8'hFF) begin
-                $display("ERROR: byte3 expected 0xFF got 0x%0h", rdata_arr[0][31:24]);
-                error_cnt = error_cnt + 1;
-            end
-            $display("--- Partial WSTRB test complete ---");
-        end
-
-        //---------------------------------------------------------
-        // PHASE 10: Long Burst Stress Test
-        //---------------------------------------------------------
-        $display("\n========== PHASE 10: Long Burst Stress ==========");
+        $display("\n========== PHASE 9: Long Burst Stress ==========");
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1578,9 +1555,9 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 11: Random Stress Test
+        // PHASE 10: Random Stress Test
         //---------------------------------------------------------
-        $display("\n========== PHASE 11: Random Stress Test ==========");
+        $display("\n========== PHASE 10: Random Stress Test ==========");
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1595,7 +1572,7 @@ module axi_tb;
                 rm   = $urandom % MST_AMT;
                 rs   = $urandom % SLV_AMT;
                 rlen = $urandom % 4;  // 0..3 (1..4 beats)
-                raddr = rs * 32'h1000_0000 + ($urandom % 4096);
+                raddr = rs * 32'h0000_2000 + ($urandom % 4096);
 
                 for (b = 0; b <= rlen; b = b + 1) begin
                     wdata_arr[b] = $urandom;

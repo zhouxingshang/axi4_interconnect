@@ -1,212 +1,225 @@
---- TEST 1: Non-split AR, single beat ---
-[155000] AR: id=0xa addr=0x00000100 len=0 size=2 → ARREADY
-[155000] S_AR: id=0xa (pref=0) addr=0x00000100 len=0 size=2
-[165000] TEST 1 DONE (errors=0)
-
---- TEST 2: Non-split AR, burst within 4KB ---
-[175000] AR: id=0xb addr=0x00000100 len=7 size=2 → ARREADY
-[175000] S_AR: id=0xb (pref=0) addr=0x00000100 len=7 size=2
-[185000] TEST 2 DONE (errors=0)
-
---- TEST 3: Split AR, crosses 4KB ---
-[205000] S_AR: id=0x1c (pref=1) addr=0x00000ffc len=0 size=2
-[215000] AR: id=0xc addr=0x00000ffc len=1 size=2 → ARREADY
-[215000] S_AR: id=0x2c (pref=2) addr=0x00001000 len=0 size=2
-[225000] TEST 3 DONE (errors=0)
-
---- TEST 4: Split AR, many beats ---
-[235000] S_AR: id=0x1d (pref=1) addr=0x00000ff0 len=3 size=2
-[245000] AR: id=0xd addr=0x00000ff0 len=7 size=2 → ARREADY
-[245000] S_AR: id=0x2d (pref=2) addr=0x00001000 len=3 size=2
-[255000] TEST 4 DONE (errors=0)
-
---- TEST 5: Non-split AW+W, single beat ---
-[265000] AW: id=0x1 addr=0x00000200 len=0 size=2 → AWREADY
-[265000] S_AR: id=0x1d (pref=1) addr=0x00000ff0 len=3 size=2
-[265000] S_AW: id=0x1 (pref=0) addr=0x00000200 len=0 size=2
-[275000] TEST 5 DONE (errors=0)
-
---- TEST 6: Non-split AW+W, burst within 4KB ---
-[275000] S_AR: id=0x2d (pref=2) addr=0x00001000 len=3 size=2
-[275000] S_W: beat[0] data=0x02000000 last=1
-[285000] AW: id=0x2 addr=0x00000200 len=3 size=2 → AWREADY
-[285000] S_AW: id=0x2 (pref=0) addr=0x00000200 len=3 size=2
-[295000] S_W: beat[0] data=0x02000000 last=0
-[305000] S_W: beat[1] data=0x02000100 last=0
-[315000] S_W: beat[2] data=0x02000200 last=0
-[325000] TEST 6 DONE (errors=0)
-
---- TEST 7: Split AW+W, crosses 4KB ---
-[325000] S_W: beat[3] data=0x02000300 last=1
-[345000] S_AW: id=0x13 (pref=1) addr=0x00000ff8 len=1 size=2
-[355000] AW: id=0x3 addr=0x00000ff8 len=3 size=2 → AWREADY
-[355000] S_AW: id=0x23 (pref=2) addr=0x00001000 len=1 size=2
-[365000] S_W: beat[0] data=0x0ff80000 last=0
-[375000] S_AW: id=0x13 (pref=1) addr=0x00000ff8 len=1 size=2
-[375000] S_W: beat[1] data=0x0ff80100 last=1
-[385000] S_AW: id=0x23 (pref=2) addr=0x00001000 len=1 size=2
-[385000] S_W: beat[0] data=0x0ff80200 last=0
-[405000] S_AW: id=0x13 (pref=1) addr=0x00000ff8 len=1 size=2
-[415000] TEST 7 DONE (errors=0)
-
---- TEST 8: Split AW+W, long burst ---
-[415000] S_AW: id=0x23 (pref=2) addr=0x00001000 len=1 size=2
-[415000] S_W: beat[1] data=0x0ff80300 last=1
-[435000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[445000] AW: id=0x4 addr=0x00000fe0 len=15 size=2 → AWREADY
-[445000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[455000] S_W: beat[0] data=0x0fe00000 last=0
-[465000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[465000] S_W: beat[1] data=0x0fe00100 last=0
-[475000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[475000] S_W: beat[2] data=0x0fe00200 last=0
-[485000] S_W: beat[3] data=0x0fe00300 last=0
-[495000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[495000] S_W: beat[4] data=0x0fe00400 last=0
-[505000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[505000] S_W: beat[5] data=0x0fe00500 last=0
-[515000] S_W: beat[6] data=0x0fe00600 last=0
-[525000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[525000] S_W: beat[7] data=0x0fe00700 last=1
-[535000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[535000] S_W: beat[0] data=0x0fe00800 last=0
-[555000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[565000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[565000] S_W: beat[1] data=0x0fe00900 last=0
-[575000] S_W: beat[2] data=0x0fe00a00 last=0
-[585000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[585000] S_W: beat[3] data=0x0fe00b00 last=0
-[595000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[595000] S_W: beat[4] data=0x0fe00c00 last=0
-[605000] S_W: beat[5] data=0x0fe00d00 last=0
-[615000] S_AW: id=0x14 (pref=1) addr=0x00000fe0 len=7 size=2
-[615000] S_W: beat[6] data=0x0fe00e00 last=0
-[625000] ERROR: TEST 8: S_AW[0] addr: got=0x00001000 exp=0x00000fe0
-[625000] ERROR: TEST 8: S_AW[0] len: got=1 exp=7
-[625000] ERROR: TEST 8: S_AW[1] addr: got=0x00000fe0 exp=0x00001000
-[625000] TEST 8 DONE (errors=3)
-
---- TEST 9: Back-to-back AR ---
-[625000] S_AW: id=0x24 (pref=2) addr=0x00001000 len=7 size=2
-[625000] S_W: beat[7] data=0x0fe00f00 last=1
-[635000] AR: id=0xe addr=0x00000500 len=3 size=2 → ARREADY
-[635000] S_AR: id=0xe (pref=0) addr=0x00000500 len=3 size=2
-[665000] S_AR: id=0x1f (pref=1) addr=0x00000ff0 len=3 size=2
-[675000] AR: id=0xf addr=0x00000ff0 len=7 size=2 → ARREADY
-[675000] S_AR: id=0x2f (pref=2) addr=0x00001000 len=3 size=2
-[695000] S_AR: id=0x1f (pref=1) addr=0x00000ff0 len=3 size=2
-[705000] S_AR: id=0x2f (pref=2) addr=0x00001000 len=3 size=2
-[725000] S_AR: id=0x1f (pref=1) addr=0x00000ff0 len=3 size=2
-[725000] TEST 9 DONE (errors=3)
-
---- TEST 10: Back-to-back AW+W ---
-[735000] AW: id=0x5 addr=0x00000f00 len=63 size=2 → AWREADY
-[735000] S_AR: id=0x2f (pref=2) addr=0x00001000 len=3 size=2
-[735000] S_AW: id=0x5 (pref=0) addr=0x00000f00 len=63 size=2
-[745000] S_W: beat[0] data=0x0f000000 last=0
-[755000] S_W: beat[1] data=0x0f000100 last=0
-[765000] S_W: beat[2] data=0x0f000200 last=0
-[775000] S_W: beat[3] data=0x0f000300 last=0
-[785000] S_W: beat[4] data=0x0f000400 last=0
-[795000] S_W: beat[5] data=0x0f000500 last=0
-[805000] S_W: beat[6] data=0x0f000600 last=0
-[815000] S_W: beat[7] data=0x0f000700 last=0
-[825000] S_W: beat[8] data=0x0f000800 last=0
-[835000] S_W: beat[9] data=0x0f000900 last=0
-[845000] S_W: beat[10] data=0x0f000a00 last=0
-[855000] S_W: beat[11] data=0x0f000b00 last=0
-[865000] S_W: beat[12] data=0x0f000c00 last=0
-[875000] S_W: beat[13] data=0x0f000d00 last=0
-[885000] S_W: beat[14] data=0x0f000e00 last=0
-[895000] S_W: beat[15] data=0x0f000f00 last=0
-[905000] S_W: beat[16] data=0x0f001000 last=0
-[915000] S_W: beat[17] data=0x0f001100 last=0
-[925000] S_W: beat[18] data=0x0f001200 last=0
-[935000] S_W: beat[19] data=0x0f001300 last=0
-[945000] S_W: beat[20] data=0x0f001400 last=0
-[955000] S_W: beat[21] data=0x0f001500 last=0
-[965000] S_W: beat[22] data=0x0f001600 last=0
-[975000] S_W: beat[23] data=0x0f001700 last=0
-[985000] S_W: beat[24] data=0x0f001800 last=0
-[995000] S_W: beat[25] data=0x0f001900 last=0
-[1005000] S_W: beat[26] data=0x0f001a00 last=0
-[1015000] S_W: beat[27] data=0x0f001b00 last=0
-[1025000] S_W: beat[28] data=0x0f001c00 last=0
-[1035000] S_W: beat[29] data=0x0f001d00 last=0
-[1045000] S_W: beat[30] data=0x0f001e00 last=0
-[1055000] S_W: beat[31] data=0x0f001f00 last=0
-[1065000] S_W: beat[32] data=0x0f002000 last=0
-[1075000] S_W: beat[33] data=0x0f002100 last=0
-[1085000] S_W: beat[34] data=0x0f002200 last=0
-[1095000] S_W: beat[35] data=0x0f002300 last=0
-[1105000] S_W: beat[36] data=0x0f002400 last=0
-[1115000] S_W: beat[37] data=0x0f002500 last=0
-[1125000] S_W: beat[38] data=0x0f002600 last=0
-[1135000] S_W: beat[39] data=0x0f002700 last=0
-[1145000] S_W: beat[40] data=0x0f002800 last=0
-[1155000] S_W: beat[41] data=0x0f002900 last=0
-[1165000] S_W: beat[42] data=0x0f002a00 last=0
-[1175000] S_W: beat[43] data=0x0f002b00 last=0
-[1185000] S_W: beat[44] data=0x0f002c00 last=0
-[1195000] S_W: beat[45] data=0x0f002d00 last=0
-[1205000] S_W: beat[46] data=0x0f002e00 last=0
-[1215000] S_W: beat[47] data=0x0f002f00 last=0
-[1225000] S_W: beat[48] data=0x0f003000 last=0
-[1235000] S_W: beat[49] data=0x0f003100 last=0
-[1245000] S_W: beat[50] data=0x0f003200 last=0
-[1255000] S_W: beat[51] data=0x0f003300 last=0
-[1265000] S_W: beat[52] data=0x0f003400 last=0
-[1275000] S_W: beat[53] data=0x0f003500 last=0
-[1285000] S_W: beat[54] data=0x0f003600 last=0
-[1295000] S_W: beat[55] data=0x0f003700 last=0
-[1305000] S_W: beat[56] data=0x0f003800 last=0
-[1315000] S_W: beat[57] data=0x0f003900 last=0
-[1325000] S_W: beat[58] data=0x0f003a00 last=0
-[1335000] S_W: beat[59] data=0x0f003b00 last=0
-[1345000] S_W: beat[60] data=0x0f003c00 last=0
-[1355000] S_W: beat[61] data=0x0f003d00 last=0
-[1365000] S_W: beat[62] data=0x0f003e00 last=0
-[1375000] S_W: beat[63] data=0x0f003f00 last=1
-[1395000] AW: id=0x6 addr=0x00000800 len=3 size=2 → AWREADY
-[1395000] S_AW: id=0x6 (pref=0) addr=0x00000800 len=3 size=2
-[1405000] S_W: beat[0] data=0x08000000 last=0
-[1415000] S_W: beat[1] data=0x08000100 last=0
-[1425000] S_W: beat[2] data=0x08000200 last=0
-[1435000] S_W: beat[3] data=0x08000300 last=1
-[1485000] TEST 10 DONE (errors=3)
-
---- TEST 11: AR at 4KB boundary (no split) ---
-[1495000] AR: id=0xa addr=0x00001000 len=1 size=2 → ARREADY
-[1495000] S_AR: id=0xa (pref=0) addr=0x00001000 len=1 size=2
-[1505000] TEST 11 DONE (errors=3)
-
---- TEST 12: AW+W ending at 0xFFF (no split) ---
-[1515000] AW: id=0x7 addr=0x00000ffc len=0 size=2 → AWREADY
-[1515000] S_AW: id=0x7 (pref=0) addr=0x00000ffc len=0 size=2
-[1525000] TEST 12 DONE (errors=3)
-
---- TEST 13: Back-to-back split ARs ---
-[1525000] S_W: beat[0] data=0x0ffc0000 last=1
-[1545000] S_AR: id=0x1a (pref=1) addr=0x00000ff0 len=3 size=2
-[1555000] AR: id=0xa addr=0x00000ff0 len=7 size=2 → ARREADY
-[1555000] S_AR: id=0x2a (pref=2) addr=0x00001000 len=3 size=2
-[1575000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
-[1585000] AR: id=0xb addr=0x00001ff0 len=7 size=2 → ARREADY
-[1585000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
-[1605000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
-[1615000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
-[1635000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
-[1645000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
-[1665000] S_AR: id=0x1b (pref=1) addr=0x00001ff0 len=3 size=2
-[1665000] TEST 13 DONE (errors=3)
-
---- TEST 14: AR high addr, no split ---
-[1675000] AR: id=0xc addr=0xfffff000 len=0 size=2 → ARREADY
-[1675000] S_AR: id=0x2b (pref=2) addr=0x00002000 len=3 size=2
-[1685000] ERROR: TEST 14: S_AR[0] addr: got=0x00002000 exp=0xfffff000
-[1685000] ERROR: TEST 14: S_AR[0] len: got=3 exp=0
-[1685000] TEST 14 DONE (errors=5)
-
-============================================================
-[1685000] TESTS FAILED with 5 errors in 14 tests!
-============================================================
+========== PHASE 1: Basic Single-Beat Sanity ==========
+[395000] MASTER[0] WRITE START: addr=0x00000000 len=0 id=0x0
+[435000] SLAVE[0] AW accepted: addr=0x00000000 len=0 size=2 id=0x0
+[455000] SLAVE[0] W beat: data=0x000000a5 last=1 beat_left=0
+[465000] SLAVE[0] B sent: id=0x0
+[485000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[485000] MASTER[0] WRITE DONE: addr=0x00000000 BID=0x0
+[535000] MASTER[0] WRITE START: addr=0x00002000 len=0 id=0x0
+[575000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x0
+[595000] SLAVE[1] W beat: data=0x000001a5 last=1 beat_left=0
+[605000] SLAVE[1] B sent: id=0x0
+[625000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[625000] MASTER[0] WRITE DONE: addr=0x00002000 BID=0x0
+[675000] MASTER[0] WRITE START: addr=0x00004000 len=0 id=0x0
+[715000] SLAVE[2] AW accepted: addr=0x00004000 len=0 size=2 id=0x0
+[735000] SLAVE[2] W beat: data=0x000002a5 last=1 beat_left=0
+[745000] SLAVE[2] B sent: id=0x0
+[765000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[765000] MASTER[0] WRITE DONE: addr=0x00004000 BID=0x0
+[815000] MASTER[0] WRITE START: addr=0x00006000 len=0 id=0x0
+[855000] SLAVE[3] AW accepted: addr=0x00006000 len=0 size=2 id=0x0
+[875000] SLAVE[3] W beat: data=0x000003a5 last=1 beat_left=0
+[885000] SLAVE[3] B sent: id=0x0
+[905000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[905000] MASTER[0] WRITE DONE: addr=0x00006000 BID=0x0
+[955000] MASTER[1] WRITE START: addr=0x00000100 len=0 id=0x1
+[995000] SLAVE[0] AW accepted: addr=0x00000100 len=0 size=2 id=0x41
+[1015000] SLAVE[0] W beat: data=0x000010a5 last=1 beat_left=0
+[1025000] SLAVE[0] B sent: id=0x41
+[1045000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1045000] MASTER[1] WRITE DONE: addr=0x00000100 BID=0x1
+[1095000] MASTER[1] WRITE START: addr=0x00002100 len=0 id=0x1
+[1135000] SLAVE[1] AW accepted: addr=0x00002100 len=0 size=2 id=0x41
+[1155000] SLAVE[1] W beat: data=0x000011a5 last=1 beat_left=0
+[1165000] SLAVE[1] B sent: id=0x41
+[1185000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1185000] MASTER[1] WRITE DONE: addr=0x00002100 BID=0x1
+[1235000] MASTER[1] WRITE START: addr=0x00004100 len=0 id=0x1
+[1275000] SLAVE[2] AW accepted: addr=0x00004100 len=0 size=2 id=0x41
+[1295000] SLAVE[2] W beat: data=0x000012a5 last=1 beat_left=0
+[1305000] SLAVE[2] B sent: id=0x41
+[1325000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1325000] MASTER[1] WRITE DONE: addr=0x00004100 BID=0x1
+[1375000] MASTER[1] WRITE START: addr=0x00006100 len=0 id=0x1
+[1415000] SLAVE[3] AW accepted: addr=0x00006100 len=0 size=2 id=0x41
+[1435000] SLAVE[3] W beat: data=0x000013a5 last=1 beat_left=0
+[1445000] SLAVE[3] B sent: id=0x41
+[1465000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1465000] MASTER[1] WRITE DONE: addr=0x00006100 BID=0x1
+[1515000] MASTER[2] WRITE START: addr=0x00000200 len=0 id=0x2
+[1555000] SLAVE[0] AW accepted: addr=0x00000200 len=0 size=2 id=0x82
+[1575000] SLAVE[0] W beat: data=0x000020a5 last=1 beat_left=0
+[1585000] SLAVE[0] B sent: id=0x82
+[1605000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[1605000] MASTER[2] WRITE DONE: addr=0x00000200 BID=0x2
+[1655000] MASTER[2] WRITE START: addr=0x00002200 len=0 id=0x2
+[1695000] SLAVE[1] AW accepted: addr=0x00002200 len=0 size=2 id=0x82
+[1715000] SLAVE[1] W beat: data=0x000021a5 last=1 beat_left=0
+[1725000] SLAVE[1] B sent: id=0x82
+[1745000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[1745000] MASTER[2] WRITE DONE: addr=0x00002200 BID=0x2
+[1795000] MASTER[2] WRITE START: addr=0x00004200 len=0 id=0x2
+[1835000] SLAVE[2] AW accepted: addr=0x00004200 len=0 size=2 id=0x82
+[1855000] SLAVE[2] W beat: data=0x000022a5 last=1 beat_left=0
+[1865000] SLAVE[2] B sent: id=0x82
+[1885000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[1885000] MASTER[2] WRITE DONE: addr=0x00004200 BID=0x2
+[1935000] MASTER[2] WRITE START: addr=0x00006200 len=0 id=0x2
+[1975000] SLAVE[3] AW accepted: addr=0x00006200 len=0 size=2 id=0x82
+[1995000] SLAVE[3] W beat: data=0x000023a5 last=1 beat_left=0
+[2005000] SLAVE[3] B sent: id=0x82
+[2025000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[2025000] MASTER[2] WRITE DONE: addr=0x00006200 BID=0x2
+[2075000] MASTER[3] WRITE START: addr=0x00000300 len=0 id=0x3
+[2115000] SLAVE[0] AW accepted: addr=0x00000300 len=0 size=2 id=0xc3
+[2135000] SLAVE[0] W beat: data=0x000030a5 last=1 beat_left=0
+[2145000] SLAVE[0] B sent: id=0xc3
+[2165000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[2165000] MASTER[3] WRITE DONE: addr=0x00000300 BID=0x3
+[2215000] MASTER[3] WRITE START: addr=0x00002300 len=0 id=0x3
+[2255000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0xc3
+[2275000] SLAVE[1] W beat: data=0x000031a5 last=1 beat_left=0
+[2285000] SLAVE[1] B sent: id=0xc3
+[2305000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[2305000] MASTER[3] WRITE DONE: addr=0x00002300 BID=0x3
+[2355000] MASTER[3] WRITE START: addr=0x00004300 len=0 id=0x3
+[2395000] SLAVE[2] AW accepted: addr=0x00004300 len=0 size=2 id=0xc3
+[2415000] SLAVE[2] W beat: data=0x000032a5 last=1 beat_left=0
+[2425000] SLAVE[2] B sent: id=0xc3
+[2445000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[2445000] MASTER[3] WRITE DONE: addr=0x00004300 BID=0x3
+[2495000] MASTER[3] WRITE START: addr=0x00006300 len=0 id=0x3
+[2535000] SLAVE[3] AW accepted: addr=0x00006300 len=0 size=2 id=0xc3
+[2555000] SLAVE[3] W beat: data=0x000033a5 last=1 beat_left=0
+[2565000] SLAVE[3] B sent: id=0xc3
+[2585000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[2585000] MASTER[3] WRITE DONE: addr=0x00006300 BID=0x3
+[2635000] MASTER[0] READ START: addr=0x00000000 len=0 id=0x0
+[2675000] SLAVE[0] AR accepted: addr=0x00000000 len=0 size=2 id=0x0
+[2685000] SLAVE[0] R last beat done: id=0x0
+[2705000] R_LISTENER[0]: beat=0 data=0x000000a5 rlast=1
+[2705000] MASTER[0] R beat: data=0xxxxxxxxx last=1
+[2705000] MASTER[0] READ DONE: addr=0x00000000 RID=0x0
+[2705000] ERROR: M[0] read data mismatch @ addr=0x00000000 beat=0
+       expected=0x000000a5  got=0xxxxxxxxx
+[2755000] MASTER[0] READ START: addr=0x00002000 len=0 id=0x0
+[2795000] SLAVE[1] AR accepted: addr=0x00002000 len=0 size=2 id=0x0
+[2805000] SLAVE[1] R last beat done: id=0x0
+[2825000] R_LISTENER[0]: beat=0 data=0x000001a5 rlast=1
+[2825000] MASTER[0] R beat: data=0xxxxxxxxx last=1
+[2825000] MASTER[0] READ DONE: addr=0x00002000 RID=0x0
+[2825000] ERROR: M[0] read data mismatch @ addr=0x00002000 beat=0
+       expected=0x000001a5  got=0xxxxxxxxx
+[2875000] MASTER[0] READ START: addr=0x00004000 len=0 id=0x0
+[2915000] SLAVE[2] AR accepted: addr=0x00004000 len=0 size=2 id=0x0
+[2925000] SLAVE[2] R last beat done: id=0x0
+[2945000] R_LISTENER[0]: beat=0 data=0x000002a5 rlast=1
+[2945000] MASTER[0] R beat: data=0xxxxxxxxx last=1
+[2945000] MASTER[0] READ DONE: addr=0x00004000 RID=0x0
+[2945000] ERROR: M[0] read data mismatch @ addr=0x00004000 beat=0
+       expected=0x000002a5  got=0xxxxxxxxx
+[2995000] MASTER[0] READ START: addr=0x00006000 len=0 id=0x0
+[3035000] SLAVE[3] AR accepted: addr=0x00006000 len=0 size=2 id=0x0
+[3045000] SLAVE[3] R last beat done: id=0x0
+[3065000] R_LISTENER[0]: beat=0 data=0x000003a5 rlast=1
+[3065000] MASTER[0] R beat: data=0xxxxxxxxx last=1
+[3065000] MASTER[0] READ DONE: addr=0x00006000 RID=0x0
+[3065000] ERROR: M[0] read data mismatch @ addr=0x00006000 beat=0
+       expected=0x000003a5  got=0xxxxxxxxx
+[3115000] MASTER[1] READ START: addr=0x00000100 len=0 id=0x1
+[3155000] SLAVE[0] AR accepted: addr=0x00000100 len=0 size=2 id=0x41
+[3165000] SLAVE[0] R last beat done: id=0x41
+[3185000] R_LISTENER[1]: beat=0 data=0x000010a5 rlast=1
+[3185000] MASTER[1] R beat: data=0xxxxxxxxx last=1
+[3185000] MASTER[1] READ DONE: addr=0x00000100 RID=0x1
+[3185000] ERROR: M[1] read data mismatch @ addr=0x00000100 beat=0
+       expected=0x000010a5  got=0xxxxxxxxx
+[3235000] MASTER[1] READ START: addr=0x00002100 len=0 id=0x1
+[3275000] SLAVE[1] AR accepted: addr=0x00002100 len=0 size=2 id=0x41
+[3285000] SLAVE[1] R last beat done: id=0x41
+[3305000] R_LISTENER[1]: beat=0 data=0x000011a5 rlast=1
+[3305000] MASTER[1] R beat: data=0xxxxxxxxx last=1
+[3305000] MASTER[1] READ DONE: addr=0x00002100 RID=0x1
+[3305000] ERROR: M[1] read data mismatch @ addr=0x00002100 beat=0
+       expected=0x000011a5  got=0xxxxxxxxx
+[3355000] MASTER[1] READ START: addr=0x00004100 len=0 id=0x1
+[3395000] SLAVE[2] AR accepted: addr=0x00004100 len=0 size=2 id=0x41
+[3405000] SLAVE[2] R last beat done: id=0x41
+[3425000] R_LISTENER[1]: beat=0 data=0x000012a5 rlast=1
+[3425000] MASTER[1] R beat: data=0xxxxxxxxx last=1
+[3425000] MASTER[1] READ DONE: addr=0x00004100 RID=0x1
+[3425000] ERROR: M[1] read data mismatch @ addr=0x00004100 beat=0
+       expected=0x000012a5  got=0xxxxxxxxx
+[3475000] MASTER[1] READ START: addr=0x00006100 len=0 id=0x1
+[3515000] SLAVE[3] AR accepted: addr=0x00006100 len=0 size=2 id=0x41
+[3525000] SLAVE[3] R last beat done: id=0x41
+[3545000] R_LISTENER[1]: beat=0 data=0x000013a5 rlast=1
+[3545000] MASTER[1] R beat: data=0xxxxxxxxx last=1
+[3545000] MASTER[1] READ DONE: addr=0x00006100 RID=0x1
+[3545000] ERROR: M[1] read data mismatch @ addr=0x00006100 beat=0
+       expected=0x000013a5  got=0xxxxxxxxx
+[3595000] MASTER[2] READ START: addr=0x00000200 len=0 id=0x2
+[3635000] SLAVE[0] AR accepted: addr=0x00000200 len=0 size=2 id=0x82
+[3645000] SLAVE[0] R last beat done: id=0x82
+[3665000] R_LISTENER[2]: beat=0 data=0x000020a5 rlast=1
+[3665000] MASTER[2] R beat: data=0xxxxxxxxx last=1
+[3665000] MASTER[2] READ DONE: addr=0x00000200 RID=0x2
+[3665000] ERROR: M[2] read data mismatch @ addr=0x00000200 beat=0
+       expected=0x000020a5  got=0xxxxxxxxx
+[3715000] MASTER[2] READ START: addr=0x00002200 len=0 id=0x2
+[3755000] SLAVE[1] AR accepted: addr=0x00002200 len=0 size=2 id=0x82
+[3765000] SLAVE[1] R last beat done: id=0x82
+[3785000] R_LISTENER[2]: beat=0 data=0x000021a5 rlast=1
+[3785000] MASTER[2] R beat: data=0xxxxxxxxx last=1
+[3785000] MASTER[2] READ DONE: addr=0x00002200 RID=0x2
+[3785000] ERROR: M[2] read data mismatch @ addr=0x00002200 beat=0
+       expected=0x000021a5  got=0xxxxxxxxx
+[3835000] MASTER[2] READ START: addr=0x00004200 len=0 id=0x2
+[3875000] SLAVE[2] AR accepted: addr=0x00004200 len=0 size=2 id=0x82
+[3885000] SLAVE[2] R last beat done: id=0x82
+[3905000] R_LISTENER[2]: beat=0 data=0x000022a5 rlast=1
+[3905000] MASTER[2] R beat: data=0xxxxxxxxx last=1
+[3905000] MASTER[2] READ DONE: addr=0x00004200 RID=0x2
+[3905000] ERROR: M[2] read data mismatch @ addr=0x00004200 beat=0
+       expected=0x000022a5  got=0xxxxxxxxx
+[3955000] MASTER[2] READ START: addr=0x00006200 len=0 id=0x2
+[3995000] SLAVE[3] AR accepted: addr=0x00006200 len=0 size=2 id=0x82
+[4005000] SLAVE[3] R last beat done: id=0x82
+[4025000] R_LISTENER[2]: beat=0 data=0x000023a5 rlast=1
+[4025000] MASTER[2] R beat: data=0xxxxxxxxx last=1
+[4025000] MASTER[2] READ DONE: addr=0x00006200 RID=0x2
+[4025000] ERROR: M[2] read data mismatch @ addr=0x00006200 beat=0
+       expected=0x000023a5  got=0xxxxxxxxx
+[4075000] MASTER[3] READ START: addr=0x00000300 len=0 id=0x3
+[4115000] SLAVE[0] AR accepted: addr=0x00000300 len=0 size=2 id=0xc3
+[4125000] SLAVE[0] R last beat done: id=0xc3
+[4145000] R_LISTENER[3]: beat=0 data=0x000030a5 rlast=1
+[4145000] MASTER[3] R beat: data=0xxxxxxxxx last=1
+[4145000] MASTER[3] READ DONE: addr=0x00000300 RID=0x3
+[4145000] ERROR: M[3] read data mismatch @ addr=0x00000300 beat=0
+       expected=0x000030a5  got=0xxxxxxxxx
+[4195000] MASTER[3] READ START: addr=0x00002300 len=0 id=0x3
+[4235000] SLAVE[1] AR accepted: addr=0x00002300 len=0 size=2 id=0xc3
+[4245000] SLAVE[1] R last beat done: id=0xc3
+[4265000] R_LISTENER[3]: beat=0 data=0x000031a5 rlast=1
+[4265000] MASTER[3] R beat: data=0xxxxxxxxx last=1
+[4265000] MASTER[3] READ DONE: addr=0x00002300 RID=0x3
+[4265000] ERROR: M[3] read data mismatch @ addr=0x00002300 beat=0
+       expected=0x000031a5  got=0xxxxxxxxx
+[4315000] MASTER[3] READ START: addr=0x00004300 len=0 id=0x3
+[4355000] SLAVE[2] AR accepted: addr=0x00004300 len=0 size=2 id=0xc3
+[4365000] SLAVE[2] R last beat done: id=0xc3
+[4385000] R_LISTENER[3]: beat=0 data=0x000032a5 rlast=1
+[4385000] MASTER[3] R beat: data=0xxxxxxxxx last=1
+[4385000] MASTER[3] READ DONE: addr=0x00004300 RID=0x3
+[4385000] ERROR: M[3] read data mismatch @ addr=0x00004300 beat=0
+       expected=0x000032a5  got=0xxxxxxxxx
+[4435000] MASTER[3] READ START: addr=0x00006300 len=0 id=0x3
+[4475000] SLAVE[3] AR accepted: addr=0x00006300 len=0 size=2 id=0xc3
+[4485000] SLAVE[3] R last beat done: id=0xc3
+[4505000] R_LISTENER[3]: beat=0 data=0x000033a5 rlast=1
+[4505000] MASTER[3] R beat: data=0xxxxxxxxx last=1
+[4505000] MASTER[3] READ DONE: addr=0x00006300 RID=0x3
+[4505000] ERROR: M[3] read data mismatch @ addr=0x00006300 beat=0
+       expected=0x000033a5  got=0xxxxxxxxx
