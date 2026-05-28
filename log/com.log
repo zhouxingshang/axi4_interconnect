@@ -1,7 +1,7 @@
 Command: vcs -full64 -sverilog -f ./list/top.f -R +v2k -debug_access+all -timescale=1ns/1ps \
 -fsdb +define+FSDB -l com.log +lint=TFIPC-L +lint=PCWM
                          Chronologic VCS (TM)
-       Version O-2018.09-SP2_Full64 -- Thu May 28 20:14:01 2026
+       Version O-2018.09-SP2_Full64 -- Thu May 28 20:34:05 2026
                Copyright (c) 1991-2018 by Synopsys Inc.
                          ALL RIGHTS RESERVED
 
@@ -76,7 +76,7 @@ rm -f _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod -x ../simv; fi
 g++  -o ../simv    -Wl,-rpath-link=./ -Wl,-rpath='$ORIGIN'/simv.daidir/ -Wl,-rpath=./simv.daidir/ \
 -Wl,-rpath='$ORIGIN'/simv.daidir//scsim.db.dir  -rdynamic  -Wl,-rpath=/home/synopsys/vcs/O-2018.09-SP2/linux64/lib \
--L/home/synopsys/vcs/O-2018.09-SP2/linux64/lib   objs/amcQw_d.o   _7078_archive_1.so \
+-L/home/synopsys/vcs/O-2018.09-SP2/linux64/lib   objs/amcQw_d.o   _16137_archive_1.so \
 SIM_l.o       rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o rmar_llvm_0_0.o \
 -lzerosoft_rt_stubs -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /home/synopsys/vcs/O-2018.09-SP2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -88,7 +88,7 @@ make[1]: Leaving directory '/home/ICer/project/axi4/csrc'
 Command: /home/ICer/project/axi4/./simv +v2k +define+FSDB -a com.log +lint=TFIPC-L +lint=PCWM
 Chronologic VCS simulator copyright 1991-2018
 Contains Synopsys proprietary information.
-Compiler version O-2018.09-SP2_Full64; Runtime version O-2018.09-SP2_Full64;  May 28 20:14 2026
+Compiler version O-2018.09-SP2_Full64; Runtime version O-2018.09-SP2_Full64;  May 28 20:34 2026
 *Verdi* Loading libsscore_vcs201809.so
 FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
 (C) 1996 - 2019 by Synopsys, Inc.
@@ -105,1672 +105,632 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
 [PHASE 1] ========== PHASE 1: Basic Single-Beat Sanity ==========
 [395000] MASTER[0] WRITE START: addr=0x00000000 len=0 id=0x0
 [435000] SLAVE[0] AW accepted: addr=0x00000000 len=0 size=2 id=0x0
-[445000] SLAVE[0] AW accepted: addr=0x00000000 len=0 size=2 id=0x0
-[485000] SLAVE[0] W beat: data=0x000000a5 last=1 beat_left=0
-[495000] SLAVE[0] B sent: id=0x0
-[515000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[515000] MASTER[0] WRITE DONE: addr=0x00000000 BID=0x0
-[565000] MASTER[0] WRITE START: addr=0x00002000 len=0 id=0x0
-[605000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x0
-[615000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x0
-[655000] SLAVE[1] W beat: data=0x000001a5 last=1 beat_left=0
-[655000] SLAVE[0] W beat: data=0x000001a5 last=1 beat_left=0
-[665000] SLAVE[1] B sent: id=0x0
-[665000] SLAVE[0] B sent: id=0x0
-[685000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[685000] MASTER[0] WRITE DONE: addr=0x00002000 BID=0x0
-[695000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[735000] MASTER[0] WRITE START: addr=0x00004000 len=0 id=0x0
-[765000] MASTER[0] WRITE DONE: addr=0x00004000 BID=0x0
-[775000] SLAVE[2] AW accepted: addr=0x00004000 len=0 size=2 id=0x0
-[785000] SLAVE[2] AW accepted: addr=0x00004000 len=0 size=2 id=0x0
-[815000] MASTER[0] WRITE START: addr=0x00006000 len=0 id=0x0
-[825000] SLAVE[2] W beat: data=0x000002a5 last=1 beat_left=0
-[825000] SLAVE[1] W beat: data=0x000002a5 last=1 beat_left=0
-[835000] SLAVE[2] B sent: id=0x0
-[835000] SLAVE[1] B sent: id=0x0
-[855000] SLAVE[3] AW accepted: addr=0x00006000 len=0 size=2 id=0x0
-[855000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[855000] MASTER[0] WRITE DONE: addr=0x00006000 BID=0x0
-[865000] SLAVE[3] AW accepted: addr=0x00006000 len=0 size=2 id=0x0
-[865000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[905000] SLAVE[3] W beat: data=0x000003a5 last=1 beat_left=0
-[905000] SLAVE[2] W beat: data=0x000003a5 last=1 beat_left=0
-[905000] MASTER[1] WRITE START: addr=0x00000100 len=0 id=0x1
-[915000] SLAVE[3] B sent: id=0x0
-[915000] SLAVE[2] B sent: id=0x0
-[935000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[945000] SLAVE[0] AW accepted: addr=0x00000100 len=0 size=2 id=0x41
-[945000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[955000] SLAVE[0] AW accepted: addr=0x00000100 len=0 size=2 id=0x41
-[995000] SLAVE[0] W beat: data=0x000010a5 last=1 beat_left=0
-[1005000] SLAVE[0] B sent: id=0x41
-[1025000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[1025000] MASTER[1] WRITE DONE: addr=0x00000100 BID=0x1
-[1075000] MASTER[1] WRITE START: addr=0x00002100 len=0 id=0x1
-[1115000] SLAVE[1] AW accepted: addr=0x00002100 len=0 size=2 id=0x41
-[1125000] SLAVE[1] AW accepted: addr=0x00002100 len=0 size=2 id=0x41
-[1165000] SLAVE[1] W beat: data=0x000011a5 last=1 beat_left=0
-[1165000] SLAVE[0] W beat: data=0x000011a5 last=1 beat_left=0
-[1175000] SLAVE[1] B sent: id=0x41
-[1175000] SLAVE[0] B sent: id=0x41
-[1195000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[1195000] MASTER[1] WRITE DONE: addr=0x00002100 BID=0x1
-[1205000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[1245000] MASTER[1] WRITE START: addr=0x00004100 len=0 id=0x1
-[1275000] MASTER[1] WRITE DONE: addr=0x00004100 BID=0x0
-[1285000] SLAVE[2] AW accepted: addr=0x00004100 len=0 size=2 id=0x41
-[1295000] SLAVE[2] AW accepted: addr=0x00004100 len=0 size=2 id=0x41
-[1325000] MASTER[1] WRITE START: addr=0x00006100 len=0 id=0x1
-[1335000] SLAVE[2] W beat: data=0x000012a5 last=1 beat_left=0
-[1335000] SLAVE[1] W beat: data=0x000012a5 last=1 beat_left=0
-[1345000] SLAVE[2] B sent: id=0x41
-[1345000] SLAVE[1] B sent: id=0x41
-[1365000] SLAVE[3] AW accepted: addr=0x00006100 len=0 size=2 id=0x41
-[1365000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[1365000] MASTER[1] WRITE DONE: addr=0x00006100 BID=0x1
-[1375000] SLAVE[3] AW accepted: addr=0x00006100 len=0 size=2 id=0x41
-[1375000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[1415000] SLAVE[2] W beat: data=0x000013a5 last=1 beat_left=0
-[1415000] MASTER[2] WRITE START: addr=0x00000200 len=0 id=0x2
-[1425000] SLAVE[2] B sent: id=0x41
-[1445000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[1455000] SLAVE[0] AW accepted: addr=0x00000200 len=0 size=2 id=0x82
-[1465000] SLAVE[0] AW accepted: addr=0x00000200 len=0 size=2 id=0x82
-[1505000] SLAVE[0] W beat: data=0x000020a5 last=1 beat_left=0
-[1515000] SLAVE[0] B sent: id=0x82
-[1535000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[1535000] MASTER[2] WRITE DONE: addr=0x00000200 BID=0x2
-[1585000] MASTER[2] WRITE START: addr=0x00002200 len=0 id=0x2
-[1625000] SLAVE[1] AW accepted: addr=0x00002200 len=0 size=2 id=0x82
-[1635000] SLAVE[1] AW accepted: addr=0x00002200 len=0 size=2 id=0x82
-[1675000] SLAVE[1] W beat: data=0x000021a5 last=1 beat_left=0
-[1675000] SLAVE[0] W beat: data=0x000021a5 last=1 beat_left=0
-[1685000] SLAVE[1] B sent: id=0x82
-[1685000] SLAVE[0] B sent: id=0x82
-[1705000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[1705000] MASTER[2] WRITE DONE: addr=0x00002200 BID=0x2
-[1715000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[1755000] MASTER[2] WRITE START: addr=0x00004200 len=0 id=0x2
-[1785000] MASTER[2] WRITE DONE: addr=0x00004200 BID=0x0
-[1795000] SLAVE[2] AW accepted: addr=0x00004200 len=0 size=2 id=0x82
-[1805000] SLAVE[2] AW accepted: addr=0x00004200 len=0 size=2 id=0x82
-[1835000] MASTER[2] WRITE START: addr=0x00006200 len=0 id=0x2
-[1845000] SLAVE[2] W beat: data=0x000022a5 last=1 beat_left=0
-[1845000] SLAVE[1] W beat: data=0x000022a5 last=1 beat_left=0
-[1855000] SLAVE[2] B sent: id=0x82
-[1855000] SLAVE[1] B sent: id=0x82
-[1875000] SLAVE[3] AW accepted: addr=0x00006200 len=0 size=2 id=0x82
-[1875000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[1875000] MASTER[2] WRITE DONE: addr=0x00006200 BID=0x2
-[1885000] SLAVE[3] AW accepted: addr=0x00006200 len=0 size=2 id=0x82
-[1885000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[1925000] SLAVE[2] W beat: data=0x000023a5 last=1 beat_left=0
-[1925000] MASTER[3] WRITE START: addr=0x00000300 len=0 id=0x3
-[1935000] SLAVE[2] B sent: id=0x82
-[1955000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[1965000] SLAVE[0] AW accepted: addr=0x00000300 len=0 size=2 id=0xc3
-[1975000] SLAVE[0] AW accepted: addr=0x00000300 len=0 size=2 id=0xc3
-[2015000] SLAVE[0] W beat: data=0x000030a5 last=1 beat_left=0
-[2025000] SLAVE[0] B sent: id=0xc3
-[2045000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[2045000] MASTER[3] WRITE DONE: addr=0x00000300 BID=0x3
-[2095000] MASTER[3] WRITE START: addr=0x00002300 len=0 id=0x3
-[2135000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0xc3
-[2145000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0xc3
-[2185000] SLAVE[1] W beat: data=0x000031a5 last=1 beat_left=0
-[2185000] SLAVE[0] W beat: data=0x000031a5 last=1 beat_left=0
-[2195000] SLAVE[1] B sent: id=0xc3
-[2195000] SLAVE[0] B sent: id=0xc3
-[2215000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[2215000] MASTER[3] WRITE DONE: addr=0x00002300 BID=0x3
-[2225000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[2265000] MASTER[3] WRITE START: addr=0x00004300 len=0 id=0x3
-[2295000] MASTER[3] WRITE DONE: addr=0x00004300 BID=0x0
-[2305000] SLAVE[2] AW accepted: addr=0x00004300 len=0 size=2 id=0xc3
-[2315000] SLAVE[2] AW accepted: addr=0x00004300 len=0 size=2 id=0xc3
-[2345000] MASTER[3] WRITE START: addr=0x00006300 len=0 id=0x3
-[2355000] SLAVE[2] W beat: data=0x000032a5 last=1 beat_left=0
-[2355000] SLAVE[1] W beat: data=0x000032a5 last=1 beat_left=0
-[2365000] SLAVE[2] B sent: id=0xc3
-[2365000] SLAVE[1] B sent: id=0xc3
-[2385000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[2385000] MASTER[3] WRITE DONE: addr=0x00006300 BID=0x3
-[2395000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[2435000] SLAVE[2] W beat: data=0x000033a5 last=1 beat_left=0
-[2435000] MASTER[0] READ START: addr=0x00000000 len=0 id=0x0
-[2445000] SLAVE[2] B sent: id=0xc3
-[2465000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[2475000] SLAVE[0] AR accepted: addr=0x00000000 len=0 size=2 id=0x0
-[2485000] SLAVE[0] R last beat done: id=0x0
-[2505000] R_LISTENER[0]: beat=0 data=0x000001a5 rlast=1
-[2505000] MASTER[0] R beat: data=0x000001a5 last=1
-[2505000] MASTER[0] READ DONE: addr=0x00000000 RID=0x0
-[2505000] CHECK OK: M[0] read data match @ addr=0x00000000 data=0x000001a5
-[2555000] MASTER[0] READ START: addr=0x00002000 len=0 id=0x0
-[2595000] SLAVE[1] AR accepted: addr=0x00002000 len=0 size=2 id=0x0
-[2605000] SLAVE[1] R last beat done: id=0x0
-[2625000] R_LISTENER[0]: beat=0 data=0x000002a5 rlast=1
-[2625000] MASTER[0] R beat: data=0x000002a5 last=1
-[2625000] MASTER[0] READ DONE: addr=0x00002000 RID=0x0
-[2625000] CHECK OK: M[0] read data match @ addr=0x00002000 data=0x000002a5
-[2675000] MASTER[0] READ START: addr=0x00004000 len=0 id=0x0
-[2715000] SLAVE[2] AR accepted: addr=0x00004000 len=0 size=2 id=0x0
-[2725000] SLAVE[2] R last beat done: id=0x0
-[2745000] R_LISTENER[0]: beat=0 data=0x000003a5 rlast=1
-[2745000] MASTER[0] R beat: data=0x000003a5 last=1
-[2745000] MASTER[0] READ DONE: addr=0x00004000 RID=0x0
-[2745000] CHECK OK: M[0] read data match @ addr=0x00004000 data=0x000003a5
-[2795000] MASTER[0] READ START: addr=0x00006000 len=0 id=0x0
-[2835000] SLAVE[3] AR accepted: addr=0x00006000 len=0 size=2 id=0x0
-[2845000] SLAVE[3] R last beat done: id=0x0
-[2865000] R_LISTENER[0]: beat=0 data=0x000003a5 rlast=1
-[2865000] MASTER[0] R beat: data=0x000003a5 last=1
-[2865000] MASTER[0] READ DONE: addr=0x00006000 RID=0x0
-[2865000] CHECK OK: M[0] read data match @ addr=0x00006000 data=0x000003a5
-[2915000] MASTER[1] READ START: addr=0x00000100 len=0 id=0x1
-[2955000] SLAVE[0] AR accepted: addr=0x00000100 len=0 size=2 id=0x41
-[2965000] SLAVE[0] R last beat done: id=0x41
-[2985000] R_LISTENER[1]: beat=0 data=0x000011a5 rlast=1
-[2985000] MASTER[1] R beat: data=0x000011a5 last=1
-[2985000] MASTER[1] READ DONE: addr=0x00000100 RID=0x1
-[2985000] CHECK OK: M[1] read data match @ addr=0x00000100 data=0x000011a5
-[3035000] MASTER[1] READ START: addr=0x00002100 len=0 id=0x1
-[3075000] SLAVE[1] AR accepted: addr=0x00002100 len=0 size=2 id=0x41
-[3085000] SLAVE[1] R last beat done: id=0x41
-[3105000] R_LISTENER[1]: beat=0 data=0x000012a5 rlast=1
-[3105000] MASTER[1] R beat: data=0x000012a5 last=1
-[3105000] MASTER[1] READ DONE: addr=0x00002100 RID=0x1
-[3105000] CHECK OK: M[1] read data match @ addr=0x00002100 data=0x000012a5
-[3155000] MASTER[1] READ START: addr=0x00004100 len=0 id=0x1
-[3195000] SLAVE[2] AR accepted: addr=0x00004100 len=0 size=2 id=0x41
-[3205000] SLAVE[2] R last beat done: id=0x41
-[3225000] R_LISTENER[1]: beat=0 data=0x000013a5 rlast=1
-[3225000] MASTER[1] R beat: data=0x000013a5 last=1
-[3225000] MASTER[1] READ DONE: addr=0x00004100 RID=0x1
-[3225000] CHECK OK: M[1] read data match @ addr=0x00004100 data=0x000013a5
-[3275000] MASTER[1] READ START: addr=0x00006100 len=0 id=0x1
-[3315000] SLAVE[3] AR accepted: addr=0x00006100 len=0 size=2 id=0x41
-[3325000] SLAVE[3] R last beat done: id=0x41
-[3345000] R_LISTENER[1]: beat=0 data=0x00000000 rlast=1
-[3345000] MASTER[1] R beat: data=0x00000000 last=1
-[3345000] MASTER[1] READ DONE: addr=0x00006100 RID=0x1
-[3345000] CHECK OK: M[1] read data match @ addr=0x00006100 data=0x00000000
-[3395000] MASTER[2] READ START: addr=0x00000200 len=0 id=0x2
-[3435000] SLAVE[0] AR accepted: addr=0x00000200 len=0 size=2 id=0x82
-[3445000] SLAVE[0] R last beat done: id=0x82
-[3465000] R_LISTENER[2]: beat=0 data=0x000021a5 rlast=1
-[3465000] MASTER[2] R beat: data=0x000021a5 last=1
-[3465000] MASTER[2] READ DONE: addr=0x00000200 RID=0x2
-[3465000] CHECK OK: M[2] read data match @ addr=0x00000200 data=0x000021a5
-[3515000] MASTER[2] READ START: addr=0x00002200 len=0 id=0x2
-[3555000] SLAVE[1] AR accepted: addr=0x00002200 len=0 size=2 id=0x82
-[3565000] SLAVE[1] R last beat done: id=0x82
-[3585000] R_LISTENER[2]: beat=0 data=0x000022a5 rlast=1
-[3585000] MASTER[2] R beat: data=0x000022a5 last=1
-[3585000] MASTER[2] READ DONE: addr=0x00002200 RID=0x2
-[3585000] CHECK OK: M[2] read data match @ addr=0x00002200 data=0x000022a5
-[3635000] MASTER[2] READ START: addr=0x00004200 len=0 id=0x2
-[3675000] SLAVE[2] AR accepted: addr=0x00004200 len=0 size=2 id=0x82
-[3685000] SLAVE[2] R last beat done: id=0x82
-[3705000] R_LISTENER[2]: beat=0 data=0x000023a5 rlast=1
-[3705000] MASTER[2] R beat: data=0x000023a5 last=1
-[3705000] MASTER[2] READ DONE: addr=0x00004200 RID=0x2
-[3705000] CHECK OK: M[2] read data match @ addr=0x00004200 data=0x000023a5
-[3755000] MASTER[2] READ START: addr=0x00006200 len=0 id=0x2
-[3795000] SLAVE[3] AR accepted: addr=0x00006200 len=0 size=2 id=0x82
-[3805000] SLAVE[3] R last beat done: id=0x82
-[3825000] R_LISTENER[2]: beat=0 data=0x00000000 rlast=1
-[3825000] MASTER[2] R beat: data=0x00000000 last=1
-[3825000] MASTER[2] READ DONE: addr=0x00006200 RID=0x2
-[3825000] CHECK OK: M[2] read data match @ addr=0x00006200 data=0x00000000
-[3875000] MASTER[3] READ START: addr=0x00000300 len=0 id=0x3
-[3915000] SLAVE[0] AR accepted: addr=0x00000300 len=0 size=2 id=0xc3
-[3925000] SLAVE[0] R last beat done: id=0xc3
-[3945000] R_LISTENER[3]: beat=0 data=0x000031a5 rlast=1
-[3945000] MASTER[3] R beat: data=0x000031a5 last=1
-[3945000] MASTER[3] READ DONE: addr=0x00000300 RID=0x3
-[3945000] CHECK OK: M[3] read data match @ addr=0x00000300 data=0x000031a5
-[3995000] MASTER[3] READ START: addr=0x00002300 len=0 id=0x3
-[4035000] SLAVE[1] AR accepted: addr=0x00002300 len=0 size=2 id=0xc3
-[4045000] SLAVE[1] R last beat done: id=0xc3
-[4065000] R_LISTENER[3]: beat=0 data=0x000032a5 rlast=1
-[4065000] MASTER[3] R beat: data=0x000032a5 last=1
-[4065000] MASTER[3] READ DONE: addr=0x00002300 RID=0x3
-[4065000] CHECK OK: M[3] read data match @ addr=0x00002300 data=0x000032a5
-[4115000] MASTER[3] READ START: addr=0x00004300 len=0 id=0x3
-[4155000] SLAVE[2] AR accepted: addr=0x00004300 len=0 size=2 id=0xc3
-[4165000] SLAVE[2] R last beat done: id=0xc3
-[4185000] R_LISTENER[3]: beat=0 data=0x000033a5 rlast=1
-[4185000] MASTER[3] R beat: data=0x000033a5 last=1
-[4185000] MASTER[3] READ DONE: addr=0x00004300 RID=0x3
-[4185000] CHECK OK: M[3] read data match @ addr=0x00004300 data=0x000033a5
-[4235000] MASTER[3] READ START: addr=0x00006300 len=0 id=0x3
-[4275000] SLAVE[3] AR accepted: addr=0x00006300 len=0 size=2 id=0xc3
-[4285000] SLAVE[3] R last beat done: id=0xc3
-[4305000] R_LISTENER[3]: beat=0 data=0x00000000 rlast=1
-[4305000] MASTER[3] R beat: data=0x00000000 last=1
-[4305000] MASTER[3] READ DONE: addr=0x00006300 RID=0x3
-[4305000] CHECK OK: M[3] read data match @ addr=0x00006300 data=0x00000000
+[505000] SLAVE[0] W beat: data=0x000000a5 last=1 beat_left=0
+[515000] SLAVE[0] B sent: id=0x0
+[535000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[535000] MASTER[0] WRITE DONE: addr=0x00000000 BID=0x0
+[585000] MASTER[0] WRITE START: addr=0x00002000 len=0 id=0x0
+[625000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x0
+[695000] SLAVE[1] W beat: data=0x000001a5 last=1 beat_left=0
+[705000] SLAVE[1] B sent: id=0x0
+[725000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[725000] MASTER[0] WRITE DONE: addr=0x00002000 BID=0x0
+[775000] MASTER[0] WRITE START: addr=0x00004000 len=0 id=0x0
+[815000] SLAVE[2] AW accepted: addr=0x00004000 len=0 size=2 id=0x0
+[885000] SLAVE[2] W beat: data=0x000002a5 last=1 beat_left=0
+[895000] SLAVE[2] B sent: id=0x0
+[915000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[915000] MASTER[0] WRITE DONE: addr=0x00004000 BID=0x0
+[965000] MASTER[0] WRITE START: addr=0x00006000 len=0 id=0x0
+[1005000] SLAVE[3] AW accepted: addr=0x00006000 len=0 size=2 id=0x0
+[1075000] SLAVE[3] W beat: data=0x000003a5 last=1 beat_left=0
+[1085000] SLAVE[3] B sent: id=0x0
+[1105000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[1105000] MASTER[0] WRITE DONE: addr=0x00006000 BID=0x0
+[1155000] MASTER[1] WRITE START: addr=0x00000100 len=0 id=0x1
+[1195000] SLAVE[0] AW accepted: addr=0x00000100 len=0 size=2 id=0x41
+[1265000] SLAVE[0] W beat: data=0x000010a5 last=1 beat_left=0
+[1275000] SLAVE[0] B sent: id=0x41
+[1295000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1295000] MASTER[1] WRITE DONE: addr=0x00000100 BID=0x1
+[1345000] MASTER[1] WRITE START: addr=0x00002100 len=0 id=0x1
+[1385000] SLAVE[1] AW accepted: addr=0x00002100 len=0 size=2 id=0x41
+[1455000] SLAVE[1] W beat: data=0x000011a5 last=1 beat_left=0
+[1465000] SLAVE[1] B sent: id=0x41
+[1485000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1485000] MASTER[1] WRITE DONE: addr=0x00002100 BID=0x1
+[1535000] MASTER[1] WRITE START: addr=0x00004100 len=0 id=0x1
+[1575000] SLAVE[2] AW accepted: addr=0x00004100 len=0 size=2 id=0x41
+[1645000] SLAVE[2] W beat: data=0x000012a5 last=1 beat_left=0
+[1655000] SLAVE[2] B sent: id=0x41
+[1675000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1675000] MASTER[1] WRITE DONE: addr=0x00004100 BID=0x1
+[1725000] MASTER[1] WRITE START: addr=0x00006100 len=0 id=0x1
+[1765000] SLAVE[3] AW accepted: addr=0x00006100 len=0 size=2 id=0x41
+[1835000] SLAVE[3] W beat: data=0x000013a5 last=1 beat_left=0
+[1845000] SLAVE[3] B sent: id=0x41
+[1865000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[1865000] MASTER[1] WRITE DONE: addr=0x00006100 BID=0x1
+[1915000] MASTER[2] WRITE START: addr=0x00000200 len=0 id=0x2
+[1955000] SLAVE[0] AW accepted: addr=0x00000200 len=0 size=2 id=0x82
+[2025000] SLAVE[0] W beat: data=0x000020a5 last=1 beat_left=0
+[2035000] SLAVE[0] B sent: id=0x82
+[2055000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[2055000] MASTER[2] WRITE DONE: addr=0x00000200 BID=0x2
+[2105000] MASTER[2] WRITE START: addr=0x00002200 len=0 id=0x2
+[2145000] SLAVE[1] AW accepted: addr=0x00002200 len=0 size=2 id=0x82
+[2215000] SLAVE[1] W beat: data=0x000021a5 last=1 beat_left=0
+[2225000] SLAVE[1] B sent: id=0x82
+[2245000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[2245000] MASTER[2] WRITE DONE: addr=0x00002200 BID=0x2
+[2295000] MASTER[2] WRITE START: addr=0x00004200 len=0 id=0x2
+[2335000] SLAVE[2] AW accepted: addr=0x00004200 len=0 size=2 id=0x82
+[2405000] SLAVE[2] W beat: data=0x000022a5 last=1 beat_left=0
+[2415000] SLAVE[2] B sent: id=0x82
+[2435000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[2435000] MASTER[2] WRITE DONE: addr=0x00004200 BID=0x2
+[2485000] MASTER[2] WRITE START: addr=0x00006200 len=0 id=0x2
+[2525000] SLAVE[3] AW accepted: addr=0x00006200 len=0 size=2 id=0x82
+[2595000] SLAVE[3] W beat: data=0x000023a5 last=1 beat_left=0
+[2605000] SLAVE[3] B sent: id=0x82
+[2625000] B_LISTENER[2]: B resp=0x0 BID=0x2
+[2625000] MASTER[2] WRITE DONE: addr=0x00006200 BID=0x2
+[2675000] MASTER[3] WRITE START: addr=0x00000300 len=0 id=0x3
+[2715000] SLAVE[0] AW accepted: addr=0x00000300 len=0 size=2 id=0xc3
+[2785000] SLAVE[0] W beat: data=0x000030a5 last=1 beat_left=0
+[2795000] SLAVE[0] B sent: id=0xc3
+[2815000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[2815000] MASTER[3] WRITE DONE: addr=0x00000300 BID=0x3
+[2865000] MASTER[3] WRITE START: addr=0x00002300 len=0 id=0x3
+[2905000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0xc3
+[2975000] SLAVE[1] W beat: data=0x000031a5 last=1 beat_left=0
+[2985000] SLAVE[1] B sent: id=0xc3
+[3005000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[3005000] MASTER[3] WRITE DONE: addr=0x00002300 BID=0x3
+[3055000] MASTER[3] WRITE START: addr=0x00004300 len=0 id=0x3
+[3095000] SLAVE[2] AW accepted: addr=0x00004300 len=0 size=2 id=0xc3
+[3165000] SLAVE[2] W beat: data=0x000032a5 last=1 beat_left=0
+[3175000] SLAVE[2] B sent: id=0xc3
+[3195000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[3195000] MASTER[3] WRITE DONE: addr=0x00004300 BID=0x3
+[3245000] MASTER[3] WRITE START: addr=0x00006300 len=0 id=0x3
+[3285000] SLAVE[3] AW accepted: addr=0x00006300 len=0 size=2 id=0xc3
+[3355000] SLAVE[3] W beat: data=0x000033a5 last=1 beat_left=0
+[3365000] SLAVE[3] B sent: id=0xc3
+[3385000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[3385000] MASTER[3] WRITE DONE: addr=0x00006300 BID=0x3
+[3435000] MASTER[0] READ START: addr=0x00000000 len=0 id=0x0
+[3475000] SLAVE[0] AR accepted: addr=0x00000000 len=0 size=2 id=0x0
+[3485000] SLAVE[0] R last beat done: id=0x0
+[3505000] R_LISTENER[0]: beat=0 data=0x000000a5 rlast=1
+[3505000] MASTER[0] R beat: data=0x000000a5 last=1
+[3505000] MASTER[0] READ DONE: addr=0x00000000 RID=0x0
+[3505000] CHECK OK: M[0] read data match @ addr=0x00000000 data=0x000000a5
+[3555000] MASTER[0] READ START: addr=0x00002000 len=0 id=0x0
+[3595000] SLAVE[1] AR accepted: addr=0x00002000 len=0 size=2 id=0x0
+[3605000] SLAVE[1] R last beat done: id=0x0
+[3625000] R_LISTENER[0]: beat=0 data=0x000001a5 rlast=1
+[3625000] MASTER[0] R beat: data=0x000001a5 last=1
+[3625000] MASTER[0] READ DONE: addr=0x00002000 RID=0x0
+[3625000] CHECK OK: M[0] read data match @ addr=0x00002000 data=0x000001a5
+[3675000] MASTER[0] READ START: addr=0x00004000 len=0 id=0x0
+[3715000] SLAVE[2] AR accepted: addr=0x00004000 len=0 size=2 id=0x0
+[3725000] SLAVE[2] R last beat done: id=0x0
+[3745000] R_LISTENER[0]: beat=0 data=0x000002a5 rlast=1
+[3745000] MASTER[0] R beat: data=0x000002a5 last=1
+[3745000] MASTER[0] READ DONE: addr=0x00004000 RID=0x0
+[3745000] CHECK OK: M[0] read data match @ addr=0x00004000 data=0x000002a5
+[3795000] MASTER[0] READ START: addr=0x00006000 len=0 id=0x0
+[3835000] SLAVE[3] AR accepted: addr=0x00006000 len=0 size=2 id=0x0
+[3845000] SLAVE[3] R last beat done: id=0x0
+[3865000] R_LISTENER[0]: beat=0 data=0x000003a5 rlast=1
+[3865000] MASTER[0] R beat: data=0x000003a5 last=1
+[3865000] MASTER[0] READ DONE: addr=0x00006000 RID=0x0
+[3865000] CHECK OK: M[0] read data match @ addr=0x00006000 data=0x000003a5
+[3915000] MASTER[1] READ START: addr=0x00000100 len=0 id=0x1
+[3955000] SLAVE[0] AR accepted: addr=0x00000100 len=0 size=2 id=0x41
+[3965000] SLAVE[0] R last beat done: id=0x41
+[3985000] R_LISTENER[1]: beat=0 data=0x000010a5 rlast=1
+[3985000] MASTER[1] R beat: data=0x000010a5 last=1
+[3985000] MASTER[1] READ DONE: addr=0x00000100 RID=0x1
+[3985000] CHECK OK: M[1] read data match @ addr=0x00000100 data=0x000010a5
+[4035000] MASTER[1] READ START: addr=0x00002100 len=0 id=0x1
+[4075000] SLAVE[1] AR accepted: addr=0x00002100 len=0 size=2 id=0x41
+[4085000] SLAVE[1] R last beat done: id=0x41
+[4105000] R_LISTENER[1]: beat=0 data=0x000011a5 rlast=1
+[4105000] MASTER[1] R beat: data=0x000011a5 last=1
+[4105000] MASTER[1] READ DONE: addr=0x00002100 RID=0x1
+[4105000] CHECK OK: M[1] read data match @ addr=0x00002100 data=0x000011a5
+[4155000] MASTER[1] READ START: addr=0x00004100 len=0 id=0x1
+[4195000] SLAVE[2] AR accepted: addr=0x00004100 len=0 size=2 id=0x41
+[4205000] SLAVE[2] R last beat done: id=0x41
+[4225000] R_LISTENER[1]: beat=0 data=0x000012a5 rlast=1
+[4225000] MASTER[1] R beat: data=0x000012a5 last=1
+[4225000] MASTER[1] READ DONE: addr=0x00004100 RID=0x1
+[4225000] CHECK OK: M[1] read data match @ addr=0x00004100 data=0x000012a5
+[4275000] MASTER[1] READ START: addr=0x00006100 len=0 id=0x1
+[4315000] SLAVE[3] AR accepted: addr=0x00006100 len=0 size=2 id=0x41
+[4325000] SLAVE[3] R last beat done: id=0x41
+[4345000] R_LISTENER[1]: beat=0 data=0x000013a5 rlast=1
+[4345000] MASTER[1] R beat: data=0x000013a5 last=1
+[4345000] MASTER[1] READ DONE: addr=0x00006100 RID=0x1
+[4345000] CHECK OK: M[1] read data match @ addr=0x00006100 data=0x000013a5
+[4395000] MASTER[2] READ START: addr=0x00000200 len=0 id=0x2
+[4435000] SLAVE[0] AR accepted: addr=0x00000200 len=0 size=2 id=0x82
+[4445000] SLAVE[0] R last beat done: id=0x82
+[4465000] R_LISTENER[2]: beat=0 data=0x000020a5 rlast=1
+[4465000] MASTER[2] R beat: data=0x000020a5 last=1
+[4465000] MASTER[2] READ DONE: addr=0x00000200 RID=0x2
+[4465000] CHECK OK: M[2] read data match @ addr=0x00000200 data=0x000020a5
+[4515000] MASTER[2] READ START: addr=0x00002200 len=0 id=0x2
+[4555000] SLAVE[1] AR accepted: addr=0x00002200 len=0 size=2 id=0x82
+[4565000] SLAVE[1] R last beat done: id=0x82
+[4585000] R_LISTENER[2]: beat=0 data=0x000021a5 rlast=1
+[4585000] MASTER[2] R beat: data=0x000021a5 last=1
+[4585000] MASTER[2] READ DONE: addr=0x00002200 RID=0x2
+[4585000] CHECK OK: M[2] read data match @ addr=0x00002200 data=0x000021a5
+[4635000] MASTER[2] READ START: addr=0x00004200 len=0 id=0x2
+[4675000] SLAVE[2] AR accepted: addr=0x00004200 len=0 size=2 id=0x82
+[4685000] SLAVE[2] R last beat done: id=0x82
+[4705000] R_LISTENER[2]: beat=0 data=0x000022a5 rlast=1
+[4705000] MASTER[2] R beat: data=0x000022a5 last=1
+[4705000] MASTER[2] READ DONE: addr=0x00004200 RID=0x2
+[4705000] CHECK OK: M[2] read data match @ addr=0x00004200 data=0x000022a5
+[4755000] MASTER[2] READ START: addr=0x00006200 len=0 id=0x2
+[4795000] SLAVE[3] AR accepted: addr=0x00006200 len=0 size=2 id=0x82
+[4805000] SLAVE[3] R last beat done: id=0x82
+[4825000] R_LISTENER[2]: beat=0 data=0x000023a5 rlast=1
+[4825000] MASTER[2] R beat: data=0x000023a5 last=1
+[4825000] MASTER[2] READ DONE: addr=0x00006200 RID=0x2
+[4825000] CHECK OK: M[2] read data match @ addr=0x00006200 data=0x000023a5
+[4875000] MASTER[3] READ START: addr=0x00000300 len=0 id=0x3
+[4915000] SLAVE[0] AR accepted: addr=0x00000300 len=0 size=2 id=0xc3
+[4925000] SLAVE[0] R last beat done: id=0xc3
+[4945000] R_LISTENER[3]: beat=0 data=0x000030a5 rlast=1
+[4945000] MASTER[3] R beat: data=0x000030a5 last=1
+[4945000] MASTER[3] READ DONE: addr=0x00000300 RID=0x3
+[4945000] CHECK OK: M[3] read data match @ addr=0x00000300 data=0x000030a5
+[4995000] MASTER[3] READ START: addr=0x00002300 len=0 id=0x3
+[5035000] SLAVE[1] AR accepted: addr=0x00002300 len=0 size=2 id=0xc3
+[5045000] SLAVE[1] R last beat done: id=0xc3
+[5065000] R_LISTENER[3]: beat=0 data=0x000031a5 rlast=1
+[5065000] MASTER[3] R beat: data=0x000031a5 last=1
+[5065000] MASTER[3] READ DONE: addr=0x00002300 RID=0x3
+[5065000] CHECK OK: M[3] read data match @ addr=0x00002300 data=0x000031a5
+[5115000] MASTER[3] READ START: addr=0x00004300 len=0 id=0x3
+[5155000] SLAVE[2] AR accepted: addr=0x00004300 len=0 size=2 id=0xc3
+[5165000] SLAVE[2] R last beat done: id=0xc3
+[5185000] R_LISTENER[3]: beat=0 data=0x000032a5 rlast=1
+[5185000] MASTER[3] R beat: data=0x000032a5 last=1
+[5185000] MASTER[3] READ DONE: addr=0x00004300 RID=0x3
+[5185000] CHECK OK: M[3] read data match @ addr=0x00004300 data=0x000032a5
+[5235000] MASTER[3] READ START: addr=0x00006300 len=0 id=0x3
+[5275000] SLAVE[3] AR accepted: addr=0x00006300 len=0 size=2 id=0xc3
+[5285000] SLAVE[3] R last beat done: id=0xc3
+[5305000] R_LISTENER[3]: beat=0 data=0x000033a5 rlast=1
+[5305000] MASTER[3] R beat: data=0x000033a5 last=1
+[5305000] MASTER[3] READ DONE: addr=0x00006300 RID=0x3
+[5305000] CHECK OK: M[3] read data match @ addr=0x00006300 data=0x000033a5
 
 [PHASE 2] ========== PHASE 2: Multi-Beat INCR Burst ==========
 --- Burst len=0 (AWLEN=0, 1 beats) ---
-[4355000] MASTER[0] WRITE START: addr=0x00001000 len=0 id=0xa
-[4385000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0x0
-[4395000] SLAVE[0] AW accepted: addr=0x00001000 len=0 size=2 id=0xa
-[4405000] SLAVE[0] AW accepted: addr=0x00001000 len=0 size=2 id=0xa
-[4435000] MASTER[0] READ START: addr=0x00001000 len=0 id=0xa
-[4445000] SLAVE[3] W beat: data=0x00000000 last=1 beat_left=0
-[4445000] SLAVE[0] W beat: data=0x00000000 last=1 beat_left=0
-[4455000] SLAVE[3] B sent: id=0x0
-[4455000] SLAVE[0] B sent: id=0xa
-[4465000] SLAVE[3] W beat: data=0x000013a5 last=1 beat_left=0
-[4475000] SLAVE[3] AW accepted: addr=0x00006300 len=0 size=2 id=0xc3
-[4475000] SLAVE[3] B sent: id=0x41
-[4475000] SLAVE[0] AR accepted: addr=0x00001000 len=0 size=2 id=0xa
-[4475000] B_LISTENER[0]: B resp=0x0 BID=0x0
-[4485000] SLAVE[3] AW accepted: addr=0x00006300 len=0 size=2 id=0xc3
-[4485000] SLAVE[0] R last beat done: id=0xa
-[4485000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[4495000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[4505000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=1
-[4505000] MASTER[0] R beat: data=0x00000000 last=1
-[4505000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
-[4505000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
+[5355000] MASTER[0] WRITE START: addr=0x00001000 len=0 id=0xa
+[5395000] SLAVE[0] AW accepted: addr=0x00001000 len=0 size=2 id=0xa
+[5465000] SLAVE[0] W beat: data=0x00000000 last=1 beat_left=0
+[5475000] SLAVE[0] B sent: id=0xa
+[5495000] B_LISTENER[0]: B resp=0x0 BID=0xa
+[5495000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0xa
+[5545000] MASTER[0] READ START: addr=0x00001000 len=0 id=0xa
+[5585000] SLAVE[0] AR accepted: addr=0x00001000 len=0 size=2 id=0xa
+[5595000] SLAVE[0] R last beat done: id=0xa
+[5615000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=1
+[5615000] MASTER[0] R beat: data=0x00000000 last=1
+[5615000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
+[5615000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
 --- Burst len=1 (AWLEN=1, 2 beats) ---
-[4605000] MASTER[0] WRITE START: addr=0x00001000 len=1 id=0xa
-[4635000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0x0
-[4645000] SLAVE[0] AW accepted: addr=0x00001000 len=1 size=2 id=0xa
-[4655000] SLAVE[0] AW accepted: addr=0x00001000 len=1 size=2 id=0xa
-[4685000] MASTER[0] READ START: addr=0x00001000 len=1 id=0xa
-[4695000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=0
-[4715000] SLAVE[0] W beat: data=0x00000001 last=1 beat_left=4294967295
-[4725000] SLAVE[0] B sent: id=0xa
-[4725000] SLAVE[0] AR accepted: addr=0x00001000 len=1 size=2 id=0xa
-[4735000] SLAVE[0] R beat: data=0x00000001 last=1 beat_left=0
-[4745000] SLAVE[0] R last beat done: id=0xa
-[4745000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[4755000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
-[4765000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=1
-[4765000] MASTER[0] R beat: data=0x00000000 last=0
-[4765000] MASTER[0] R beat: data=0x00000001 last=1
-[4765000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
-[4765000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
-[4765000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
+[5715000] MASTER[0] WRITE START: addr=0x00001000 len=1 id=0xa
+[5755000] SLAVE[0] AW accepted: addr=0x00001000 len=1 size=2 id=0xa
+[5825000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=1
+[5835000] SLAVE[0] W beat: data=0x00000001 last=1 beat_left=0
+[5845000] SLAVE[0] B sent: id=0xa
+[5865000] B_LISTENER[0]: B resp=0x0 BID=0xa
+[5865000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0xa
+[5915000] MASTER[0] READ START: addr=0x00001000 len=1 id=0xa
+[5955000] SLAVE[0] AR accepted: addr=0x00001000 len=1 size=2 id=0xa
+[5965000] SLAVE[0] R beat: data=0x00000001 last=1 beat_left=0
+[5975000] SLAVE[0] R last beat done: id=0xa
+[5985000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
+[5995000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=1
+[5995000] MASTER[0] R beat: data=0x00000000 last=0
+[5995000] MASTER[0] R beat: data=0x00000001 last=1
+[5995000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
+[5995000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
+[5995000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
 --- Burst len=3 (AWLEN=3, 4 beats) ---
-[4865000] MASTER[0] WRITE START: addr=0x00001000 len=3 id=0xa
-[4895000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0x0
-[4905000] SLAVE[0] AW accepted: addr=0x00001000 len=3 size=2 id=0xa
-[4915000] SLAVE[0] AW accepted: addr=0x00001000 len=3 size=2 id=0xa
-[4945000] MASTER[0] READ START: addr=0x00001000 len=3 id=0xa
-[4955000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=1
-[4965000] SLAVE[0] W beat: data=0x00000001 last=0 beat_left=0
-[4985000] SLAVE[0] W beat: data=0x00000002 last=0 beat_left=4294967295
-[4985000] SLAVE[0] AR accepted: addr=0x00001000 len=3 size=2 id=0xa
-[4995000] SLAVE[0] W beat: data=0x00000003 last=1 beat_left=4294967294
-[4995000] SLAVE[0] R beat: data=0x00000001 last=0 beat_left=2
-[5005000] SLAVE[0] B sent: id=0xa
-[5005000] SLAVE[0] R beat: data=0x00000002 last=0 beat_left=1
-[5015000] SLAVE[0] R beat: data=0x00000003 last=1 beat_left=0
-[5015000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
-[5025000] SLAVE[0] R last beat done: id=0xa
-[5025000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[5025000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=0
-[5035000] R_LISTENER[0]: beat=2 data=0x00000002 rlast=0
-[5045000] R_LISTENER[0]: beat=3 data=0x00000003 rlast=1
-[5045000] MASTER[0] R beat: data=0x00000000 last=0
-[5045000] MASTER[0] R beat: data=0x00000001 last=0
-[5045000] MASTER[0] R beat: data=0x00000002 last=0
-[5045000] MASTER[0] R beat: data=0x00000003 last=1
-[5045000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
-[5045000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
-[5045000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
-[5045000] CHECK OK: M[0] read data match @ addr=0x00001008 data=0x00000002
-[5045000] CHECK OK: M[0] read data match @ addr=0x0000100c data=0x00000003
+[6095000] MASTER[0] WRITE START: addr=0x00001000 len=3 id=0xa
+[6135000] SLAVE[0] AW accepted: addr=0x00001000 len=3 size=2 id=0xa
+[6205000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=3
+[6215000] SLAVE[0] W beat: data=0x00000001 last=0 beat_left=2
+[6225000] SLAVE[0] W beat: data=0x00000002 last=0 beat_left=1
+[6235000] SLAVE[0] W beat: data=0x00000003 last=1 beat_left=0
+[6245000] SLAVE[0] B sent: id=0xa
+[6265000] B_LISTENER[0]: B resp=0x0 BID=0xa
+[6265000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0xa
+[6315000] MASTER[0] READ START: addr=0x00001000 len=3 id=0xa
+[6355000] SLAVE[0] AR accepted: addr=0x00001000 len=3 size=2 id=0xa
+[6365000] SLAVE[0] R beat: data=0x00000001 last=0 beat_left=2
+[6375000] SLAVE[0] R beat: data=0x00000002 last=0 beat_left=1
+[6385000] SLAVE[0] R beat: data=0x00000003 last=1 beat_left=0
+[6385000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
+[6395000] SLAVE[0] R last beat done: id=0xa
+[6395000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=0
+[6405000] R_LISTENER[0]: beat=2 data=0x00000002 rlast=0
+[6415000] R_LISTENER[0]: beat=3 data=0x00000003 rlast=1
+[6415000] MASTER[0] R beat: data=0x00000000 last=0
+[6415000] MASTER[0] R beat: data=0x00000001 last=0
+[6415000] MASTER[0] R beat: data=0x00000002 last=0
+[6415000] MASTER[0] R beat: data=0x00000003 last=1
+[6415000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
+[6415000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
+[6415000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
+[6415000] CHECK OK: M[0] read data match @ addr=0x00001008 data=0x00000002
+[6415000] CHECK OK: M[0] read data match @ addr=0x0000100c data=0x00000003
 --- Burst len=7 (AWLEN=7, 8 beats) ---
-[5145000] MASTER[0] WRITE START: addr=0x00001000 len=7 id=0xa
-[5175000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0x0
-[5185000] SLAVE[0] AW accepted: addr=0x00001000 len=7 size=2 id=0xa
-[5195000] SLAVE[0] AW accepted: addr=0x00001000 len=7 size=2 id=0xa
-[5225000] MASTER[0] READ START: addr=0x00001000 len=7 id=0xa
-[5235000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=1
-[5245000] SLAVE[0] W beat: data=0x00000001 last=0 beat_left=0
-[5265000] SLAVE[0] W beat: data=0x00000002 last=0 beat_left=4294967295
-[5265000] SLAVE[0] AR accepted: addr=0x00001000 len=7 size=2 id=0xa
-[5275000] SLAVE[0] W beat: data=0x00000003 last=0 beat_left=4294967294
-[5275000] SLAVE[0] R beat: data=0x00000001 last=0 beat_left=6
-[5285000] SLAVE[0] R beat: data=0x00000002 last=0 beat_left=5
-[5295000] SLAVE[0] W beat: data=0x00000004 last=0 beat_left=4294967293
-[5295000] SLAVE[0] R beat: data=0x00000003 last=0 beat_left=4
-[5295000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
-[5305000] SLAVE[0] W beat: data=0x00000005 last=0 beat_left=4294967292
-[5305000] SLAVE[0] R beat: data=0x00000004 last=0 beat_left=3
-[5305000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=0
-[5315000] SLAVE[0] R beat: data=0x00000005 last=0 beat_left=2
-[5315000] R_LISTENER[0]: beat=2 data=0x00000002 rlast=0
-[5325000] SLAVE[0] W beat: data=0x00000006 last=0 beat_left=4294967291
-[5325000] SLAVE[0] R beat: data=0x00000000 last=0 beat_left=1
-[5325000] R_LISTENER[0]: beat=3 data=0x00000003 rlast=0
-[5335000] SLAVE[0] W beat: data=0x00000007 last=1 beat_left=4294967290
-[5335000] SLAVE[0] R beat: data=0x00000000 last=1 beat_left=0
-[5335000] R_LISTENER[0]: beat=4 data=0x00000004 rlast=0
-[5345000] SLAVE[0] B sent: id=0xa
-[5345000] SLAVE[0] R last beat done: id=0xa
-[5345000] R_LISTENER[0]: beat=5 data=0x00000005 rlast=0
-[5355000] R_LISTENER[0]: beat=6 data=0x00000000 rlast=0
-[5365000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[5365000] R_LISTENER[0]: beat=7 data=0x00000000 rlast=1
-[5365000] MASTER[0] R beat: data=0x00000000 last=0
-[5365000] MASTER[0] R beat: data=0x00000001 last=0
-[5365000] MASTER[0] R beat: data=0x00000002 last=0
-[5365000] MASTER[0] R beat: data=0x00000003 last=0
-[5365000] MASTER[0] R beat: data=0x00000004 last=0
-[5365000] MASTER[0] R beat: data=0x00000005 last=0
-[5365000] MASTER[0] R beat: data=0x00000000 last=0
-[5365000] MASTER[0] R beat: data=0x00000000 last=1
-[5365000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
-[5365000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
-[5365000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
-[5365000] CHECK OK: M[0] read data match @ addr=0x00001008 data=0x00000002
-[5365000] CHECK OK: M[0] read data match @ addr=0x0000100c data=0x00000003
-[5365000] CHECK OK: M[0] read data match @ addr=0x00001010 data=0x00000004
-[5365000] CHECK OK: M[0] read data match @ addr=0x00001014 data=0x00000005
-[5365000] ERROR: M[0] read data mismatch @ addr=0x00001018 beat=6
-       expected=0x00000006  got=0x00000000
-[5365000] ERROR: M[0] read data mismatch @ addr=0x0000101c beat=7
-       expected=0x00000007  got=0x00000000
+[6515000] MASTER[0] WRITE START: addr=0x00001000 len=7 id=0xa
+[6555000] SLAVE[0] AW accepted: addr=0x00001000 len=7 size=2 id=0xa
+[6625000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=7
+[6635000] SLAVE[0] W beat: data=0x00000001 last=0 beat_left=6
+[6645000] SLAVE[0] W beat: data=0x00000002 last=0 beat_left=5
+[6655000] SLAVE[0] W beat: data=0x00000003 last=0 beat_left=4
+[6665000] SLAVE[0] W beat: data=0x00000004 last=0 beat_left=3
+[6675000] SLAVE[0] W beat: data=0x00000005 last=0 beat_left=2
+[6685000] SLAVE[0] W beat: data=0x00000006 last=0 beat_left=1
+[6695000] SLAVE[0] W beat: data=0x00000007 last=1 beat_left=0
+[6705000] SLAVE[0] B sent: id=0xa
+[6725000] B_LISTENER[0]: B resp=0x0 BID=0xa
+[6725000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0xa
+[6775000] MASTER[0] READ START: addr=0x00001000 len=7 id=0xa
+[6815000] SLAVE[0] AR accepted: addr=0x00001000 len=7 size=2 id=0xa
+[6825000] SLAVE[0] R beat: data=0x00000001 last=0 beat_left=6
+[6835000] SLAVE[0] R beat: data=0x00000002 last=0 beat_left=5
+[6845000] SLAVE[0] R beat: data=0x00000003 last=0 beat_left=4
+[6845000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
+[6855000] SLAVE[0] R beat: data=0x00000004 last=0 beat_left=3
+[6855000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=0
+[6865000] SLAVE[0] R beat: data=0x00000005 last=0 beat_left=2
+[6865000] R_LISTENER[0]: beat=2 data=0x00000002 rlast=0
+[6875000] SLAVE[0] R beat: data=0x00000006 last=0 beat_left=1
+[6875000] R_LISTENER[0]: beat=3 data=0x00000003 rlast=0
+[6885000] SLAVE[0] R beat: data=0x00000007 last=1 beat_left=0
+[6885000] R_LISTENER[0]: beat=4 data=0x00000004 rlast=0
+[6895000] SLAVE[0] R last beat done: id=0xa
+[6895000] R_LISTENER[0]: beat=5 data=0x00000005 rlast=0
+[6905000] R_LISTENER[0]: beat=6 data=0x00000006 rlast=0
+[6915000] R_LISTENER[0]: beat=7 data=0x00000007 rlast=1
+[6915000] MASTER[0] R beat: data=0x00000000 last=0
+[6915000] MASTER[0] R beat: data=0x00000001 last=0
+[6915000] MASTER[0] R beat: data=0x00000002 last=0
+[6915000] MASTER[0] R beat: data=0x00000003 last=0
+[6915000] MASTER[0] R beat: data=0x00000004 last=0
+[6915000] MASTER[0] R beat: data=0x00000005 last=0
+[6915000] MASTER[0] R beat: data=0x00000006 last=0
+[6915000] MASTER[0] R beat: data=0x00000007 last=1
+[6915000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
+[6915000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
+[6915000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
+[6915000] CHECK OK: M[0] read data match @ addr=0x00001008 data=0x00000002
+[6915000] CHECK OK: M[0] read data match @ addr=0x0000100c data=0x00000003
+[6915000] CHECK OK: M[0] read data match @ addr=0x00001010 data=0x00000004
+[6915000] CHECK OK: M[0] read data match @ addr=0x00001014 data=0x00000005
+[6915000] CHECK OK: M[0] read data match @ addr=0x00001018 data=0x00000006
+[6915000] CHECK OK: M[0] read data match @ addr=0x0000101c data=0x00000007
 --- Burst len=15 (AWLEN=15, 16 beats) ---
-[5465000] MASTER[0] WRITE START: addr=0x00001000 len=15 id=0xa
-[5495000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0x0
-[5505000] SLAVE[0] AW accepted: addr=0x00001000 len=15 size=2 id=0xa
-[5515000] SLAVE[0] AW accepted: addr=0x00001000 len=15 size=2 id=0xa
-[5545000] MASTER[0] READ START: addr=0x00001000 len=15 id=0xa
-[5555000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=3
-[5565000] SLAVE[0] W beat: data=0x00000001 last=0 beat_left=2
-[5575000] SLAVE[0] W beat: data=0x00000002 last=0 beat_left=1
-[5585000] SLAVE[0] W beat: data=0x00000003 last=0 beat_left=0
-[5585000] SLAVE[0] AR accepted: addr=0x00001000 len=15 size=2 id=0xa
-[5595000] SLAVE[0] R beat: data=0x00000001 last=0 beat_left=14
-[5605000] SLAVE[0] W beat: data=0x00000004 last=0 beat_left=4294967295
-[5605000] SLAVE[0] R beat: data=0x00000002 last=0 beat_left=13
-[5615000] SLAVE[0] W beat: data=0x00000005 last=0 beat_left=4294967294
-[5615000] SLAVE[0] R beat: data=0x00000003 last=0 beat_left=12
-[5615000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
-[5625000] SLAVE[0] W beat: data=0x00000006 last=0 beat_left=4294967293
-[5625000] SLAVE[0] R beat: data=0x00000004 last=0 beat_left=11
-[5625000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=0
-[5635000] SLAVE[0] W beat: data=0x00000007 last=0 beat_left=4294967292
-[5635000] SLAVE[0] R beat: data=0x00000005 last=0 beat_left=10
-[5635000] R_LISTENER[0]: beat=2 data=0x00000002 rlast=0
-[5645000] SLAVE[0] R beat: data=0x00000006 last=0 beat_left=9
-[5645000] R_LISTENER[0]: beat=3 data=0x00000003 rlast=0
-[5655000] SLAVE[0] W beat: data=0x00000008 last=0 beat_left=4294967291
-[5655000] SLAVE[0] R beat: data=0x00000007 last=0 beat_left=8
-[5655000] R_LISTENER[0]: beat=4 data=0x00000004 rlast=0
-[5665000] SLAVE[0] W beat: data=0x00000009 last=0 beat_left=4294967290
-[5665000] SLAVE[0] R beat: data=0x00000008 last=0 beat_left=7
-[5665000] R_LISTENER[0]: beat=5 data=0x00000005 rlast=0
-[5675000] SLAVE[0] W beat: data=0x0000000a last=0 beat_left=4294967289
-[5675000] SLAVE[0] R beat: data=0x00000009 last=0 beat_left=6
-[5675000] R_LISTENER[0]: beat=6 data=0x00000006 rlast=0
-[5685000] SLAVE[0] W beat: data=0x0000000b last=0 beat_left=4294967288
-[5685000] SLAVE[0] R beat: data=0x0000000a last=0 beat_left=5
-[5685000] R_LISTENER[0]: beat=7 data=0x00000007 rlast=0
-[5695000] SLAVE[0] R beat: data=0x0000000b last=0 beat_left=4
-[5695000] R_LISTENER[0]: beat=8 data=0x00000008 rlast=0
-[5705000] SLAVE[0] W beat: data=0x0000000c last=0 beat_left=4294967287
-[5705000] SLAVE[0] R beat: data=0x00000000 last=0 beat_left=3
-[5705000] R_LISTENER[0]: beat=9 data=0x00000009 rlast=0
-[5715000] SLAVE[0] W beat: data=0x0000000d last=0 beat_left=4294967286
-[5715000] SLAVE[0] R beat: data=0x00000000 last=0 beat_left=2
-[5715000] R_LISTENER[0]: beat=10 data=0x0000000a rlast=0
-[5725000] SLAVE[0] W beat: data=0x0000000e last=0 beat_left=4294967285
-[5725000] SLAVE[0] R beat: data=0x00000000 last=0 beat_left=1
-[5725000] R_LISTENER[0]: beat=11 data=0x0000000b rlast=0
-[5735000] SLAVE[0] W beat: data=0x0000000f last=1 beat_left=4294967284
-[5735000] SLAVE[0] R beat: data=0x00000000 last=1 beat_left=0
-[5735000] R_LISTENER[0]: beat=12 data=0x00000000 rlast=0
-[5745000] SLAVE[0] B sent: id=0xa
-[5745000] SLAVE[0] R last beat done: id=0xa
-[5745000] R_LISTENER[0]: beat=13 data=0x00000000 rlast=0
-[5755000] R_LISTENER[0]: beat=14 data=0x00000000 rlast=0
-[5765000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[5765000] R_LISTENER[0]: beat=15 data=0x00000000 rlast=1
-[5765000] MASTER[0] R beat: data=0x00000000 last=0
-[5765000] MASTER[0] R beat: data=0x00000001 last=0
-[5765000] MASTER[0] R beat: data=0x00000002 last=0
-[5765000] MASTER[0] R beat: data=0x00000003 last=0
-[5765000] MASTER[0] R beat: data=0x00000004 last=0
-[5765000] MASTER[0] R beat: data=0x00000005 last=0
-[5765000] MASTER[0] R beat: data=0x00000006 last=0
-[5765000] MASTER[0] R beat: data=0x00000007 last=0
-[5765000] MASTER[0] R beat: data=0x00000008 last=0
-[5765000] MASTER[0] R beat: data=0x00000009 last=0
-[5765000] MASTER[0] R beat: data=0x0000000a last=0
-[5765000] MASTER[0] R beat: data=0x0000000b last=0
-[5765000] MASTER[0] R beat: data=0x00000000 last=0
-[5765000] MASTER[0] R beat: data=0x00000000 last=0
-[5765000] MASTER[0] R beat: data=0x00000000 last=0
-[5765000] MASTER[0] R beat: data=0x00000000 last=1
-[5765000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001008 data=0x00000002
-[5765000] CHECK OK: M[0] read data match @ addr=0x0000100c data=0x00000003
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001010 data=0x00000004
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001014 data=0x00000005
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001018 data=0x00000006
-[5765000] CHECK OK: M[0] read data match @ addr=0x0000101c data=0x00000007
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001020 data=0x00000008
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001024 data=0x00000009
-[5765000] CHECK OK: M[0] read data match @ addr=0x00001028 data=0x0000000a
-[5765000] CHECK OK: M[0] read data match @ addr=0x0000102c data=0x0000000b
-[5765000] ERROR: M[0] read data mismatch @ addr=0x00001030 beat=12
-       expected=0x0000000c  got=0x00000000
-[5765000] ERROR: M[0] read data mismatch @ addr=0x00001034 beat=13
-       expected=0x0000000d  got=0x00000000
-[5765000] ERROR: M[0] read data mismatch @ addr=0x00001038 beat=14
-       expected=0x0000000e  got=0x00000000
-[5765000] ERROR: M[0] read data mismatch @ addr=0x0000103c beat=15
-       expected=0x0000000f  got=0x00000000
+[7015000] MASTER[0] WRITE START: addr=0x00001000 len=15 id=0xa
+[7055000] SLAVE[0] AW accepted: addr=0x00001000 len=15 size=2 id=0xa
+[7125000] SLAVE[0] W beat: data=0x00000000 last=0 beat_left=15
+[7135000] SLAVE[0] W beat: data=0x00000001 last=0 beat_left=14
+[7145000] SLAVE[0] W beat: data=0x00000002 last=0 beat_left=13
+[7155000] SLAVE[0] W beat: data=0x00000003 last=0 beat_left=12
+[7165000] SLAVE[0] W beat: data=0x00000004 last=0 beat_left=11
+[7175000] SLAVE[0] W beat: data=0x00000005 last=0 beat_left=10
+[7185000] SLAVE[0] W beat: data=0x00000006 last=0 beat_left=9
+[7195000] SLAVE[0] W beat: data=0x00000007 last=0 beat_left=8
+[7205000] SLAVE[0] W beat: data=0x00000008 last=0 beat_left=7
+[7215000] SLAVE[0] W beat: data=0x00000009 last=0 beat_left=6
+[7225000] SLAVE[0] W beat: data=0x0000000a last=0 beat_left=5
+[7235000] SLAVE[0] W beat: data=0x0000000b last=0 beat_left=4
+[7245000] SLAVE[0] W beat: data=0x0000000c last=0 beat_left=3
+[7255000] SLAVE[0] W beat: data=0x0000000d last=0 beat_left=2
+[7265000] SLAVE[0] W beat: data=0x0000000e last=0 beat_left=1
+[7275000] SLAVE[0] W beat: data=0x0000000f last=1 beat_left=0
+[7285000] SLAVE[0] B sent: id=0xa
+[7305000] B_LISTENER[0]: B resp=0x0 BID=0xa
+[7305000] MASTER[0] WRITE DONE: addr=0x00001000 BID=0xa
+[7355000] MASTER[0] READ START: addr=0x00001000 len=15 id=0xa
+[7395000] SLAVE[0] AR accepted: addr=0x00001000 len=15 size=2 id=0xa
+[7405000] SLAVE[0] R beat: data=0x00000001 last=0 beat_left=14
+[7415000] SLAVE[0] R beat: data=0x00000002 last=0 beat_left=13
+[7425000] SLAVE[0] R beat: data=0x00000003 last=0 beat_left=12
+[7425000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
+[7435000] SLAVE[0] R beat: data=0x00000004 last=0 beat_left=11
+[7435000] R_LISTENER[0]: beat=1 data=0x00000001 rlast=0
+[7445000] SLAVE[0] R beat: data=0x00000005 last=0 beat_left=10
+[7445000] R_LISTENER[0]: beat=2 data=0x00000002 rlast=0
+[7455000] SLAVE[0] R beat: data=0x00000006 last=0 beat_left=9
+[7455000] R_LISTENER[0]: beat=3 data=0x00000003 rlast=0
+[7465000] SLAVE[0] R beat: data=0x00000007 last=0 beat_left=8
+[7465000] R_LISTENER[0]: beat=4 data=0x00000004 rlast=0
+[7475000] SLAVE[0] R beat: data=0x00000008 last=0 beat_left=7
+[7475000] R_LISTENER[0]: beat=5 data=0x00000005 rlast=0
+[7485000] SLAVE[0] R beat: data=0x00000009 last=0 beat_left=6
+[7485000] R_LISTENER[0]: beat=6 data=0x00000006 rlast=0
+[7495000] SLAVE[0] R beat: data=0x0000000a last=0 beat_left=5
+[7495000] R_LISTENER[0]: beat=7 data=0x00000007 rlast=0
+[7505000] SLAVE[0] R beat: data=0x0000000b last=0 beat_left=4
+[7505000] R_LISTENER[0]: beat=8 data=0x00000008 rlast=0
+[7515000] SLAVE[0] R beat: data=0x0000000c last=0 beat_left=3
+[7515000] R_LISTENER[0]: beat=9 data=0x00000009 rlast=0
+[7525000] SLAVE[0] R beat: data=0x0000000d last=0 beat_left=2
+[7525000] R_LISTENER[0]: beat=10 data=0x0000000a rlast=0
+[7535000] SLAVE[0] R beat: data=0x0000000e last=0 beat_left=1
+[7535000] R_LISTENER[0]: beat=11 data=0x0000000b rlast=0
+[7545000] SLAVE[0] R beat: data=0x0000000f last=1 beat_left=0
+[7545000] R_LISTENER[0]: beat=12 data=0x0000000c rlast=0
+[7555000] SLAVE[0] R last beat done: id=0xa
+[7555000] R_LISTENER[0]: beat=13 data=0x0000000d rlast=0
+[7565000] R_LISTENER[0]: beat=14 data=0x0000000e rlast=0
+[7575000] R_LISTENER[0]: beat=15 data=0x0000000f rlast=1
+[7575000] MASTER[0] R beat: data=0x00000000 last=0
+[7575000] MASTER[0] R beat: data=0x00000001 last=0
+[7575000] MASTER[0] R beat: data=0x00000002 last=0
+[7575000] MASTER[0] R beat: data=0x00000003 last=0
+[7575000] MASTER[0] R beat: data=0x00000004 last=0
+[7575000] MASTER[0] R beat: data=0x00000005 last=0
+[7575000] MASTER[0] R beat: data=0x00000006 last=0
+[7575000] MASTER[0] R beat: data=0x00000007 last=0
+[7575000] MASTER[0] R beat: data=0x00000008 last=0
+[7575000] MASTER[0] R beat: data=0x00000009 last=0
+[7575000] MASTER[0] R beat: data=0x0000000a last=0
+[7575000] MASTER[0] R beat: data=0x0000000b last=0
+[7575000] MASTER[0] R beat: data=0x0000000c last=0
+[7575000] MASTER[0] R beat: data=0x0000000d last=0
+[7575000] MASTER[0] R beat: data=0x0000000e last=0
+[7575000] MASTER[0] R beat: data=0x0000000f last=1
+[7575000] MASTER[0] READ DONE: addr=0x00001000 RID=0xa
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001000 data=0x00000000
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001004 data=0x00000001
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001008 data=0x00000002
+[7575000] CHECK OK: M[0] read data match @ addr=0x0000100c data=0x00000003
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001010 data=0x00000004
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001014 data=0x00000005
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001018 data=0x00000006
+[7575000] CHECK OK: M[0] read data match @ addr=0x0000101c data=0x00000007
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001020 data=0x00000008
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001024 data=0x00000009
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001028 data=0x0000000a
+[7575000] CHECK OK: M[0] read data match @ addr=0x0000102c data=0x0000000b
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001030 data=0x0000000c
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001034 data=0x0000000d
+[7575000] CHECK OK: M[0] read data match @ addr=0x00001038 data=0x0000000e
+[7575000] CHECK OK: M[0] read data match @ addr=0x0000103c data=0x0000000f
 
 [PHASE 3] ========== PHASE 3: Full-Word Single-Beat Writes ==========
-[5865000] MASTER[0] WRITE START: addr=0x00002000 len=0 id=0x3
-[5895000] MASTER[0] WRITE DONE: addr=0x00002000 BID=0x0
-[5905000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x3
-[5915000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x3
-[5915000] MASTER[0] READ START: addr=0x00002000 len=0 id=0x3
-[5955000] SLAVE[1] W beat: data=0x12345678 last=1 beat_left=0
-[5955000] SLAVE[0] W beat: data=0x12345678 last=1 beat_left=15
-[5955000] SLAVE[1] AR accepted: addr=0x00002000 len=0 size=2 id=0x3
-[5965000] SLAVE[1] B sent: id=0x3
-[5965000] SLAVE[0] B sent: id=0xa
-[5965000] SLAVE[1] R last beat done: id=0x3
-[5985000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[5985000] R_LISTENER[0]: beat=0 data=0x000002a5 rlast=1
-[5985000] MASTER[0] R beat: data=0x000002a5 last=1
-[5985000] MASTER[0] READ DONE: addr=0x00002000 RID=0x3
-[5985000] ERROR: M[0] read data mismatch @ addr=0x00002000 beat=0
-       expected=0x12345678  got=0x000002a5
-[5985000] MASTER[1] WRITE START: addr=0x00002004 len=0 id=0x3
-[5995000] B_LISTENER[0]: B resp=0x0 BID=0x3
-[6015000] MASTER[1] WRITE DONE: addr=0x00002004 BID=0x0
-[6025000] SLAVE[1] AW accepted: addr=0x00002004 len=0 size=2 id=0x43
-[6035000] SLAVE[1] AW accepted: addr=0x00002004 len=0 size=2 id=0x43
-[6035000] MASTER[1] READ START: addr=0x00002004 len=0 id=0x3
-[6075000] SLAVE[3] W beat: data=0xaaaabbbb last=1 beat_left=0
-[6075000] SLAVE[1] AR accepted: addr=0x00002004 len=0 size=2 id=0x43
-[6085000] SLAVE[3] B sent: id=0x41
-[6085000] SLAVE[1] R last beat done: id=0x43
-[6095000] SLAVE[3] W beat: data=0x000023a5 last=1 beat_left=0
-[6105000] SLAVE[3] B sent: id=0x82
-[6105000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[6105000] R_LISTENER[1]: beat=0 data=0x00000000 rlast=1
-[6105000] MASTER[1] R beat: data=0x00000000 last=1
-[6105000] MASTER[1] READ DONE: addr=0x00002004 RID=0x3
-[6105000] CHECK OK: M[1] read data match @ addr=0x00002004 data=0x00000000
-[6105000] MASTER[2] WRITE START: addr=0x00002008 len=0 id=0x3
-[6125000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[6135000] MASTER[2] WRITE DONE: addr=0x00002008 BID=0x0
-[6145000] SLAVE[1] AW accepted: addr=0x00002008 len=0 size=2 id=0x83
-[6155000] SLAVE[1] AW accepted: addr=0x00002008 len=0 size=2 id=0x83
-[6155000] MASTER[2] READ START: addr=0x00002008 len=0 id=0x3
-[6195000] SLAVE[3] W beat: data=0xffff0000 last=1 beat_left=0
-[6195000] SLAVE[1] AR accepted: addr=0x00002008 len=0 size=2 id=0x83
-[6205000] SLAVE[3] B sent: id=0x82
-[6205000] SLAVE[1] R last beat done: id=0x83
-[6215000] SLAVE[3] W beat: data=0x000033a5 last=1 beat_left=0
-[6225000] SLAVE[3] B sent: id=0xc3
-[6225000] B_LISTENER[2]: B resp=0x0 BID=0x2
-[6225000] R_LISTENER[2]: beat=0 data=0x00000000 rlast=1
-[6225000] MASTER[2] R beat: data=0x00000000 last=1
-[6225000] MASTER[2] READ DONE: addr=0x00002008 RID=0x3
-[6225000] CHECK OK: M[2] read data match @ addr=0x00002008 data=0x00000000
-[6225000] MASTER[3] WRITE START: addr=0x0000200c len=0 id=0x3
-[6245000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[6255000] MASTER[3] WRITE DONE: addr=0x0000200c BID=0x0
-[6275000] MASTER[3] READ START: addr=0x0000200c len=0 id=0x3
-[6315000] SLAVE[3] W beat: data=0x0000ffff last=1 beat_left=0
-[6315000] SLAVE[1] AR accepted: addr=0x0000200c len=0 size=2 id=0xc3
-[6325000] SLAVE[3] B sent: id=0xc3
-[6325000] SLAVE[1] R last beat done: id=0xc3
-[6345000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[6345000] R_LISTENER[3]: beat=0 data=0x00000000 rlast=1
-[6345000] MASTER[3] R beat: data=0x00000000 last=1
-[6345000] MASTER[3] READ DONE: addr=0x0000200c RID=0x3
-[6345000] CHECK OK: M[3] read data match @ addr=0x0000200c data=0x00000000
+[7675000] MASTER[0] WRITE START: addr=0x00002000 len=0 id=0x3
+[7715000] SLAVE[1] AW accepted: addr=0x00002000 len=0 size=2 id=0x3
+[7785000] SLAVE[1] W beat: data=0x12345678 last=1 beat_left=0
+[7795000] SLAVE[1] B sent: id=0x3
+[7815000] B_LISTENER[0]: B resp=0x0 BID=0x3
+[7815000] MASTER[0] WRITE DONE: addr=0x00002000 BID=0x3
+[7835000] MASTER[0] READ START: addr=0x00002000 len=0 id=0x3
+[7875000] SLAVE[1] AR accepted: addr=0x00002000 len=0 size=2 id=0x3
+[7885000] SLAVE[1] R last beat done: id=0x3
+[7905000] R_LISTENER[0]: beat=0 data=0x12345678 rlast=1
+[7905000] MASTER[0] R beat: data=0x12345678 last=1
+[7905000] MASTER[0] READ DONE: addr=0x00002000 RID=0x3
+[7905000] CHECK OK: M[0] read data match @ addr=0x00002000 data=0x12345678
+[7905000] MASTER[1] WRITE START: addr=0x00002004 len=0 id=0x3
+[7945000] SLAVE[1] AW accepted: addr=0x00002004 len=0 size=2 id=0x43
+[8015000] SLAVE[1] W beat: data=0xaaaabbbb last=1 beat_left=0
+[8025000] SLAVE[1] B sent: id=0x43
+[8045000] B_LISTENER[1]: B resp=0x0 BID=0x3
+[8045000] MASTER[1] WRITE DONE: addr=0x00002004 BID=0x3
+[8065000] MASTER[1] READ START: addr=0x00002004 len=0 id=0x3
+[8105000] SLAVE[1] AR accepted: addr=0x00002004 len=0 size=2 id=0x43
+[8115000] SLAVE[1] R last beat done: id=0x43
+[8135000] R_LISTENER[1]: beat=0 data=0xaaaabbbb rlast=1
+[8135000] MASTER[1] R beat: data=0xaaaabbbb last=1
+[8135000] MASTER[1] READ DONE: addr=0x00002004 RID=0x3
+[8135000] CHECK OK: M[1] read data match @ addr=0x00002004 data=0xaaaabbbb
+[8135000] MASTER[2] WRITE START: addr=0x00002008 len=0 id=0x3
+[8175000] SLAVE[1] AW accepted: addr=0x00002008 len=0 size=2 id=0x83
+[8245000] SLAVE[1] W beat: data=0xffff0000 last=1 beat_left=0
+[8255000] SLAVE[1] B sent: id=0x83
+[8275000] B_LISTENER[2]: B resp=0x0 BID=0x3
+[8275000] MASTER[2] WRITE DONE: addr=0x00002008 BID=0x3
+[8295000] MASTER[2] READ START: addr=0x00002008 len=0 id=0x3
+[8335000] SLAVE[1] AR accepted: addr=0x00002008 len=0 size=2 id=0x83
+[8345000] SLAVE[1] R last beat done: id=0x83
+[8365000] R_LISTENER[2]: beat=0 data=0xffff0000 rlast=1
+[8365000] MASTER[2] R beat: data=0xffff0000 last=1
+[8365000] MASTER[2] READ DONE: addr=0x00002008 RID=0x3
+[8365000] CHECK OK: M[2] read data match @ addr=0x00002008 data=0xffff0000
+[8365000] MASTER[3] WRITE START: addr=0x0000200c len=0 id=0x3
+[8405000] SLAVE[1] AW accepted: addr=0x0000200c len=0 size=2 id=0xc3
+[8475000] SLAVE[1] W beat: data=0x0000ffff last=1 beat_left=0
+[8485000] SLAVE[1] B sent: id=0xc3
+[8505000] B_LISTENER[3]: B resp=0x0 BID=0x3
+[8505000] MASTER[3] WRITE DONE: addr=0x0000200c BID=0x3
+[8525000] MASTER[3] READ START: addr=0x0000200c len=0 id=0x3
+[8565000] SLAVE[1] AR accepted: addr=0x0000200c len=0 size=2 id=0xc3
+[8575000] SLAVE[1] R last beat done: id=0xc3
+[8595000] R_LISTENER[3]: beat=0 data=0x0000ffff rlast=1
+[8595000] MASTER[3] R beat: data=0x0000ffff last=1
+[8595000] MASTER[3] READ DONE: addr=0x0000200c RID=0x3
+[8595000] CHECK OK: M[3] read data match @ addr=0x0000200c data=0x0000ffff
 
 [PHASE 4] ========== PHASE 4: Concurrent Multi-Master ==========
 --- 4 Masters → Slave 0 (write, concurrent) ---
-[6345000] MASTER[0] WRITE START: addr=0x00000100 len=0 id=0x0
-[6345000] MASTER[1] WRITE START: addr=0x00000104 len=0 id=0x0
-[6345000] MASTER[2] WRITE START: addr=0x00000108 len=0 id=0x0
-[6345000] MASTER[3] WRITE START: addr=0x0000010c len=0 id=0x0
-[6375000] MASTER[3] WRITE DONE: addr=0x0000010c BID=0x0
-[6375000] MASTER[2] WRITE DONE: addr=0x00000108 BID=0x0
-[6375000] MASTER[1] WRITE DONE: addr=0x00000104 BID=0x0
-[6375000] MASTER[0] WRITE DONE: addr=0x00000100 BID=0x0
+[8595000] MASTER[0] WRITE START: addr=0x00000100 len=0 id=0x0
+[8595000] MASTER[1] WRITE START: addr=0x00000104 len=0 id=0x0
+[8595000] MASTER[2] WRITE START: addr=0x00000108 len=0 id=0x0
+[8595000] MASTER[3] WRITE START: addr=0x0000010c len=0 id=0x0
+[8635000] SLAVE[0] AW accepted: addr=0x0000010c len=0 size=2 id=0xc0
+[8645000] SLAVE[0] AW accepted: addr=0x00000104 len=0 size=2 id=0x40
+[8655000] SLAVE[0] AW accepted: addr=0x00000108 len=0 size=2 id=0x80
+[8665000] SLAVE[0] AW accepted: addr=0x00000100 len=0 size=2 id=0x0
+[8705000] SLAVE[0] W beat: data=0xdddd0004 last=1 beat_left=0
+[8715000] SLAVE[0] B sent: id=0xc0
+[8725000] SLAVE[0] W beat: data=0xbbbb0002 last=1 beat_left=0
+[8735000] SLAVE[0] B sent: id=0x40
+[8735000] B_LISTENER[3]: B resp=0x0 BID=0x0
+[8735000] MASTER[3] WRITE DONE: addr=0x0000010c BID=0x0
+[8745000] SLAVE[0] W beat: data=0xcccc0003 last=1 beat_left=0
+[8755000] SLAVE[0] B sent: id=0x80
+[8755000] B_LISTENER[1]: B resp=0x0 BID=0x0
+[8755000] MASTER[1] WRITE DONE: addr=0x00000104 BID=0x0
+[8765000] SLAVE[0] W beat: data=0xaaaa0001 last=1 beat_left=0
+[8775000] SLAVE[0] B sent: id=0x0
+[8775000] B_LISTENER[2]: B resp=0x0 BID=0x0
+[8775000] MASTER[2] WRITE DONE: addr=0x00000108 BID=0x0
+[8795000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[8795000] MASTER[0] WRITE DONE: addr=0x00000100 BID=0x0
 --- 4 Masters ← Slave 0 (read, concurrent) ---
-[6375000] MASTER[0] READ START: addr=0x00000100 len=0 id=0x0
-[6375000] MASTER[1] READ START: addr=0x00000104 len=0 id=0x0
-[6375000] MASTER[2] READ START: addr=0x00000108 len=0 id=0x0
-[6375000] MASTER[3] READ START: addr=0x0000010c len=0 id=0x0
-[6385000] SLAVE[0] AW accepted: addr=0x00000100 len=0 size=2 id=0x0
-[6395000] SLAVE[0] AW accepted: addr=0x00000104 len=0 size=2 id=0x40
-[6415000] SLAVE[0] AR accepted: addr=0x0000010c len=0 size=2 id=0xc0
-[6425000] SLAVE[0] AR accepted: addr=0x00000104 len=0 size=2 id=0x40
-[6425000] SLAVE[0] R last beat done: id=0xc0
-[6435000] SLAVE[1] W beat: data=0xaaaa0001 last=1 beat_left=0
-[6435000] SLAVE[0] W beat: data=0xaaaa0001 last=1 beat_left=7
-[6435000] SLAVE[0] AR accepted: addr=0x00000108 len=0 size=2 id=0x80
-[6445000] SLAVE[1] B sent: id=0x3
-[6445000] SLAVE[0] B sent: id=0xa
-[6445000] SLAVE[0] AR accepted: addr=0x00000100 len=0 size=2 id=0x0
-[6445000] SLAVE[0] R last beat done: id=0x40
-[6445000] R_LISTENER[3]: beat=0 data=0x00000000 rlast=1
-[6445000] MASTER[3] R beat: data=0x00000000 last=1
-[6445000] MASTER[3] READ DONE: addr=0x0000010c RID=0x0
-[6445000] CHECK OK: M[3] read data match @ addr=0x0000010c data=0x00000000
-[6455000] SLAVE[1] W beat: data=0xaaaabbbb last=1 beat_left=0
-[6465000] SLAVE[1] AW accepted: addr=0x0000200c len=0 size=2 id=0xc3
-[6465000] SLAVE[1] B sent: id=0x43
-[6465000] SLAVE[0] R last beat done: id=0x80
-[6465000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[6465000] R_LISTENER[1]: beat=0 data=0x00000000 rlast=1
-[6465000] MASTER[1] R beat: data=0x00000000 last=1
-[6465000] MASTER[1] READ DONE: addr=0x00000104 RID=0x0
-[6465000] CHECK OK: M[1] read data match @ addr=0x00000104 data=0x00000000
-[6475000] SLAVE[1] AW accepted: addr=0x0000200c len=0 size=2 id=0xc3
-[6475000] SLAVE[1] W beat: data=0xbbbb0002 last=1 beat_left=0
-[6475000] B_LISTENER[0]: B resp=0x0 BID=0x3
-[6485000] SLAVE[1] B sent: id=0x43
-[6485000] SLAVE[0] R last beat done: id=0x0
-[6485000] B_LISTENER[1]: B resp=0x0 BID=0x3
-[6485000] R_LISTENER[2]: beat=0 data=0x00000000 rlast=1
-[6485000] MASTER[2] R beat: data=0x00000000 last=1
-[6485000] MASTER[2] READ DONE: addr=0x00000108 RID=0x0
-[6485000] CHECK OK: M[2] read data match @ addr=0x00000108 data=0x00000000
-[6495000] SLAVE[1] W beat: data=0xffff0000 last=1 beat_left=0
-[6505000] SLAVE[1] B sent: id=0x83
-[6505000] B_LISTENER[1]: B resp=0x0 BID=0x3
-[6505000] R_LISTENER[0]: beat=0 data=0x000011a5 rlast=1
-[6505000] MASTER[0] R beat: data=0x000011a5 last=1
-[6505000] MASTER[0] READ DONE: addr=0x00000100 RID=0x0
-[6505000] CHECK OK: M[0] read data match @ addr=0x00000100 data=0x000011a5
+[8795000] MASTER[0] READ START: addr=0x00000100 len=0 id=0x0
+[8795000] MASTER[1] READ START: addr=0x00000104 len=0 id=0x0
+[8795000] MASTER[2] READ START: addr=0x00000108 len=0 id=0x0
+[8795000] MASTER[3] READ START: addr=0x0000010c len=0 id=0x0
+[8835000] SLAVE[0] AR accepted: addr=0x0000010c len=0 size=2 id=0xc0
+[8845000] SLAVE[0] AR accepted: addr=0x00000104 len=0 size=2 id=0x40
+[8845000] SLAVE[0] R last beat done: id=0xc0
+[8855000] SLAVE[0] AR accepted: addr=0x00000108 len=0 size=2 id=0x80
+[8865000] SLAVE[0] AR accepted: addr=0x00000100 len=0 size=2 id=0x0
+[8865000] SLAVE[0] R last beat done: id=0x40
+[8865000] R_LISTENER[3]: beat=0 data=0xdddd0004 rlast=1
+[8865000] MASTER[3] R beat: data=0xdddd0004 last=1
+[8865000] MASTER[3] READ DONE: addr=0x0000010c RID=0x0
+[8865000] CHECK OK: M[3] read data match @ addr=0x0000010c data=0xdddd0004
+[8885000] SLAVE[0] R last beat done: id=0x80
+[8885000] R_LISTENER[1]: beat=0 data=0xbbbb0002 rlast=1
+[8885000] MASTER[1] R beat: data=0xbbbb0002 last=1
+[8885000] MASTER[1] READ DONE: addr=0x00000104 RID=0x0
+[8885000] CHECK OK: M[1] read data match @ addr=0x00000104 data=0xbbbb0002
+[8905000] SLAVE[0] R last beat done: id=0x0
+[8905000] R_LISTENER[2]: beat=0 data=0xcccc0003 rlast=1
+[8905000] MASTER[2] R beat: data=0xcccc0003 last=1
+[8905000] MASTER[2] READ DONE: addr=0x00000108 RID=0x0
+[8905000] CHECK OK: M[2] read data match @ addr=0x00000108 data=0xcccc0003
+[8925000] R_LISTENER[0]: beat=0 data=0xaaaa0001 rlast=1
+[8925000] MASTER[0] R beat: data=0xaaaa0001 last=1
+[8925000] MASTER[0] READ DONE: addr=0x00000100 RID=0x0
+[8925000] CHECK OK: M[0] read data match @ addr=0x00000100 data=0xaaaa0001
 
 [PHASE 5] ========== PHASE 5: Multi-Slave Concurrent Access ==========
 --- 4 Masters → 4 Slaves (write, concurrent) ---
-[6505000] MASTER[0] WRITE START: addr=0x00000300 len=0 id=0x1
-[6505000] MASTER[1] WRITE START: addr=0x00002300 len=0 id=0x1
-[6505000] MASTER[2] WRITE START: addr=0x00004300 len=0 id=0x1
-[6505000] MASTER[3] WRITE START: addr=0x00006300 len=0 id=0x1
-[6515000] SLAVE[1] W beat: data=0xcccc0003 last=1 beat_left=0
-[6525000] SLAVE[1] B sent: id=0x83
-[6525000] B_LISTENER[2]: B resp=0x0 BID=0x3
-[6535000] SLAVE[1] W beat: data=0x0000ffff last=1 beat_left=0
-[6535000] MASTER[3] WRITE DONE: addr=0x00006300 BID=0x0
-[6535000] MASTER[2] WRITE DONE: addr=0x00004300 BID=0x0
-[6535000] MASTER[1] WRITE DONE: addr=0x00002300 BID=0x0
-[6535000] MASTER[0] WRITE DONE: addr=0x00000300 BID=0x0
+[8925000] MASTER[0] WRITE START: addr=0x00000300 len=0 id=0x1
+[8925000] MASTER[1] WRITE START: addr=0x00002300 len=0 id=0x1
+[8925000] MASTER[2] WRITE START: addr=0x00004300 len=0 id=0x1
+[8925000] MASTER[3] WRITE START: addr=0x00006300 len=0 id=0x1
+[8965000] SLAVE[3] AW accepted: addr=0x00006300 len=0 size=2 id=0xc1
+[8965000] SLAVE[2] AW accepted: addr=0x00004300 len=0 size=2 id=0x81
+[8965000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0x41
+[8965000] SLAVE[0] AW accepted: addr=0x00000300 len=0 size=2 id=0x1
+[9035000] SLAVE[3] W beat: data=0x44444444 last=1 beat_left=0
+[9035000] SLAVE[2] W beat: data=0x33333333 last=1 beat_left=0
+[9035000] SLAVE[1] W beat: data=0x22222222 last=1 beat_left=0
+[9035000] SLAVE[0] W beat: data=0x11111111 last=1 beat_left=0
+[9045000] SLAVE[3] B sent: id=0xc1
+[9045000] SLAVE[2] B sent: id=0x81
+[9045000] SLAVE[1] B sent: id=0x41
+[9045000] SLAVE[0] B sent: id=0x1
+[9065000] B_LISTENER[3]: B resp=0x0 BID=0x1
+[9065000] B_LISTENER[2]: B resp=0x0 BID=0x1
+[9065000] B_LISTENER[1]: B resp=0x0 BID=0x1
+[9065000] B_LISTENER[0]: B resp=0x0 BID=0x1
+[9065000] MASTER[3] WRITE DONE: addr=0x00006300 BID=0x1
+[9065000] MASTER[2] WRITE DONE: addr=0x00004300 BID=0x1
+[9065000] MASTER[1] WRITE DONE: addr=0x00002300 BID=0x1
+[9065000] MASTER[0] WRITE DONE: addr=0x00000300 BID=0x1
 --- 4 Masters ← 4 Slaves (read, concurrent) ---
-[6535000] MASTER[0] READ START: addr=0x00000300 len=0 id=0x1
-[6535000] MASTER[1] READ START: addr=0x00002300 len=0 id=0x1
-[6535000] MASTER[2] READ START: addr=0x00004300 len=0 id=0x1
-[6535000] MASTER[3] READ START: addr=0x00006300 len=0 id=0x1
-[6545000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0x41
-[6545000] SLAVE[1] B sent: id=0xc3
-[6545000] B_LISTENER[2]: B resp=0x0 BID=0x3
-[6555000] SLAVE[1] AW accepted: addr=0x00002300 len=0 size=2 id=0x41
-[6565000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[6575000] SLAVE[3] AR accepted: addr=0x00006300 len=0 size=2 id=0xc1
-[6575000] SLAVE[2] AR accepted: addr=0x00004300 len=0 size=2 id=0x81
-[6575000] SLAVE[1] AR accepted: addr=0x00002300 len=0 size=2 id=0x41
-[6575000] SLAVE[0] AR accepted: addr=0x00000300 len=0 size=2 id=0x1
-[6585000] SLAVE[3] R last beat done: id=0xc1
-[6585000] SLAVE[2] R last beat done: id=0x81
-[6585000] SLAVE[1] R last beat done: id=0x41
-[6585000] SLAVE[0] R last beat done: id=0x1
-[6595000] SLAVE[1] W beat: data=0x22222222 last=1 beat_left=0
-[6595000] SLAVE[0] W beat: data=0x11111111 last=1 beat_left=0
-[6605000] SLAVE[1] B sent: id=0xc3
-[6605000] SLAVE[0] B sent: id=0x40
-[6605000] R_LISTENER[3]: beat=0 data=0x0000ffff rlast=1
-[6605000] R_LISTENER[2]: beat=0 data=0x000033a5 rlast=1
-[6605000] R_LISTENER[1]: beat=0 data=0x000032a5 rlast=1
-[6605000] R_LISTENER[0]: beat=0 data=0x000031a5 rlast=1
-[6605000] MASTER[3] R beat: data=0x0000ffff last=1
-[6605000] MASTER[3] READ DONE: addr=0x00006300 RID=0x1
-[6605000] CHECK OK: M[3] read data match @ addr=0x00006300 data=0x0000ffff
-[6605000] MASTER[2] R beat: data=0x000033a5 last=1
-[6605000] MASTER[2] READ DONE: addr=0x00004300 RID=0x1
-[6605000] CHECK OK: M[2] read data match @ addr=0x00004300 data=0x000033a5
-[6605000] MASTER[1] R beat: data=0x000032a5 last=1
-[6605000] MASTER[1] READ DONE: addr=0x00002300 RID=0x1
-[6605000] CHECK OK: M[1] read data match @ addr=0x00002300 data=0x000032a5
-[6605000] MASTER[0] R beat: data=0x000031a5 last=1
-[6605000] MASTER[0] READ DONE: addr=0x00000300 RID=0x1
-[6605000] CHECK OK: M[0] read data match @ addr=0x00000300 data=0x000031a5
+[9065000] MASTER[0] READ START: addr=0x00000300 len=0 id=0x1
+[9065000] MASTER[1] READ START: addr=0x00002300 len=0 id=0x1
+[9065000] MASTER[2] READ START: addr=0x00004300 len=0 id=0x1
+[9065000] MASTER[3] READ START: addr=0x00006300 len=0 id=0x1
+[9105000] SLAVE[3] AR accepted: addr=0x00006300 len=0 size=2 id=0xc1
+[9105000] SLAVE[2] AR accepted: addr=0x00004300 len=0 size=2 id=0x81
+[9105000] SLAVE[1] AR accepted: addr=0x00002300 len=0 size=2 id=0x41
+[9105000] SLAVE[0] AR accepted: addr=0x00000300 len=0 size=2 id=0x1
+[9115000] SLAVE[3] R last beat done: id=0xc1
+[9115000] SLAVE[2] R last beat done: id=0x81
+[9115000] SLAVE[1] R last beat done: id=0x41
+[9115000] SLAVE[0] R last beat done: id=0x1
+[9135000] R_LISTENER[3]: beat=0 data=0x44444444 rlast=1
+[9135000] R_LISTENER[2]: beat=0 data=0x33333333 rlast=1
+[9135000] R_LISTENER[1]: beat=0 data=0x22222222 rlast=1
+[9135000] R_LISTENER[0]: beat=0 data=0x11111111 rlast=1
+[9135000] MASTER[3] R beat: data=0x44444444 last=1
+[9135000] MASTER[3] READ DONE: addr=0x00006300 RID=0x1
+[9135000] CHECK OK: M[3] read data match @ addr=0x00006300 data=0x44444444
+[9135000] MASTER[2] R beat: data=0x33333333 last=1
+[9135000] MASTER[2] READ DONE: addr=0x00004300 RID=0x1
+[9135000] CHECK OK: M[2] read data match @ addr=0x00004300 data=0x33333333
+[9135000] MASTER[1] R beat: data=0x22222222 last=1
+[9135000] MASTER[1] READ DONE: addr=0x00002300 RID=0x1
+[9135000] CHECK OK: M[1] read data match @ addr=0x00002300 data=0x22222222
+[9135000] MASTER[0] R beat: data=0x11111111 last=1
+[9135000] MASTER[0] READ DONE: addr=0x00000300 RID=0x1
+[9135000] CHECK OK: M[0] read data match @ addr=0x00000300 data=0x11111111
 
 [PHASE 6] ========== PHASE 6: Mixed Concurrent Read/Write ==========
-[6605000] MASTER[0] WRITE START: addr=0x00000500 len=0 id=0xf
-[6605000] MONITOR [phase=6][cnt=0]
-  M[0] AW: addr=0x00000300 valid=0 ready=1
-  M[0] W : data=0x11111111 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x000031a5 last=1 valid=1 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x000032a5 last=1 valid=1 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x000033a5 last=1 valid=1 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x0000ffff last=1 valid=1 ready=1
-  S[0] AW: addr=0x00000104 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=0
-  S[0] B : id=0x40 resp=0x0 valid=1 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=0
-  S[1] B : id=0xc3 resp=0x0 valid=1 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6615000] SLAVE[1] W beat: data=0xdddd0004 last=1 beat_left=0
-[6615000] MONITOR [phase=6][cnt=1]
-  M[0] AW: addr=0x00000300 valid=0 ready=1
-  M[0] W : data=0x11111111 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000104 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0xdddd0004 last=1 valid=1 ready=1
-  S[1] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6625000] SLAVE[0] AW accepted: addr=0x00000104 len=0 size=2 id=0x40
-[6625000] SLAVE[1] B sent: id=0x41
-[6625000] B_LISTENER[3]: B resp=0x0 BID=0x3
-[6625000] B_LISTENER[1]: B resp=0x0 BID=0x0
-[6625000] MONITOR [phase=6][cnt=2]
-  M[0] AW: addr=0x00000500 valid=1 ready=1
-  M[0] W : data=0x11111111 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=1 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x3 resp=0x0 valid=1 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000104 valid=1 ready=1
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=0
-  S[1] B : id=0x41 resp=0x0 valid=1 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6635000] SLAVE[0] AW accepted: addr=0x00000108 len=0 size=2 id=0x80
-[6635000] MASTER[0] WRITE DONE: addr=0x00000500 BID=0x0
-[6635000] MASTER[1] WRITE START: addr=0x00002500 len=0 id=0xf
-[6635000] MONITOR [phase=6][cnt=3]
-  M[0] AW: addr=0x00000500 valid=1 ready=0
-  M[0] W : data=0x11111111 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=1
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6645000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[6645000] MONITOR [phase=6][cnt=4]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0x11111111 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x1 resp=0x0 valid=1 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6655000] MONITOR [phase=6][cnt=5]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0x11111111 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=1 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6665000] MASTER[1] WRITE DONE: addr=0x00002500 BID=0x0
-[6665000] MONITOR [phase=6][cnt=6]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=1 valid=1 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=1 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6675000] SLAVE[1] AW accepted: addr=0x00002500 len=0 size=2 id=0x4f
-[6675000] MONITOR [phase=6][cnt=7]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00002500 valid=1 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6685000] SLAVE[1] AW accepted: addr=0x00002500 len=0 size=2 id=0x4f
-[6685000] MONITOR [phase=6][cnt=8]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00002500 valid=1 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6695000] SLAVE[0] W beat: data=0xcafec0de last=1 beat_left=15
-[6695000] MONITOR [phase=6][cnt=9]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=1 valid=1 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0xcafec0de last=1 valid=1 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6705000] SLAVE[0] B sent: id=0xa
-[6705000] MONITOR [phase=6][cnt=10]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=0
-  S[0] B : id=0xa resp=0x0 valid=1 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6715000] MONITOR [phase=6][cnt=11]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6725000] SLAVE[1] W beat: data=0xfeedface last=1 beat_left=0
-[6725000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[6725000] MONITOR [phase=6][cnt=12]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0xa resp=0x0 valid=1 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0xfeedface last=1 valid=1 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6735000] SLAVE[1] B sent: id=0x41
-[6735000] MONITOR [phase=6][cnt=13]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=0
-  S[1] B : id=0x41 resp=0x0 valid=1 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6745000] MONITOR [phase=6][cnt=14]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6755000] B_LISTENER[1]: B resp=0x0 BID=0x1
-[6755000] MONITOR [phase=6][cnt=15]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x1 resp=0x0 valid=1 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[9135000] MASTER[0] WRITE START: addr=0x00000500 len=0 id=0xf
+[9175000] SLAVE[0] AW accepted: addr=0x00000500 len=0 size=2 id=0xf
+[9245000] SLAVE[0] W beat: data=0xcafec0de last=1 beat_left=0
+[9255000] SLAVE[0] B sent: id=0xf
+[9275000] B_LISTENER[0]: B resp=0x0 BID=0xf
+[9275000] MASTER[0] WRITE DONE: addr=0x00000500 BID=0xf
+[9275000] MASTER[1] WRITE START: addr=0x00002500 len=0 id=0xf
+[9315000] SLAVE[1] AW accepted: addr=0x00002500 len=0 size=2 id=0x4f
+[9385000] SLAVE[1] W beat: data=0xfeedface last=1 beat_left=0
+[9395000] SLAVE[1] B sent: id=0x4f
+[9415000] B_LISTENER[1]: B resp=0x0 BID=0xf
+[9415000] MASTER[1] WRITE DONE: addr=0x00002500 BID=0xf
 --- M0 read Slave0, M1 write Slave1, M2 write Slave2, M3 read Slave3 ---
-[6765000] MONITOR [phase=6][cnt=16]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6765000] MASTER[0] READ START: addr=0x00000500 len=0 id=0xf
-[6765000] MASTER[1] WRITE START: addr=0x00002600 len=0 id=0xe
-[6765000] MASTER[2] WRITE START: addr=0x00004600 len=0 id=0xe
-[6765000] MASTER[3] WRITE START: addr=0x00006500 len=0 id=0xe
-[6775000] MONITOR [phase=6][cnt=17]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002500 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6785000] MONITOR [phase=6][cnt=18]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=1 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=1 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6795000] MASTER[1] WRITE DONE: addr=0x00002600 BID=0x0
-[6795000] MONITOR [phase=6][cnt=19]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=1 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6805000] SLAVE[1] AW accepted: addr=0x00002600 len=0 size=2 id=0x4e
-[6805000] SLAVE[0] AR accepted: addr=0x00000500 len=0 size=2 id=0xf
-[6805000] MONITOR [phase=6][cnt=20]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000500 valid=1 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00002600 valid=1 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6815000] SLAVE[1] AW accepted: addr=0x00002600 len=0 size=2 id=0x4e
-[6815000] SLAVE[0] R last beat done: id=0xf
-[6815000] MONITOR [phase=6][cnt=21]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xfeedface last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=1 valid=1 ready=1
-  S[1] AW: addr=0x00002600 valid=1 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6825000] MONITOR [phase=6][cnt=22]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xbeef0001 last=1 valid=1 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6835000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=1
-[6835000] MASTER[0] R beat: data=0x00000000 last=1
-[6835000] MASTER[0] READ DONE: addr=0x00000500 RID=0xf
-[6835000] CHECK OK: M[0] read data match @ addr=0x00000500 data=0x00000000
-[6835000] MONITOR [phase=6][cnt=23]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=1 valid=1 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6845000] MONITOR [phase=6][cnt=24]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
+[9515000] MASTER[0] READ START: addr=0x00000500 len=0 id=0xf
+[9515000] MASTER[1] WRITE START: addr=0x00002600 len=0 id=0xe
+[9515000] MASTER[2] WRITE START: addr=0x00004600 len=0 id=0xe
+[9515000] MASTER[3] WRITE START: addr=0x00006500 len=0 id=0xe
+[9555000] SLAVE[3] AW accepted: addr=0x00006500 len=0 size=2 id=0xce
+[9555000] SLAVE[2] AW accepted: addr=0x00004600 len=0 size=2 id=0x8e
+[9555000] SLAVE[1] AW accepted: addr=0x00002600 len=0 size=2 id=0x4e
+[9555000] SLAVE[0] AR accepted: addr=0x00000500 len=0 size=2 id=0xf
+[9565000] SLAVE[0] R last beat done: id=0xf
+[9585000] R_LISTENER[0]: beat=0 data=0xcafec0de rlast=1
+[9585000] MASTER[0] R beat: data=0xcafec0de last=1
+[9585000] MASTER[0] READ DONE: addr=0x00000500 RID=0xf
+[9585000] CHECK OK: M[0] read data match @ addr=0x00000500 data=0xcafec0de
+[9625000] SLAVE[3] W beat: data=0xdeadbeef last=1 beat_left=0
+[9625000] SLAVE[2] W beat: data=0xbeef0002 last=1 beat_left=0
+[9625000] SLAVE[1] W beat: data=0xbeef0001 last=1 beat_left=0
+[9635000] SLAVE[3] B sent: id=0xce
+[9635000] SLAVE[2] B sent: id=0x8e
+[9635000] SLAVE[1] B sent: id=0x4e
+[9655000] B_LISTENER[3]: B resp=0x0 BID=0xe
+[9655000] B_LISTENER[2]: B resp=0x0 BID=0xe
+[9655000] B_LISTENER[1]: B resp=0x0 BID=0xe
+[9655000] MASTER[3] WRITE DONE: addr=0x00006500 BID=0xe
+[9655000] MASTER[2] WRITE DONE: addr=0x00004600 BID=0xe
+[9655000] MASTER[1] WRITE DONE: addr=0x00002600 BID=0xe
+[9685000] MASTER[3] READ START: addr=0x00006500 len=0 id=0xe
+[9725000] SLAVE[3] AR accepted: addr=0x00006500 len=0 size=2 id=0xce
+[9735000] SLAVE[3] R last beat done: id=0xce
+[9755000] R_LISTENER[3]: beat=0 data=0xdeadbeef rlast=1
+[9755000] MASTER[3] R beat: data=0xdeadbeef last=1
+[9755000] MASTER[3] READ DONE: addr=0x00006500 RID=0xe
+[9755000] CHECK OK: M[3] read data match @ addr=0x00006500 data=0xdeadbeef
+
+[PHASE 7] ========== PHASE 7: Multi-ID Outstanding Transactions ==========
+--- M0: 4 writes with different IDs → Slave 0 ---
+[9755000] MONITOR [phase=7][cnt=0]
+  M[0] AW: addr=0x00000500 valid=0 ready=1
   M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000500 valid=0 ready=1
@@ -1780,122 +740,42 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0xdeadbeef last=1 valid=1 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6855000] SLAVE[1] W beat: data=0xbeef0001 last=1 beat_left=0
-[6855000] MONITOR [phase=6][cnt=25]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0xbeef0001 last=1 valid=1 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6865000] SLAVE[1] B sent: id=0x4f
-[6865000] MONITOR [phase=6][cnt=26]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=0
-  S[1] B : id=0x4f resp=0x0 valid=1 ready=1
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
   S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
   S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
   S[3] AW: addr=0x00000000 valid=0 ready=1
   S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6875000] MONITOR [phase=6][cnt=27]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9755000] MASTER[0] WRITE START: addr=0x00000700 len=0 id=0x0
+[9755000] MASTER[0] WRITE START: addr=0x00000704 len=0 id=0x2
+[9755000] MASTER[0] WRITE START: addr=0x00000708 len=0 id=0x4
+[9755000] MASTER[0] WRITE START: addr=0x0000070c len=0 id=0x6
+[9765000] MONITOR [phase=7][cnt=1]
+  M[0] AW: addr=0x00000500 valid=0 ready=1
   M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000500 valid=0 ready=1
@@ -1905,80 +785,38 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
   M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x4f resp=0x0 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
   S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
   S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
   S[3] AW: addr=0x00000000 valid=0 ready=1
   S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6885000] B_LISTENER[1]: B resp=0x0 BID=0xf
-[6885000] MONITOR [phase=6][cnt=28]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
-  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000500 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002600 valid=0 ready=1
-  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
-  M[1] B : id=0xf resp=0x0 valid=1 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x4f resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6895000] MONITOR [phase=6][cnt=29]
-  M[0] AW: addr=0x00000500 valid=0 ready=0
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9775000] MONITOR [phase=7][cnt=2]
+  M[0] AW: addr=0x00000700 valid=1 ready=1
   M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000500 valid=0 ready=1
@@ -1988,45 +826,1157 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004600 valid=1 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006500 valid=1 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
   M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x4f resp=0x0 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
   S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
   S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
   S[3] AW: addr=0x00000000 valid=0 ready=1
   S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9785000] MONITOR [phase=7][cnt=3]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9795000] SLAVE[0] AW accepted: addr=0x00000700 len=0 size=2 id=0x0
+[9795000] MONITOR [phase=7][cnt=4]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000700 valid=1 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9805000] MONITOR [phase=7][cnt=5]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9815000] MONITOR [phase=7][cnt=6]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9825000] MONITOR [phase=7][cnt=7]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9835000] MONITOR [phase=7][cnt=8]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa004a004 last=1 valid=1 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9845000] MONITOR [phase=7][cnt=9]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa004a004 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9855000] MONITOR [phase=7][cnt=10]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa004a004 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9865000] SLAVE[0] W beat: data=0xa004a004 last=1 beat_left=0
+[9865000] MONITOR [phase=7][cnt=11]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa003a003 last=1 valid=1 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0xa004a004 last=1 valid=1 ready=1
+  S[0] B : id=0xf resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9875000] SLAVE[0] B sent: id=0x0
+[9875000] MONITOR [phase=7][cnt=12]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa003a003 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=1 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9885000] MONITOR [phase=7][cnt=13]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa003a003 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9895000] B_LISTENER[0]: B resp=0x0 BID=0x0
+[9895000] MASTER[0] WRITE DONE: addr=0x0000070c BID=0x0
+[9895000] MONITOR [phase=7][cnt=14]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa002a002 last=1 valid=1 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=1 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9905000] MONITOR [phase=7][cnt=15]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa002a002 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9915000] MONITOR [phase=7][cnt=16]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa002a002 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9925000] MONITOR [phase=7][cnt=17]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=1 valid=1 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9935000] MONITOR [phase=7][cnt=18]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9945000] MONITOR [phase=7][cnt=19]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9955000] MONITOR [phase=7][cnt=20]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9965000] MONITOR [phase=7][cnt=21]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9975000] MONITOR [phase=7][cnt=22]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9985000] MONITOR [phase=7][cnt=23]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[9995000] MONITOR [phase=7][cnt=24]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[10005000] MONITOR [phase=7][cnt=25]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[10015000] MONITOR [phase=7][cnt=26]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[10025000] MONITOR [phase=7][cnt=27]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[10035000] MONITOR [phase=7][cnt=28]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
+[10045000] MONITOR [phase=7][cnt=29]
+  M[0] AW: addr=0x00000700 valid=0 ready=1
+  M[0] W : data=0xa001a001 last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=0 ready=1
+  M[2] W : data=0xbeef0002 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=0 ready=1
+  M[3] W : data=0xdeadbeef last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006500 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000000 valid=0 ready=1
+  S[0] W : data=0x00000000 last=0 valid=0 ready=0
+  S[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0xcafec0de last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4e resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x22222222 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0x8e resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x33333333 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xce resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0xdeadbeef last=0 valid=0 ready=1
 
-[506885000] DEADLOCK: no AXI activity for 50000 cycles
+[509925000] DEADLOCK: no AXI activity for 50000 cycles
   m_wr_q_cnt = {0,0,0,0}
-  m_b_q_cnt  = {5,5,3,3}
+  m_b_q_cnt  = {0,0,0,0}
   m_rd_q_cnt = {0,0,0,0}
-$finish called from file "./tb/axi_tb.sv", line 1102.
-$finish at simulation time            506885000
+$finish called from file "./tb/axi_tb.sv", line 1106.
+$finish at simulation time            509925000
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 506885000 ps
-CPU Time:      0.510 seconds;       Data structure size:   0.6Mb
-Thu May 28 20:14:04 2026
-CPU time: 1.061 seconds to compile + .312 seconds to elab + .185 seconds to link + .538 seconds in simulation
+Time: 509925000 ps
+CPU Time:      0.470 seconds;       Data structure size:   0.6Mb
+Thu May 28 20:34:07 2026
+CPU time: 1.028 seconds to compile + .311 seconds to elab + .177 seconds to link + .492 seconds in simulation

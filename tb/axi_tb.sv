@@ -699,10 +699,14 @@ module axi_tb;
             $display("[%0t] MASTER[%0d] WRITE START: addr=0x%08h len=%0d id=0x%0h",
                      $time, mst, addr, len, id);
 
-            // Send AW first (blocks until AWREADY)
+            // Send AW first (blocks until cross_4k_if accepts into FIFO)
             axi_aw_send(mst, id, addr, len, size, burst);
 
-            // Queue W data AFTER AW handshake → ensures pending_aw_cnt is ready
+            // Wait for AW to propagate through pipeline FIFO → crossbar M2S,
+            // so pending_aw_cnt is updated before W data arrives
+            repeat(3) @(posedge AXI_CLK);
+
+            // Queue W data after pipeline delay
             while (m_wr_q_cnt[mst] >= 4) @(posedge AXI_CLK);
             m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
             for (beat = 0; beat <= len; beat = beat + 1) begin
@@ -806,7 +810,7 @@ module axi_tb;
             @(posedge AXI_CLK);
             while (!M_AXI_AWREADY_o[mst]) @(posedge AXI_CLK);
 
-            @(posedge AXI_CLK);
+            // Deassert immediately (arbiter uses S_AWREADY, no race)
             M_AXI_AWVALID_i[mst] <= 1'b0;
         end
     endtask
@@ -1475,67 +1479,64 @@ module axi_tb;
         phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 7: Multi-ID Outstanding Transactions ==========", phase_cnt);
         begin
             // Master 0 issues 4 writes with different IDs to the same slave
+            // AW sent sequentially (single master driver), W/B can be pipelined
             $display("--- M0: 4 writes with different IDs → Slave 0 ---");
-            fork
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    reg [W_STRB-1:0]     _s [];
-                    _d = new[1]; _s = new[1];
-                    _d[0] = 32'hA001_A001; _s[0] = 4'hF;
-                    axi_write_burst(0, 4'h0, 32'h0000_0700, 8'd0, 3'b010, 2'b01, _d, _s);
-                end
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    reg [W_STRB-1:0]     _s [];
-                    _d = new[1]; _s = new[1];
-                    _d[0] = 32'hA002_A002; _s[0] = 4'hF;
-                    axi_write_burst(0, 4'h2, 32'h0000_0704, 8'd0, 3'b010, 2'b01, _d, _s);
-                end
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    reg [W_STRB-1:0]     _s [];
-                    _d = new[1]; _s = new[1];
-                    _d[0] = 32'hA003_A003; _s[0] = 4'hF;
-                    axi_write_burst(0, 4'h4, 32'h0000_0708, 8'd0, 3'b010, 2'b01, _d, _s);
-                end
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    reg [W_STRB-1:0]     _s [];
-                    _d = new[1]; _s = new[1];
-                    _d[0] = 32'hA004_A004; _s[0] = 4'hF;
-                    axi_write_burst(0, 4'h6, 32'h0000_070C, 8'd0, 3'b010, 2'b01, _d, _s);
-                end
-            join
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                reg [W_STRB-1:0]     _s [];
+                _d = new[1]; _s = new[1];
+                _d[0] = 32'hA001_A001; _s[0] = 4'hF;
+                axi_write_burst(0, 4'h0, 32'h0000_0700, 8'd0, 3'b010, 2'b01, _d, _s);
+            end
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                reg [W_STRB-1:0]     _s [];
+                _d = new[1]; _s = new[1];
+                _d[0] = 32'hA002_A002; _s[0] = 4'hF;
+                axi_write_burst(0, 4'h2, 32'h0000_0704, 8'd0, 3'b010, 2'b01, _d, _s);
+            end
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                reg [W_STRB-1:0]     _s [];
+                _d = new[1]; _s = new[1];
+                _d[0] = 32'hA003_A003; _s[0] = 4'hF;
+                axi_write_burst(0, 4'h4, 32'h0000_0708, 8'd0, 3'b010, 2'b01, _d, _s);
+            end
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                reg [W_STRB-1:0]     _s [];
+                _d = new[1]; _s = new[1];
+                _d[0] = 32'hA004_A004; _s[0] = 4'hF;
+                axi_write_burst(0, 4'h6, 32'h0000_070C, 8'd0, 3'b010, 2'b01, _d, _s);
+            end
 
             wait_cycles(10);
 
             $display("--- M0: 4 reads with different IDs ← Slave 0 ---");
-            fork
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    _d = new[1];
-                    axi_read_burst(0, 4'h0, 32'h0000_0700, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(0, 32'h0000_0700, 8'd0, 3'b010, _d);
-                end
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    _d = new[1];
-                    axi_read_burst(0, 4'h2, 32'h0000_0704, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(0, 32'h0000_0704, 8'd0, 3'b010, _d);
-                end
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    _d = new[1];
-                    axi_read_burst(0, 4'h4, 32'h0000_0708, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(0, 32'h0000_0708, 8'd0, 3'b010, _d);
-                end
-                begin
-                    reg [DATA_WIDTH-1:0] _d [];
-                    _d = new[1];
-                    axi_read_burst(0, 4'h6, 32'h0000_070C, 8'd0, 3'b010, 2'b01, _d);
-                    check_read_data(0, 32'h0000_070C, 8'd0, 3'b010, _d);
-                end
-            join
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                _d = new[1];
+                axi_read_burst(0, 4'h0, 32'h0000_0700, 8'd0, 3'b010, 2'b01, _d);
+                check_read_data(0, 32'h0000_0700, 8'd0, 3'b010, _d);
+            end
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                _d = new[1];
+                axi_read_burst(0, 4'h2, 32'h0000_0704, 8'd0, 3'b010, 2'b01, _d);
+                check_read_data(0, 32'h0000_0704, 8'd0, 3'b010, _d);
+            end
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                _d = new[1];
+                axi_read_burst(0, 4'h4, 32'h0000_0708, 8'd0, 3'b010, 2'b01, _d);
+                check_read_data(0, 32'h0000_0708, 8'd0, 3'b010, _d);
+            end
+            begin
+                reg [DATA_WIDTH-1:0] _d [];
+                _d = new[1];
+                axi_read_burst(0, 4'h6, 32'h0000_070C, 8'd0, 3'b010, 2'b01, _d);
+                check_read_data(0, 32'h0000_070C, 8'd0, 3'b010, _d);
+            end
         end
 
         //---------------------------------------------------------

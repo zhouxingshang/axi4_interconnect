@@ -206,12 +206,14 @@ axi_arbiter_m2s_m_amt #(
     .AWVALID     (m_awvalid),
     .AWREADY     (m_awready),
     .AWGRANT     (AWGRANT),
-    
+    .S_AWREADY   (S_AWREADY),
+
     // AR channel ports
     .ARSELECT    (ARSELECT),
     .ARVALID     (m_arvalid),
     .ARREADY     (m_arready),
     .ARGRANT     (ARGRANT),
+    .S_ARREADY   (S_ARREADY),
     
     .arbiter_type(arbiter_type)
     // ⚠️ W channel ports REMOVED - handled by AW-order FIFO logic

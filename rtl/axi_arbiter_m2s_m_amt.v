@@ -9,10 +9,12 @@ module axi_arbiter_m2s_m_amt #(
     // AW channel arbitration
     input  wire  [NUM-1:0]       AWSELECT, AWVALID, AWREADY,
     output wire  [NUM-1:0]       AWGRANT,
+    input  wire                  S_AWREADY,
     
     // AR channel arbitration
     input  wire  [NUM-1:0]       ARSELECT, ARVALID, ARREADY,
     output wire  [NUM-1:0]       ARGRANT,
+    input  wire                  S_ARREADY,
     
     input  wire                  arbiter_type    // 0: RR, 1: Fixed
 );
@@ -44,15 +46,15 @@ module axi_arbiter_m2s_m_amt #(
             case (stateAW)
                 STAW_RUN: begin
                     if (|AWGRANT) begin
-                        // Hold grant until handshake completes (AWREADY goes high)
-                        if (~|(AWGRANT & AWREADY)) begin
+                        // Hold grant if slave not ready (use S_AWREADY to avoid race)
+                        if (!S_AWREADY) begin
                             awgrant_reg <= AWGRANT;
                             stateAW     <= STAW_WAIT;
                         end
                     end
                 end
                 STAW_WAIT: begin
-                    if (|(AWGRANT & AWVALID & AWREADY)) begin
+                    if (S_AWREADY) begin
                         stateAW <= STAW_RUN;
                     end
                 end
@@ -87,14 +89,15 @@ module axi_arbiter_m2s_m_amt #(
             case (stateAR)
                 STAR_RUN: begin
                     if (|ARGRANT) begin
-                        if (~|(ARGRANT & ARREADY)) begin
+                        // Hold grant if slave not ready (use S_ARREADY to avoid race)
+                        if (!S_ARREADY) begin
                             argrant_reg <= ARGRANT;
                             stateAR     <= STAR_WAIT;
                         end
                     end
                 end
                 STAR_WAIT: begin
-                    if (|(ARGRANT & ARVALID & ARREADY)) begin
+                    if (S_ARREADY) begin
                         stateAR <= STAR_RUN;
                     end
                 end
