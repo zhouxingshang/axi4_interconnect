@@ -1,4 +1,3 @@
-c      - Master identity encoded implicitly via array index (no m_id port)
 //=============================================================================
 module axi_m2s_m_amt
 #(

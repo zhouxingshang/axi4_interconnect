@@ -1106,7 +1106,7 @@ module axi_tb;
     end
 
     always @(posedge AXI_CLK) begin
-        if (phase_cnt >= 6 && monitor_cnt < 30) begin
+        if (phase_cnt >= 7 && monitor_cnt < 30) begin
             $display("[%0t] MONITOR [phase=%0d][cnt=%0d]", $time, phase_cnt, monitor_cnt);
             monitor_cnt <= monitor_cnt + 1;
             // ---- Master Side (M[0..3]) ----
@@ -1409,44 +1409,10 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 6: 4KB Boundary Crossing
         //---------------------------------------------------------
-        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 6: 4KB Boundary Crossing ==========", phase_cnt);
-        begin
-            reg [DATA_WIDTH-1:0] wdata_arr [];
-            reg [DATA_WIDTH-1:0] rdata_arr [];
-            reg [W_STRB-1:0]     strb_arr  [];
-            integer b, bi, blen;
-            wdata_arr = new[16];
-            rdata_arr = new[16];
-            strb_arr  = new[16];
-            for (bi = 0; bi < 3; bi = bi + 1) begin
-                blen = (bi == 0) ? 1 : (bi == 1) ? 3 : 7;
-                $display("--- Cross-4K: len=%0d, addr=0x0FF0 ---", blen);
-                // Start near 4KB boundary, SIZE=2 (4 bytes/beat)
-                // 0x0FF0 + (len+1)*4 → crosses 0x1000 if len >= 3
-                for (b = 0; b <= blen; b = b + 1) begin
-                    wdata_arr[b] = gen_test_data(0, b) ^ 32'hC000_0000;
-                    strb_arr[b]  = 4'hF;
-                end
-                axi_write_burst(0, 4'h7, 32'h0000_0FF0,
-                                blen[LEN_W-1:0], 3'b010, 2'b01,
-                                wdata_arr, strb_arr);
-                wait_cycles(10);
-
-                axi_read_burst(0, 4'h7, 32'h0000_0FF0,
-                               blen[LEN_W-1:0], 3'b010, 2'b01,
-                               rdata_arr);
-                check_read_data(0, 32'h0000_0FF0,
-                                blen[LEN_W-1:0], 3'b010, rdata_arr);
-                wait_cycles(10);
-            end
-        end
-
+        // PHASE 6: Mixed Concurrent Read/Write
         //---------------------------------------------------------
-        // PHASE 7: Mixed Concurrent Read/Write
-        //---------------------------------------------------------
-        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 7: Mixed Concurrent Read/Write ==========", phase_cnt);
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 6: Mixed Concurrent Read/Write ==========", phase_cnt);
         begin
             // Pre-write data for reads
             begin
@@ -1504,9 +1470,9 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 8: Multi-ID Outstanding (same master, different IDs)
+        // PHASE 7: Multi-ID Outstanding (same master, different IDs)
         //---------------------------------------------------------
-        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 8: Multi-ID Outstanding Transactions ==========", phase_cnt);
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 7: Multi-ID Outstanding Transactions ==========", phase_cnt);
         begin
             // Master 0 issues 4 writes with different IDs to the same slave
             $display("--- M0: 4 writes with different IDs → Slave 0 ---");
@@ -1573,9 +1539,9 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 9: Long Burst Stress Test
+        // PHASE 8: Long Burst Stress Test
         //---------------------------------------------------------
-        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 9: Long Burst Stress ==========", phase_cnt);
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 8: Long Burst Stress ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1600,9 +1566,9 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 10: Random Stress Test
+        // PHASE 9: Random Stress Test
         //---------------------------------------------------------
-        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 10: Random Stress Test ==========", phase_cnt);
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 9: Random Stress Test ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1641,6 +1607,41 @@ module axi_tb;
                                    rdata_arr);
                     check_read_data(rm, raddr, rlen[LEN_W-1:0], 3'b010, rdata_arr);
                 end
+            end
+        end
+
+        //---------------------------------------------------------
+        // PHASE 10: 4KB Boundary Crossing (moved to last)
+        //---------------------------------------------------------
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 10: 4KB Boundary Crossing ==========", phase_cnt);
+        begin
+            reg [DATA_WIDTH-1:0] wdata_arr [];
+            reg [DATA_WIDTH-1:0] rdata_arr [];
+            reg [W_STRB-1:0]     strb_arr  [];
+            integer b, bi, blen;
+            wdata_arr = new[16];
+            rdata_arr = new[16];
+            strb_arr  = new[16];
+            for (bi = 0; bi < 3; bi = bi + 1) begin
+                blen = (bi == 0) ? 1 : (bi == 1) ? 3 : 7;
+                $display("--- Cross-4K: len=%0d, addr=0x0FF0 ---", blen);
+                // Start near 4KB boundary, SIZE=2 (4 bytes/beat)
+                // 0x0FF0 + (len+1)*4 → crosses 0x1000 if len >= 3
+                for (b = 0; b <= blen; b = b + 1) begin
+                    wdata_arr[b] = gen_test_data(0, b) ^ 32'hC000_0000;
+                    strb_arr[b]  = 4'hF;
+                end
+                axi_write_burst(0, 4'h7, 32'h0000_0FF0,
+                                blen[LEN_W-1:0], 3'b010, 2'b01,
+                                wdata_arr, strb_arr);
+                wait_cycles(10);
+
+                axi_read_burst(0, 4'h7, 32'h0000_0FF0,
+                               blen[LEN_W-1:0], 3'b010, 2'b01,
+                               rdata_arr);
+                check_read_data(0, 32'h0000_0FF0,
+                                blen[LEN_W-1:0], 3'b010, rdata_arr);
+                wait_cycles(10);
             end
         end
 

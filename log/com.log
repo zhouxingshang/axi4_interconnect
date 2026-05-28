@@ -1,7 +1,7 @@
 Command: vcs -full64 -sverilog -f ./list/top.f -R +v2k -debug_access+all -timescale=1ns/1ps \
 -fsdb +define+FSDB -l com.log +lint=TFIPC-L +lint=PCWM
                          Chronologic VCS (TM)
-       Version O-2018.09-SP2_Full64 -- Thu May 28 16:11:31 2026
+       Version O-2018.09-SP2_Full64 -- Thu May 28 20:14:01 2026
                Copyright (c) 1991-2018 by Synopsys Inc.
                          ALL RIGHTS RESERVED
 
@@ -76,7 +76,7 @@ rm -f _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
 if [ -x ../simv ]; then chmod -x ../simv; fi
 g++  -o ../simv    -Wl,-rpath-link=./ -Wl,-rpath='$ORIGIN'/simv.daidir/ -Wl,-rpath=./simv.daidir/ \
 -Wl,-rpath='$ORIGIN'/simv.daidir//scsim.db.dir  -rdynamic  -Wl,-rpath=/home/synopsys/vcs/O-2018.09-SP2/linux64/lib \
--L/home/synopsys/vcs/O-2018.09-SP2/linux64/lib   objs/amcQw_d.o   _68093_archive_1.so \
+-L/home/synopsys/vcs/O-2018.09-SP2/linux64/lib   objs/amcQw_d.o   _7078_archive_1.so \
 SIM_l.o       rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o rmar_llvm_0_0.o \
 -lzerosoft_rt_stubs -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile \
 -luclinative /home/synopsys/vcs/O-2018.09-SP2/linux64/lib/vcs_tls.o   -Wl,-whole-archive \
@@ -88,7 +88,7 @@ make[1]: Leaving directory '/home/ICer/project/axi4/csrc'
 Command: /home/ICer/project/axi4/./simv +v2k +define+FSDB -a com.log +lint=TFIPC-L +lint=PCWM
 Chronologic VCS simulator copyright 1991-2018
 Contains Synopsys proprietary information.
-Compiler version O-2018.09-SP2_Full64; Runtime version O-2018.09-SP2_Full64;  May 28 16:11 2026
+Compiler version O-2018.09-SP2_Full64; Runtime version O-2018.09-SP2_Full64;  May 28 20:14 2026
 *Verdi* Loading libsscore_vcs201809.so
 FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
 (C) 1996 - 2019 by Synopsys, Inc.
@@ -751,9 +751,8 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
 [6605000] MASTER[0] READ DONE: addr=0x00000300 RID=0x1
 [6605000] CHECK OK: M[0] read data match @ addr=0x00000300 data=0x000031a5
 
-[PHASE 6] ========== PHASE 6: 4KB Boundary Crossing ==========
---- Cross-4K: len=1, addr=0x0FF0 ---
-[6605000] MASTER[0] WRITE START: addr=0x00000ff0 len=1 id=0x7
+[PHASE 6] ========== PHASE 6: Mixed Concurrent Read/Write ==========
+[6605000] MASTER[0] WRITE START: addr=0x00000500 len=0 id=0xf
 [6605000] MONITOR [phase=6][cnt=0]
   M[0] AW: addr=0x00000300 valid=0 ready=1
   M[0] W : data=0x11111111 last=0 valid=0 ready=1
@@ -842,7 +841,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
 [6625000] B_LISTENER[3]: B resp=0x0 BID=0x3
 [6625000] B_LISTENER[1]: B resp=0x0 BID=0x0
 [6625000] MONITOR [phase=6][cnt=2]
-  M[0] AW: addr=0x00000ff0 valid=1 ready=1
+  M[0] AW: addr=0x00000500 valid=1 ready=1
   M[0] W : data=0x11111111 last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
@@ -883,9 +882,10 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6635000] SLAVE[0] AW accepted: addr=0x00000108 len=0 size=2 id=0x80
-[6635000] MASTER[0] WRITE DONE: addr=0x00000ff0 BID=0x0
+[6635000] MASTER[0] WRITE DONE: addr=0x00000500 BID=0x0
+[6635000] MASTER[1] WRITE START: addr=0x00002500 len=0 id=0xf
 [6635000] MONITOR [phase=6][cnt=3]
-  M[0] AW: addr=0x00000ff0 valid=1 ready=0
+  M[0] AW: addr=0x00000500 valid=1 ready=0
   M[0] W : data=0x11111111 last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
@@ -927,7 +927,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6645000] B_LISTENER[1]: B resp=0x0 BID=0x1
 [6645000] MONITOR [phase=6][cnt=4]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
+  M[0] AW: addr=0x00000500 valid=0 ready=0
   M[0] W : data=0x11111111 last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
@@ -968,12 +968,12 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6655000] MONITOR [phase=6][cnt=5]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
+  M[0] AW: addr=0x00000500 valid=0 ready=0
   M[0] W : data=0x11111111 last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=1 ready=1
   M[1] W : data=0x22222222 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
@@ -1008,13 +1008,14 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6665000] MASTER[1] WRITE DONE: addr=0x00002500 BID=0x0
 [6665000] MONITOR [phase=6][cnt=6]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000000 last=0 valid=1 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=1 valid=1 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=1 ready=1
   M[1] W : data=0x22222222 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
@@ -1049,13 +1050,14 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6675000] SLAVE[1] AW accepted: addr=0x00002500 len=0 size=2 id=0x4f
 [6675000] MONITOR [phase=6][cnt=7]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=1 valid=1 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
   M[1] W : data=0x22222222 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
@@ -1075,7 +1077,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] B : id=0x40 resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
   S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] AW: addr=0x00002500 valid=1 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
   S[1] B : id=0x41 resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
@@ -1090,13 +1092,14 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6685000] SLAVE[1] AW accepted: addr=0x00002500 len=0 size=2 id=0x4f
 [6685000] MONITOR [phase=6][cnt=8]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
   M[1] W : data=0x22222222 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
@@ -1116,7 +1119,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] B : id=0x40 resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
   S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] AW: addr=0x00002500 valid=1 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
   S[1] B : id=0x41 resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
@@ -1131,15 +1134,15 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6695000] SLAVE[0] W beat: data=0xc0000000 last=0 beat_left=15
+[6695000] SLAVE[0] W beat: data=0xcafec0de last=1 beat_left=15
 [6695000] MONITOR [phase=6][cnt=9]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=1 valid=1 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
@@ -1154,7 +1157,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   M[3] AR: addr=0x00006300 valid=0 ready=1
   M[3] R : data=0x00000000 last=0 valid=0 ready=1
   S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0xc0000000 last=0 valid=1 ready=1
+  S[0] W : data=0xcafec0de last=1 valid=1 ready=1
   S[0] B : id=0x40 resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
   S[0] R : data=0x000031a5 last=0 valid=0 ready=1
@@ -1173,98 +1176,15 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6705000] SLAVE[0] B sent: id=0xa
 [6705000] MONITOR [phase=6][cnt=10]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6715000] SLAVE[0] W beat: data=0xc0000001 last=1 beat_left=14
-[6715000] MONITOR [phase=6][cnt=11]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0xc0000001 last=1 valid=1 ready=1
-  S[0] B : id=0x40 resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6725000] SLAVE[0] B sent: id=0xa
-[6725000] MONITOR [phase=6][cnt=12]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000300 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
@@ -1298,15 +1218,14 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6735000] MASTER[0] READ START: addr=0x00000ff0 len=1 id=0x7
-[6735000] MONITOR [phase=6][cnt=13]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+[6715000] MONITOR [phase=6][cnt=11]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
@@ -1340,15 +1259,99 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6745000] B_LISTENER[0]: B resp=0x0 BID=0xa
-[6745000] MONITOR [phase=6][cnt=14]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+[6725000] SLAVE[1] W beat: data=0xfeedface last=1 beat_left=0
+[6725000] B_LISTENER[0]: B resp=0x0 BID=0xa
+[6725000] MONITOR [phase=6][cnt=12]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0xa resp=0x0 valid=1 ready=1
   M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000108 valid=1 ready=0
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0xfeedface last=1 valid=1 ready=1
+  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6735000] SLAVE[1] B sent: id=0x41
+[6735000] MONITOR [phase=6][cnt=13]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000300 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000108 valid=1 ready=0
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x41 resp=0x0 valid=1 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6745000] MONITOR [phase=6][cnt=14]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000300 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
@@ -1382,15 +1385,16 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6755000] B_LISTENER[1]: B resp=0x0 BID=0x1
 [6755000] MONITOR [phase=6][cnt=15]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=1 ready=1
+  M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
+  M[1] B : id=0x1 resp=0x0 valid=1 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
   M[2] AW: addr=0x00004300 valid=0 ready=0
@@ -1423,14 +1427,15 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+--- M0 read Slave0, M1 write Slave1, M2 write Slave2, M3 read Slave3 ---
 [6765000] MONITOR [phase=6][cnt=16]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
@@ -1464,57 +1469,18 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6775000] SLAVE[0] AR accepted: addr=0x00000ff0 len=1 size=2 id=0x7
+[6765000] MASTER[0] READ START: addr=0x00000500 len=0 id=0xf
+[6765000] MASTER[1] WRITE START: addr=0x00002600 len=0 id=0xe
+[6765000] MASTER[2] WRITE START: addr=0x00004600 len=0 id=0xe
+[6765000] MASTER[3] WRITE START: addr=0x00006500 len=0 id=0xe
 [6775000] MONITOR [phase=6][cnt=17]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000300 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000ff0 valid=1 ready=1
-  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6785000] SLAVE[0] R beat: data=0x00000000 last=1 beat_left=0
-[6785000] MONITOR [phase=6][cnt=18]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002500 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
@@ -1532,7 +1498,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] W : data=0x00000000 last=0 valid=0 ready=1
   S[0] B : id=0xa resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=1 ready=1
+  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
   S[1] B : id=0x41 resp=0x0 valid=0 ready=1
@@ -1548,24 +1514,151 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6795000] SLAVE[0] R last beat done: id=0x7
-[6795000] MONITOR [phase=6][cnt=19]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+[6785000] MONITOR [phase=6][cnt=18]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=1 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=1 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
+  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000108 valid=1 ready=0
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=1
+  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6795000] MASTER[1] WRITE DONE: addr=0x00002600 BID=0x0
+[6795000] MONITOR [phase=6][cnt=19]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=1 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=1 ready=0
+  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=1 ready=0
+  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000108 valid=1 ready=0
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000000 valid=0 ready=1
+  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
+  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=1
+  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6805000] SLAVE[1] AW accepted: addr=0x00002600 len=0 size=2 id=0x4e
+[6805000] SLAVE[0] AR accepted: addr=0x00000500 len=0 size=2 id=0xf
+[6805000] MONITOR [phase=6][cnt=20]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=1 ready=0
+  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=1 ready=0
+  M[3] W : data=0x44444444 last=0 valid=0 ready=1
+  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[3] AR: addr=0x00006300 valid=0 ready=1
+  M[3] R : data=0x00000000 last=0 valid=0 ready=1
+  S[0] AW: addr=0x00000108 valid=1 ready=0
+  S[0] W : data=0x00000000 last=0 valid=0 ready=1
+  S[0] B : id=0xa resp=0x0 valid=0 ready=1
+  S[0] AR: addr=0x00000500 valid=1 ready=1
+  S[0] R : data=0x000031a5 last=0 valid=0 ready=1
+  S[1] AW: addr=0x00002600 valid=1 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=1
+  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] AR: addr=0x00000000 valid=0 ready=1
+  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
+  S[2] AW: addr=0x00000000 valid=0 ready=1
+  S[2] W : data=0x00000000 last=0 valid=0 ready=0
+  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[2] AR: addr=0x00000000 valid=0 ready=1
+  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
+  S[3] AW: addr=0x00000000 valid=0 ready=1
+  S[3] W : data=0x00000000 last=0 valid=0 ready=0
+  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
+  S[3] AR: addr=0x00000000 valid=0 ready=1
+  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6815000] SLAVE[1] AW accepted: addr=0x00002600 len=0 size=2 id=0x4e
+[6815000] SLAVE[0] R last beat done: id=0xf
+[6815000] MONITOR [phase=6][cnt=21]
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
+  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xfeedface last=0 valid=0 ready=1
+  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AR: addr=0x00002300 valid=0 ready=1
+  M[1] R : data=0x00000000 last=0 valid=0 ready=1
+  M[2] AW: addr=0x00004600 valid=1 ready=0
+  M[2] W : data=0x33333333 last=0 valid=0 ready=1
+  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[2] AR: addr=0x00004300 valid=0 ready=1
+  M[2] R : data=0x00000000 last=0 valid=0 ready=1
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1575,96 +1668,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] B : id=0xa resp=0x0 valid=0 ready=1
   S[0] AR: addr=0x00000000 valid=0 ready=1
   S[0] R : data=0x00000000 last=1 valid=1 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6805000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=0
-[6805000] MONITOR [phase=6][cnt=20]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=1 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
-  S[1] AR: addr=0x00000000 valid=0 ready=1
-  S[1] R : data=0x000032a5 last=0 valid=0 ready=1
-  S[2] AW: addr=0x00000000 valid=0 ready=1
-  S[2] W : data=0x00000000 last=0 valid=0 ready=0
-  S[2] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[2] AR: addr=0x00000000 valid=0 ready=1
-  S[2] R : data=0x000033a5 last=0 valid=0 ready=1
-  S[3] AW: addr=0x00000000 valid=0 ready=1
-  S[3] W : data=0x00000000 last=0 valid=0 ready=0
-  S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
-  S[3] AR: addr=0x00000000 valid=0 ready=1
-  S[3] R : data=0x0000ffff last=0 valid=0 ready=1
-[6815000] R_LISTENER[0]: beat=1 data=0x00000000 rlast=1
-[6815000] MASTER[0] R beat: data=0x00000000 last=0
-[6815000] MASTER[0] R beat: data=0x00000000 last=1
-[6815000] MASTER[0] READ DONE: addr=0x00000ff0 RID=0x7
-[6815000] CHECK OK: M[0] read data match @ addr=0x00000ff0 data=0x00000000
-[6815000] CHECK OK: M[0] read data match @ addr=0x00000ff4 data=0x00000000
-[6815000] MONITOR [phase=6][cnt=21]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
-  M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
-  M[0] R : data=0x00000000 last=1 valid=1 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[1] AR: addr=0x00002300 valid=0 ready=1
-  M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
-  M[2] W : data=0x33333333 last=0 valid=0 ready=1
-  M[2] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[2] AR: addr=0x00004300 valid=0 ready=1
-  M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
-  M[3] W : data=0x44444444 last=0 valid=0 ready=1
-  M[3] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[3] AR: addr=0x00006300 valid=0 ready=1
-  M[3] R : data=0x00000000 last=0 valid=0 ready=1
-  S[0] AW: addr=0x00000108 valid=1 ready=0
-  S[0] W : data=0x00000000 last=0 valid=0 ready=1
-  S[0] B : id=0xa resp=0x0 valid=0 ready=1
-  S[0] AR: addr=0x00000000 valid=0 ready=1
-  S[0] R : data=0x00000000 last=0 valid=0 ready=1
-  S[1] AW: addr=0x00000000 valid=0 ready=1
+  S[1] AW: addr=0x00002600 valid=1 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
   S[1] B : id=0x41 resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
@@ -1680,22 +1684,22 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6825000] MONITOR [phase=6][cnt=22]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=1 valid=1 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1720,23 +1724,27 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6835000] R_LISTENER[0]: beat=0 data=0x00000000 rlast=1
+[6835000] MASTER[0] R beat: data=0x00000000 last=1
+[6835000] MASTER[0] READ DONE: addr=0x00000500 RID=0xf
+[6835000] CHECK OK: M[0] read data match @ addr=0x00000500 data=0x00000000
 [6835000] MONITOR [phase=6][cnt=23]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
-  M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
+  M[0] R : data=0x00000000 last=1 valid=1 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1762,22 +1770,22 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6845000] MONITOR [phase=6][cnt=24]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1802,23 +1810,24 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6855000] SLAVE[1] W beat: data=0xbeef0001 last=1 beat_left=0
 [6855000] MONITOR [phase=6][cnt=25]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1829,7 +1838,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] AR: addr=0x00000000 valid=0 ready=1
   S[0] R : data=0x00000000 last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
+  S[1] W : data=0xbeef0001 last=1 valid=1 ready=1
   S[1] B : id=0x41 resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
   S[1] R : data=0x000032a5 last=0 valid=0 ready=1
@@ -1843,23 +1852,24 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6865000] SLAVE[1] B sent: id=0x4f
 [6865000] MONITOR [phase=6][cnt=26]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1870,8 +1880,8 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] AR: addr=0x00000000 valid=0 ready=1
   S[0] R : data=0x00000000 last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
-  S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] W : data=0x00000000 last=0 valid=0 ready=0
+  S[1] B : id=0x4f resp=0x0 valid=1 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
   S[1] R : data=0x000032a5 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
@@ -1885,22 +1895,22 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6875000] MONITOR [phase=6][cnt=27]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1912,7 +1922,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] R : data=0x00000000 last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] B : id=0x4f resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
   S[1] R : data=0x000032a5 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
@@ -1925,23 +1935,24 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
+[6885000] B_LISTENER[1]: B resp=0x0 BID=0xf
 [6885000] MONITOR [phase=6][cnt=28]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
-  M[1] B : id=0x0 resp=0x0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
+  M[1] B : id=0xf resp=0x0 valid=1 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1953,7 +1964,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] R : data=0x00000000 last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] B : id=0x4f resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
   S[1] R : data=0x000032a5 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
@@ -1967,22 +1978,22 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
 [6895000] MONITOR [phase=6][cnt=29]
-  M[0] AW: addr=0x00000ff0 valid=0 ready=0
-  M[0] W : data=0xc0000001 last=0 valid=0 ready=1
+  M[0] AW: addr=0x00000500 valid=0 ready=0
+  M[0] W : data=0xcafec0de last=0 valid=0 ready=1
   M[0] B : id=0x0 resp=0x0 valid=0 ready=1
-  M[0] AR: addr=0x00000ff0 valid=0 ready=1
+  M[0] AR: addr=0x00000500 valid=0 ready=1
   M[0] R : data=0x00000000 last=0 valid=0 ready=1
-  M[1] AW: addr=0x00002300 valid=0 ready=1
-  M[1] W : data=0x22222222 last=0 valid=0 ready=1
+  M[1] AW: addr=0x00002600 valid=0 ready=1
+  M[1] W : data=0xbeef0001 last=0 valid=0 ready=1
   M[1] B : id=0x0 resp=0x0 valid=0 ready=1
   M[1] AR: addr=0x00002300 valid=0 ready=1
   M[1] R : data=0x00000000 last=0 valid=0 ready=1
-  M[2] AW: addr=0x00004300 valid=0 ready=0
+  M[2] AW: addr=0x00004600 valid=1 ready=0
   M[2] W : data=0x33333333 last=0 valid=0 ready=1
   M[2] B : id=0x0 resp=0x0 valid=0 ready=1
   M[2] AR: addr=0x00004300 valid=0 ready=1
   M[2] R : data=0x00000000 last=0 valid=0 ready=1
-  M[3] AW: addr=0x00006300 valid=0 ready=0
+  M[3] AW: addr=0x00006500 valid=1 ready=0
   M[3] W : data=0x44444444 last=0 valid=0 ready=1
   M[3] B : id=0x0 resp=0x0 valid=0 ready=1
   M[3] AR: addr=0x00006300 valid=0 ready=1
@@ -1994,7 +2005,7 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[0] R : data=0x00000000 last=0 valid=0 ready=1
   S[1] AW: addr=0x00000000 valid=0 ready=1
   S[1] W : data=0x00000000 last=0 valid=0 ready=1
-  S[1] B : id=0x41 resp=0x0 valid=0 ready=1
+  S[1] B : id=0x4f resp=0x0 valid=0 ready=1
   S[1] AR: addr=0x00000000 valid=0 ready=1
   S[1] R : data=0x000032a5 last=0 valid=0 ready=1
   S[2] AW: addr=0x00000000 valid=0 ready=1
@@ -2007,17 +2018,15 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
   S[3] B : id=0xc3 resp=0x0 valid=0 ready=1
   S[3] AR: addr=0x00000000 valid=0 ready=1
   S[3] R : data=0x0000ffff last=0 valid=0 ready=1
---- Cross-4K: len=3, addr=0x0FF0 ---
-[6915000] MASTER[0] WRITE START: addr=0x00000ff0 len=3 id=0x7
 
-[506815000] DEADLOCK: no AXI activity for 50000 cycles
+[506885000] DEADLOCK: no AXI activity for 50000 cycles
   m_wr_q_cnt = {0,0,0,0}
   m_b_q_cnt  = {5,5,3,3}
   m_rd_q_cnt = {0,0,0,0}
 $finish called from file "./tb/axi_tb.sv", line 1102.
-$finish at simulation time            506815000
+$finish at simulation time            506885000
            V C S   S i m u l a t i o n   R e p o r t 
-Time: 506815000 ps
-CPU Time:      0.520 seconds;       Data structure size:   0.6Mb
-Thu May 28 16:11:33 2026
-CPU time: 1.084 seconds to compile + .315 seconds to elab + .187 seconds to link + .546 seconds in simulation
+Time: 506885000 ps
+CPU Time:      0.510 seconds;       Data structure size:   0.6Mb
+Thu May 28 20:14:04 2026
+CPU time: 1.061 seconds to compile + .312 seconds to elab + .185 seconds to link + .538 seconds in simulation
