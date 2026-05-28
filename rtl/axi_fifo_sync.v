@@ -115,7 +115,7 @@ module axi_fifo_sync
    end
    // synopsys translate_on
 
-   assign rd_dout  = Mem[fifo_head[FAW-1:0]];
+   assign rd_dout  = empty ? {FDW{1'b0}} : Mem[fifo_head[FAW-1:0]];
 
    always @(posedge clk) begin
        if (!full && wr_vld) begin

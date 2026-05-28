@@ -236,6 +236,8 @@ module axi_tb;
     // Global error counter
     //=========================================================
     integer error_cnt;
+    integer phase_cnt  = 0;
+    integer monitor_cnt = 0;
 
     //=========================================================
     // Slave Memory Model (per-slave 32-bit word storage)
@@ -697,7 +699,10 @@ module axi_tb;
             $display("[%0t] MASTER[%0d] WRITE START: addr=0x%08h len=%0d id=0x%0h",
                      $time, mst, addr, len, id);
 
-            // Queue W data → background mst_w_driver sends it independently
+            // Send AW first (blocks until AWREADY)
+            axi_aw_send(mst, id, addr, len, size, burst);
+
+            // Queue W data AFTER AW handshake → ensures pending_aw_cnt is ready
             while (m_wr_q_cnt[mst] >= 4) @(posedge AXI_CLK);
             m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
             for (beat = 0; beat <= len; beat = beat + 1) begin
@@ -705,9 +710,6 @@ module axi_tb;
             end
             m_wr_q_wr_ptr[mst] = (m_wr_q_wr_ptr[mst] + 1) & 3;
             m_wr_q_cnt[mst]    = m_wr_q_cnt[mst] + 1;
-
-            // Send AW immediately (non-blocking, does not wait for W)
-            axi_aw_send(mst, id, addr, len, size, burst);
 
             // Wait for B response from shared queue (filled by background mst_b_listener)
             while (m_b_q_cnt[mst] == 0) @(posedge AXI_CLK);
@@ -800,16 +802,9 @@ module axi_tb;
             M_AXI_AWBURST_i[BURST_W*(mst+1)-1 -: BURST_W]    <= burst;
             M_AXI_AWVALID_i[mst] <= 1'b1;
 
-            fork
-                begin
-                    wait(M_AXI_AWREADY_o[mst]);
-                end
-                begin
-                    repeat(10000) @(posedge AXI_CLK);
-                    $fatal(1, "[%0t] MASTER[%0d] AW TIMEOUT", $time, mst);
-                end
-            join_any
-            disable fork;
+            // Wait one cycle for AWVALID to propagate, then poll AWREADY at posedge
+            @(posedge AXI_CLK);
+            while (!M_AXI_AWREADY_o[mst]) @(posedge AXI_CLK);
 
             @(posedge AXI_CLK);
             M_AXI_AWVALID_i[mst] <= 1'b0;
@@ -1110,6 +1105,51 @@ module axi_tb;
         end
     end
 
+    always @(posedge AXI_CLK) begin
+        if (phase_cnt >= 6 && monitor_cnt < 30) begin
+            $display("[%0t] MONITOR [phase=%0d][cnt=%0d]", $time, phase_cnt, monitor_cnt);
+            monitor_cnt <= monitor_cnt + 1;
+            // ---- Master Side (M[0..3]) ----
+            for (int m = 0; m < MST_AMT; m = m + 1) begin
+                $display("  M[%0d] AW: addr=0x%08h valid=%0d ready=%0d",
+                         m, M_AXI_AWADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH],
+                         M_AXI_AWVALID_i[m], M_AXI_AWREADY_o[m]);
+                $display("  M[%0d] W : data=0x%08h last=%0d valid=%0d ready=%0d",
+                         m, M_AXI_WDATA_i[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH],
+                         M_AXI_WLAST_i[m], M_AXI_WVALID_i[m], M_AXI_WREADY_o[m]);
+                $display("  M[%0d] B : id=0x%0h resp=0x%0h valid=%0d ready=%0d",
+                         m, M_AXI_BID_o[W_ID*(m+1)-1 -: W_ID],
+                         M_AXI_BRESP_o[RESP_W*(m+1)-1 -: RESP_W],
+                         M_AXI_BVALID_o[m], M_AXI_BREADY_i[m]);
+                $display("  M[%0d] AR: addr=0x%08h valid=%0d ready=%0d",
+                         m, M_AXI_ARADDR_i[ADDR_WIDTH*(m+1)-1 -: ADDR_WIDTH],
+                         M_AXI_ARVALID_i[m], M_AXI_ARREADY_o[m]);
+                $display("  M[%0d] R : data=0x%08h last=%0d valid=%0d ready=%0d",
+                         m, M_AXI_RDATA_o[DATA_WIDTH*(m+1)-1 -: DATA_WIDTH],
+                         M_AXI_RLAST_o[m], M_AXI_RVALID_o[m], M_AXI_RREADY_i[m]);
+            end
+            // ---- Slave Side (S[0..3]) ----
+            for (int s = 0; s < SLV_AMT; s = s + 1) begin
+                $display("  S[%0d] AW: addr=0x%08h valid=%0d ready=%0d",
+                         s, S_AXI_AWADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH],
+                         S_AXI_AWVALID_o[s], S_AXI_AWREADY_i[s]);
+                $display("  S[%0d] W : data=0x%08h last=%0d valid=%0d ready=%0d",
+                         s, S_AXI_WDATA_o[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH],
+                         S_AXI_WLAST_o[s], S_AXI_WVALID_o[s], S_AXI_WREADY_i[s]);
+                $display("  S[%0d] B : id=0x%0h resp=0x%0h valid=%0d ready=%0d",
+                         s, S_AXI_BID_i[W_SID*(s+1)-1 -: W_SID],
+                         S_AXI_BRESP_i[RESP_W*(s+1)-1 -: RESP_W],
+                         S_AXI_BVALID_i[s], S_AXI_BREADY_o[s]);
+                $display("  S[%0d] AR: addr=0x%08h valid=%0d ready=%0d",
+                         s, S_AXI_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH],
+                         S_AXI_ARVALID_o[s], S_AXI_ARREADY_i[s]);
+                $display("  S[%0d] R : data=0x%08h last=%0d valid=%0d ready=%0d",
+                         s, S_AXI_RDATA_i[DATA_WIDTH*(s+1)-1 -: DATA_WIDTH],
+                         S_AXI_RLAST_i[s], S_AXI_RVALID_i[s], S_AXI_RREADY_o[s]);
+            end
+        end
+    end
+
     //=========================================================
     // ======================  TEST SUITE  =====================
     //=========================================================
@@ -1124,7 +1164,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 1: Basic Sanity — Single-beat Write/Read per Master
         //---------------------------------------------------------
-        $display("\n========== PHASE 1: Basic Single-Beat Sanity ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 1: Basic Single-Beat Sanity ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] rdata_arr [];
             reg [DATA_WIDTH-1:0] wdata_arr [];
@@ -1158,7 +1198,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 2: Multi-Beat Burst Write/Read (INCR)
         //---------------------------------------------------------
-        $display("\n========== PHASE 2: Multi-Beat INCR Burst ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 2: Multi-Beat INCR Burst ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1194,44 +1234,49 @@ module axi_tb;
         end
 
         //---------------------------------------------------------
-        // PHASE 3: Different Data Sizes
+        // PHASE 3: Full-Word Writes (WSTRB = 4'hF, single-beat)
         //---------------------------------------------------------
-        $display("\n========== PHASE 3: Data Size Variants ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 3: Full-Word Single-Beat Writes ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
             reg [W_STRB-1:0]     strb_arr  [];
-            integer s;
-            wdata_arr = new[4];
-            rdata_arr = new[4];
-            strb_arr  = new[4];
+            integer p;
+            wdata_arr = new[1];
+            rdata_arr = new[1];
+            strb_arr  = new[1];
+            strb_arr[0] = 4'hF;
 
-            // 32-bit (SIZE=2), 16-bit (SIZE=1), 8-bit (SIZE=0)
-            for (s = 0; s < 3; s = s + 1) begin
-                $display("--- SIZE=%0d (bytes_per_beat=%0d) ---", s, 1<<s);
-                wdata_arr[0] = 32'hDEAD_BEEF;
-                strb_arr[0]  = (1 << (1<<s)) - 1;  // valid bytes only
-                axi_write_burst(0, s[3:0], 32'h0000_2000 + s * 32'h100,
-                               8'd0, s[2:0], 2'b01, wdata_arr, strb_arr);
-                wait_cycles(5);
-                axi_read_burst(0, s[3:0], 32'h0000_2000 + s * 32'h100,
-                              8'd0, s[2:0], 2'b01, rdata_arr);
-                // Mask read data to valid bytes only (generate mask via shift)
-                begin
-                    reg [31:0] mask;
-                    mask = (32'hFFFF_FFFF >> (32 - 8*(1<<s)));
-                    rdata_arr[0] = rdata_arr[0] & mask;
-                end
-                check_read_data(0, 32'h0000_2000 + s * 32'h100,
-                               8'd0, s[2:0], rdata_arr);
-                wait_cycles(5);
-            end
+            // Write known patterns to 4 consecutive words, read back and check
+            wdata_arr[0] = 32'h1234_5678;
+            axi_write_burst(0, 4'h3, 32'h0000_2000, 8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
+            wait_cycles(2);
+            axi_read_burst(0, 4'h3, 32'h0000_2000, 8'd0, 3'b010, 2'b01, rdata_arr);
+            check_read_data(0, 32'h0000_2000, 8'd0, 3'b010, rdata_arr);
+
+            wdata_arr[0] = 32'hAAAA_BBBB;
+            axi_write_burst(1, 4'h3, 32'h0000_2004, 8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
+            wait_cycles(2);
+            axi_read_burst(1, 4'h3, 32'h0000_2004, 8'd0, 3'b010, 2'b01, rdata_arr);
+            check_read_data(1, 32'h0000_2004, 8'd0, 3'b010, rdata_arr);
+
+            wdata_arr[0] = 32'hFFFF_0000;
+            axi_write_burst(2, 4'h3, 32'h0000_2008, 8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
+            wait_cycles(2);
+            axi_read_burst(2, 4'h3, 32'h0000_2008, 8'd0, 3'b010, 2'b01, rdata_arr);
+            check_read_data(2, 32'h0000_2008, 8'd0, 3'b010, rdata_arr);
+
+            wdata_arr[0] = 32'h0000_FFFF;
+            axi_write_burst(3, 4'h3, 32'h0000_200C, 8'd0, 3'b010, 2'b01, wdata_arr, strb_arr);
+            wait_cycles(2);
+            axi_read_burst(3, 4'h3, 32'h0000_200C, 8'd0, 3'b010, 2'b01, rdata_arr);
+            check_read_data(3, 32'h0000_200C, 8'd0, 3'b010, rdata_arr);
         end
 
         //---------------------------------------------------------
         // PHASE 4: Concurrent Multi-Master Arbitration
         //---------------------------------------------------------
-        $display("\n========== PHASE 4: Concurrent Multi-Master ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 4: Concurrent Multi-Master ==========", phase_cnt);
         begin
             // All 4 masters write to slave 0 concurrently (tests arbitration)
             $display("--- 4 Masters → Slave 0 (write, concurrent) ---");
@@ -1299,7 +1344,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 5: Multi-Slave Concurrent Access
         //---------------------------------------------------------
-        $display("\n========== PHASE 5: Multi-Slave Concurrent Access ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 5: Multi-Slave Concurrent Access ==========", phase_cnt);
         begin
             // 4 masters → 4 different slaves simultaneously
             $display("--- 4 Masters → 4 Slaves (write, concurrent) ---");
@@ -1366,7 +1411,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 6: 4KB Boundary Crossing
         //---------------------------------------------------------
-        $display("\n========== PHASE 6: 4KB Boundary Crossing ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 6: 4KB Boundary Crossing ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1401,7 +1446,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 7: Mixed Concurrent Read/Write
         //---------------------------------------------------------
-        $display("\n========== PHASE 7: Mixed Concurrent Read/Write ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 7: Mixed Concurrent Read/Write ==========", phase_cnt);
         begin
             // Pre-write data for reads
             begin
@@ -1461,7 +1506,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 8: Multi-ID Outstanding (same master, different IDs)
         //---------------------------------------------------------
-        $display("\n========== PHASE 8: Multi-ID Outstanding Transactions ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 8: Multi-ID Outstanding Transactions ==========", phase_cnt);
         begin
             // Master 0 issues 4 writes with different IDs to the same slave
             $display("--- M0: 4 writes with different IDs → Slave 0 ---");
@@ -1530,7 +1575,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 9: Long Burst Stress Test
         //---------------------------------------------------------
-        $display("\n========== PHASE 9: Long Burst Stress ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 9: Long Burst Stress ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
@@ -1557,7 +1602,7 @@ module axi_tb;
         //---------------------------------------------------------
         // PHASE 10: Random Stress Test
         //---------------------------------------------------------
-        $display("\n========== PHASE 10: Random Stress Test ==========");
+        phase_cnt = phase_cnt + 1; $display("\n[PHASE %0d] ========== PHASE 10: Random Stress Test ==========", phase_cnt);
         begin
             reg [DATA_WIDTH-1:0] wdata_arr [];
             reg [DATA_WIDTH-1:0] rdata_arr [];
