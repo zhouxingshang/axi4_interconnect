@@ -702,11 +702,8 @@ module axi_tb;
             // Send AW first (blocks until cross_4k_if accepts into FIFO)
             axi_aw_send(mst, id, addr, len, size, burst);
 
-            // Wait for AW to propagate through pipeline FIFO → crossbar M2S,
-            // so pending_aw_cnt is updated before W data arrives
-            repeat(3) @(posedge AXI_CLK);
-
-            // Queue W data after pipeline delay
+            // Queue W data after AW handshake
+            // (M2S WREADY gate ensures W waits for AW at crossbar input)
             while (m_wr_q_cnt[mst] >= 4) @(posedge AXI_CLK);
             m_wr_len_q[mst][m_wr_q_wr_ptr[mst]] = len;
             for (beat = 0; beat <= len; beat = beat + 1) begin

@@ -335,6 +335,7 @@ end
 //=============================================================================
 wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
 wire [MST_AMT-1:0]         w_fifo_vld;
+wire [MST_AMT-1:0]         m_wready_fifo;  // internal FIFO ready (ungated)
 
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : W_FIFO_PER_MASTER
@@ -347,8 +348,8 @@ generate
             .clk    (AXI_CLK),
 
             // Write side: from master
-            .wr_rdy (m_wready[m]),
-            .wr_vld (m_wvalid[m] && (pending_aw_cnt[m] > 0)),
+            .wr_rdy (m_wready_fifo[m]),
+            .wr_vld (m_wvalid[m] && ((pending_aw_cnt[m] > 0) || (AWSELECT[m] && m_awvalid[m]))),
             .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
 
             // Read side: to slave (gated by W-follows-AW logic)
@@ -356,6 +357,16 @@ generate
             .rd_vld (w_fifo_vld[m]),
             .rd_dout(w_fifo_dout[m])
         );
+    end
+endgenerate
+
+// Gate m_wready: stall pre-crossbar W FIFO until AW is ready.
+//   pending_aw_cnt[m]>0:     AW accepted by this M2S, waiting for W (covers burst)
+//   AWSELECT[m] & m_awvalid: AW present at crossbar input targeting this slave
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : GATE_WREADY
+        assign m_wready[m] = m_wready_fifo[m]
+                           && ((pending_aw_cnt[m] > 0) || (AWSELECT[m] && m_awvalid[m]));
     end
 endgenerate
 
