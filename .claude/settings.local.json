@@ -16,7 +16,9 @@
       "Bash(git checkout:*)",
       "Bash(sed -i '840d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")",
       "Bash(sed -i '971d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")",
-      "Bash(sed -i '1054,1057d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")"
+      "Bash(sed -i '1054,1057d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")",
+      "Bash(cat)",
+      "Bash(python3 -c ':*)"
     ]
   }
 }
