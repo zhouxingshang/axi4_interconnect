@@ -35,6 +35,9 @@
 ./rtl/axi_split_r_merge.v
 ./rtl/axi_interconnect.v
 
+//---- UVM TB: Interface (must come before package — agents reference axi_if) ----
+./UVM_AXI_TB/tb/axi_if.sv
+
 //---- UVM TB: Package (includes all other TB files via `include) ----
 ./UVM_AXI_TB/tb/axi_pkg.sv
 

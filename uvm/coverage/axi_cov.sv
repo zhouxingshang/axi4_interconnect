@@ -177,7 +177,8 @@ class axi_cov extends uvm_component;
             // Arbitration: track per-master per-slave grant
             cg_arb_mst=t.mst_id; cg_arb_slv=addr_decoder::decode(t.addr);
             arb_grant_hist[t.mst_id][addr_decoder::decode(t.addr)]++;
-            arb_grant_order.push_back({t.mst_id[1:0], addr_decoder::decode(t.addr)[1:0]});
+            cg_arb_slv = addr_decoder::decode(t.addr);
+            arb_grant_order.push_back({t.mst_id[1:0], cg_arb_slv[1:0]});
             arb_total_grants++;
             cg_arbitration.sample();
 

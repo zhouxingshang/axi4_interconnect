@@ -50,7 +50,7 @@ module tb_top;
         .S_AXI_ARBURST_o(vif.S_ARBURST), .S_AXI_ARVALID_o(vif.S_ARVALID), .S_AXI_ARREADY_i(vif.S_ARREADY),
         .S_AXI_RID_i(vif.S_RID), .S_AXI_RDATA_i(vif.S_RDATA), .S_AXI_RRESP_i(vif.S_RRESP),
         .S_AXI_RLAST_i(vif.S_RLAST), .S_AXI_RVALID_i(vif.S_RVALID), .S_AXI_RREADY_o(vif.S_RREADY),
-        .slv_en_i(4'b1111), .arbiter_type(1'b0)
+        .arbiter_type(1'b0)
     );
 
     // Connect interface to UVM config DB
