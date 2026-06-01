@@ -1,12 +1,13 @@
 all: clean com sim verdi
 
 TOP=tb_top
-FILELIST=./UVM_AXI_TB/flist.f
+FILELIST=./list/flist.f
+TEST=smoke_test
 
 VCS=vcs
 VCS_FLAG=-full64 -sverilog -f $(FILELIST) -R +v2k -debug_access+all \
          -timescale=1ns/1ps -fsdb +define+FSDB -l com.log +lint=TFIPC-L +lint=PCWM \
-         -ntb_opts uvm-1.2
+         -ntb_opts uvm-1.2 +UVM_TESTNAME=$(TEST)
 
 VERDI=verdi
 VERDI_FLAGS=-f $(FILELIST) -ssf $(TOP).fsdb -nologo -sswr \

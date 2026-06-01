@@ -53,6 +53,15 @@ module tb_top;
         .arbiter_type(1'b0)
     );
 
+    // FSDB waveform dumping
+    `ifdef FSDB
+    initial begin
+        $fsdbDumpfile("tb_top.fsdb");
+        $fsdbDumpvars(0, tb_top);
+        $fsdbDumpMDA();  // dump memory / multi-dimensional arrays
+    end
+    `endif
+
     // Connect interface to UVM config DB
     initial begin
         uvm_config_db #(virtual axi_if)::set(null, "*", "vif", vif);

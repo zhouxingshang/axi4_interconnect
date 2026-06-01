@@ -42,7 +42,7 @@ class data_sb extends uvm_scoreboard;
     endtask
 
     task process_rd();
-        axi_ar_item at; axi_r_item rt; int key; bit[31:0] addr, exp; int r_beat;
+        axi_ar_item at; axi_r_item rt; int key; bit[31:0] addr, exp; int r_beat[int];
         forever begin
             fork ar_fifo.get(at); r_fifo.get(rt); join
             key = {8'(at.mst_id), at.id};
