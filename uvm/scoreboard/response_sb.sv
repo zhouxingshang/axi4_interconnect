@@ -18,6 +18,7 @@ class response_sb extends uvm_scoreboard;
         bit[7:0] mst_id; bit[3:0] id; bit[31:0] addr;
         bit[7:0] len; int w_beat_cnt; int b_received;
     } wr_out_t;
+    
     typedef struct {
         bit[7:0] mst_id; bit[3:0] id; bit[31:0] addr;
         bit[7:0] len; int r_beat_cnt; time ar_time;

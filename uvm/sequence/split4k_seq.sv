@@ -2,7 +2,11 @@
 class split4k_seq extends uvm_sequence #(axi_transaction);
     `uvm_object_utils(split4k_seq)
     int mst_id=0;
-    function new(string n="split4k_seq"); super.new(n); endfunction
+
+    function new(string n="split4k_seq"); 
+        super.new(n); 
+    endfunction
+    
     task body();
         axi_transaction t = axi_transaction::type_id::create("t");
         start_item(t);

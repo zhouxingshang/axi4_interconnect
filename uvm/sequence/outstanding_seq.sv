@@ -1,8 +1,13 @@
 // Outstanding Sequence: sends multiple AW/AR before waiting for responses
 class outstanding_seq extends uvm_sequence #(axi_transaction);
     `uvm_object_utils(outstanding_seq)
-    int mst_id=0; int count=4;
-    function new(string n="outstanding_seq"); super.new(n); endfunction
+    int mst_id=0; 
+    int count=4;
+
+    function new(string n="outstanding_seq"); 
+        super.new(n); 
+    endfunction
+
     task body();
         axi_transaction t; int i;
         for(i=0; i<count; i++) begin

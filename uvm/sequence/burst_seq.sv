@@ -1,8 +1,14 @@
 // Burst Sequence: multi-beat INCR burst
 class burst_seq extends uvm_sequence #(axi_transaction);
     `uvm_object_utils(burst_seq)
-    int mst_id=0; bit[31:0] base_addr=0; bit[7:0] burst_len=3;
-    function new(string n="burst_seq"); super.new(n); endfunction
+    int mst_id=0; 
+    bit[31:0] base_addr=0; 
+    bit[7:0] burst_len=3;
+
+    function new(string n="burst_seq"); 
+        super.new(n); 
+    endfunction
+
     task body();
         axi_transaction t = axi_transaction::type_id::create("t");
         start_item(t);

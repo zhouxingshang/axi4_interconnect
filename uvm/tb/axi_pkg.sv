@@ -40,13 +40,6 @@ package axi_pkg;
 
     //---- Interface ----
 
-    //---- Channel monitors (master-side + slave-side) ----
-    `include "../agent/axi_aw_monitor.sv"
-    `include "../agent/axi_w_monitor.sv"
-    `include "../agent/axi_b_monitor.sv"
-    `include "../agent/axi_ar_monitor.sv"
-    `include "../agent/axi_r_monitor.sv"
-
     //---- Agent components ----
     `include "../agent/axi_sequencer.sv"
     `include "../agent/axi_driver.sv"

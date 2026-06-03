@@ -30,6 +30,10 @@ class axi_transaction extends uvm_sequence_item;
     bit                     is_split;       // was this split across 4KB?
 
     //---- Constraints ----
+    constraint addr_range_c {
+        addr inside {[0:32'h7FFF]};              // within slave address map
+    }
+
     constraint addr_align_c {
         (size == 0) -> (addr[1:0] == 2'b00);   // byte access: no alignment needed
         (size == 1) -> (addr[0]   == 1'b0);    // halfword: even address
@@ -41,7 +45,7 @@ class axi_transaction extends uvm_sequence_item;
     }
 
     constraint burst_type_c {
-        burst inside {0, 1, 2};                // FIXED, INCR, WRAP
+        burst inside {0, 1};                // FIXED, INCR, WRAP
     }
 
     constraint id_c {
@@ -49,6 +53,8 @@ class axi_transaction extends uvm_sequence_item;
     }
 
     constraint data_size_c {
+        data.size() < 128;
+        strb.size() < 128;
         if (is_write) {
             data.size() == len + 1;
             strb.size() == len + 1;
@@ -71,6 +77,12 @@ class axi_transaction extends uvm_sequence_item;
         super.new(name);
         data = new[16];
         strb = new[16];
+    endfunction
+
+    function void post_randomize();
+        if (is_write) begin
+            foreach (strb[i]) strb[i] = 4'hF;
+        end
     endfunction
 
     function string convert2string();

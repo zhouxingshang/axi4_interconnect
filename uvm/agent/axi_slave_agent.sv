@@ -5,6 +5,7 @@ class axi_slave_agent extends uvm_agent;
 
     int slv_id;
     virtual axi_if vif;
+    axi_monitor   mon;
 
     int aw_ready_delay_min = 0, aw_ready_delay_max = 3;
     int  w_ready_delay_min = 0,  w_ready_delay_max = 3;
@@ -20,6 +21,12 @@ class axi_slave_agent extends uvm_agent;
 
     function new(string name = "axi_slave_agent", uvm_component parent);
         super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        mon = axi_monitor::type_id::create($sformatf("mon_s%0d", slv_id), this);
+        mon.slv_id = slv_id;
     endfunction
 
     task run_phase(uvm_phase phase);
