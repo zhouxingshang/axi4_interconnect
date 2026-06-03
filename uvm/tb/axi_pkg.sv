@@ -36,48 +36,46 @@ package axi_pkg;
     `include "axi_transaction.sv"
 
     //---- Channel transaction items ----
-    `include "../agent/axi_channel_items.sv"
+    `include "axi_channel_items.sv"
 
     //---- Interface ----
 
     //---- Agent components ----
-    `include "../agent/axi_sequencer.sv"
-    `include "../agent/axi_driver.sv"
-    `include "../agent/axi_monitor.sv"
-    `include "../agent/axi_master_agent.sv"
-    `include "../agent/axi_slave_agent.sv"
+    `include "axi_sequencer.sv"
+    `include "axi_driver.sv"
+    `include "axi_monitor.sv"
+    `include "axi_master_agent.sv"
+    `include "axi_slave_agent.sv"
 
     //---- Sequences ----
-    `include "../sequence/axi_base_seq.sv"
-    `include "../sequence/burst_seq.sv"
-    `include "../sequence/outstanding_seq.sv"
-    `include "../sequence/split4k_seq.sv"
-    `include "../sequence/stress_seq.sv"
+    `include "axi_base_seq.sv"
+    `include "burst_seq.sv"
+    `include "outstanding_seq.sv"
+    `include "split4k_seq.sv"
+    `include "stress_seq.sv"
 
     //---- Model ----
-    `include "../model/addr_decoder.sv"
-    `include "../model/memory_model.sv"
-    `include "../model/reference_model.sv"
+    `include "addr_decoder.sv"
+    `include "memory_model.sv"
+    `include "reference_model.sv"
 
     //---- Scoreboard ----
-    `include "../scoreboard/routing_sb.sv"
-    `include "../scoreboard/data_sb.sv"
-    `include "../scoreboard/response_sb.sv"
+    `include "axi_scoreboard.sv"
 
     //---- Coverage ----
-    `include "../coverage/axi_cov.sv"
-    `include "../coverage/axi_protocol_checker.sv"
+    `include "axi_cov.sv"
+    `include "axi_protocol_checker.sv"
 
     //---- Environment ----
     `include "axi_env.sv"
 
     //---- Tests ----
     `include "axi_test_base.sv"
-    `include "../tests/smoke_test.sv"
-    `include "../tests/burst_test.sv"
-    `include "../tests/arb_test.sv"
-    `include "../tests/split4k_test.sv"
-    `include "../tests/stress_test.sv"
+    `include "smoke_test.sv"
+    `include "burst_test.sv"
+    `include "arb_test.sv"
+    `include "split4k_test.sv"
+    `include "stress_test.sv"
 
 endpackage
 

@@ -8,13 +8,7 @@
 -timescale=1ns/1ps
 
 //---- Include directories ----
-+incdir+./UVM_AXI_TB/tb
-+incdir+./UVM_AXI_TB/agent
-+incdir+./UVM_AXI_TB/sequence
-+incdir+./UVM_AXI_TB/model
-+incdir+./UVM_AXI_TB/scoreboard
-+incdir+./UVM_AXI_TB/coverage
-+incdir+./UVM_AXI_TB/tests
++incdir+./uvm
 
 //---- UVM library (adjust path to your installation) ----
 // $UVM_HOME/src/uvm_pkg.sv
@@ -36,10 +30,10 @@
 ./rtl/axi_interconnect.v
 
 //---- UVM TB: Interface (must come before package — agents reference axi_if) ----
-./UVM_AXI_TB/tb/axi_if.sv
+./uvm/axi_if.sv
 
 //---- UVM TB: Package (includes all other TB files via `include) ----
-./UVM_AXI_TB/tb/axi_pkg.sv
+./uvm/axi_pkg.sv
 
 //---- UVM TB: Top-level module ----
-./UVM_AXI_TB/tb/tb_top.sv
+./uvm/tb_top.sv

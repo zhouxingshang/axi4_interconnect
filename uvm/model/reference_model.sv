@@ -29,6 +29,7 @@ class reference_model extends uvm_component;
         bit[31:0] addr; bit[7:0] len; bit[2:0] size;
         bit will_split; int beats_done; bit[3:0] data_q[$];  // W data queue
     } wr_entry_t;
+    
     typedef struct {
         bit[1:0] mst_idx; bit[3:0] orig_id;
         bit[31:0] addr; bit[7:0] len; bit[2:0] size;

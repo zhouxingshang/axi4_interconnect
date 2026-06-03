@@ -2,7 +2,7 @@ Command: vcs -full64 -sverilog -f ./list/flist.f -R +v2k -debug_access+all -time
 -fsdb +define+FSDB -l com.log +lint=TFIPC-L +lint=PCWM -ntb_opts uvm-1.2 +UVM_TESTNAME=smoke_test \
 
                          Chronologic VCS (TM)
-       Version O-2018.09-SP2_Full64 -- Mon Jun  1 16:45:30 2026
+       Version O-2018.09-SP2_Full64 -- Wed Jun  3 15:36:57 2026
                Copyright (c) 1991-2018 by Synopsys Inc.
                          ALL RIGHTS RESERVED
 
@@ -384,82 +384,68 @@ Warning-[IPDW] Identifier previously declared
   Identifier 'sid_buf_s_clr_rdy' previously declared as wire. 
   [./rtl/axi_interconnect.v, 647]
 
-Parsing design file './uvm/tb/axi_if.sv'
-Parsing design file './uvm/tb/axi_pkg.sv'
+Parsing design file './uvm/axi_if.sv'
+Parsing design file './uvm/axi_pkg.sv'
 Parsing included file '/home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/uvm_macros.svh'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/axi_transaction.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_channel_items.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_aw_monitor.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_w_monitor.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_b_monitor.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_ar_monitor.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_r_monitor.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_sequencer.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_driver.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_monitor.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_master_agent.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../agent/axi_slave_agent.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../sequence/axi_base_seq.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../sequence/burst_seq.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../sequence/outstanding_seq.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../sequence/split4k_seq.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../sequence/stress_seq.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../model/addr_decoder.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../model/memory_model.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../model/reference_model.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../scoreboard/routing_sb.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../scoreboard/data_sb.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../scoreboard/response_sb.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../coverage/axi_cov.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../coverage/axi_protocol_checker.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/axi_env.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/axi_test_base.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../tests/smoke_test.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../tests/burst_test.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../tests/arb_test.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../tests/split4k_test.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing included file './uvm/tb/../tests/stress_test.sv'.
-Back to file './uvm/tb/axi_pkg.sv'.
-Parsing design file './uvm/tb/tb_top.sv'
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_transaction.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_channel_items.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_sequencer.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_driver.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_monitor.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_master_agent.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_slave_agent.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_base_seq.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/burst_seq.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/outstanding_seq.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/split4k_seq.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/stress_seq.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/addr_decoder.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/memory_model.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/reference_model.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_scoreboard.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_cov.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_protocol_checker.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_env.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/axi_test_base.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/smoke_test.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/burst_test.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/arb_test.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/split4k_test.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing included file './uvm/stress_test.sv'.
+Back to file './uvm/axi_pkg.sv'.
+Parsing design file './uvm/tb_top.sv'
 Top Level Modules:
        uvm_custom_install_recording
        uvm_custom_install_verdi_recording
        tb_top
 
 Warning-[AOUP] Attempt to override undefined parameter
-./uvm/tb/tb_top.sv, 27
+./uvm/tb_top.sv, 27
   Attempting to override undefined parameter "DEFAULT_SLV_EN", will ignore it.
 
 TimeScale is 1 ns / 1 ps
@@ -497,7 +483,7 @@ if [ -x ../simv ]; then chmod -x ../simv; fi
 g++  -o ../simv    -Wl,-rpath-link=./ -Wl,-rpath='$ORIGIN'/simv.daidir/ -Wl,-rpath=./simv.daidir/ \
 -Wl,-rpath='$ORIGIN'/simv.daidir//scsim.db.dir  -rdynamic  -Wl,-rpath=/home/synopsys/vcs/O-2018.09-SP2/linux64/lib \
 -L/home/synopsys/vcs/O-2018.09-SP2/linux64/lib  uvm_dpi.o uvm_verdi_dpi.o   objs/amcQw_d.o \
-_44251_archive_1.so  SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
+_12647_archive_1.so  SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
 rmar_llvm_0_0.o          -lzerosoft_rt_stubs -lvirsim -lerrorinf -lsnpsmalloc -lvfs \
 -lvcsnew -lsimprofile -luclinative /home/synopsys/vcs/O-2018.09-SP2/linux64/lib/vcs_tls.o \
 -Wl,-whole-archive -lvcsucli -Wl,-no-whole-archive       ./../simv.daidir/vc_hdrs.o \
@@ -509,7 +495,7 @@ make[1]: Leaving directory '/home/ICer/project/axi4/csrc'
 Command: /home/ICer/project/axi4/./simv +v2k +define+FSDB -a com.log +lint=TFIPC-L +lint=PCWM +UVM_TESTNAME=smoke_test
 Chronologic VCS simulator copyright 1991-2018
 Contains Synopsys proprietary information.
-Compiler version O-2018.09-SP2_Full64; Runtime version O-2018.09-SP2_Full64;  Jun  1 16:45 2026
+Compiler version O-2018.09-SP2_Full64; Runtime version O-2018.09-SP2_Full64;  Jun  3 15:37 2026
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh(402) @ 0: reporter [UVM/RELNOTES] 
 ----------------------------------------------------------------
 UVM-1.2.Synopsys
@@ -549,297 +535,279 @@ Name                       Type                        Size  Value
 ------------------------------------------------------------------
 uvm_test_top               smoke_test                  -     @343 
   env                      axi_env                     -     @356 
-    ar_m0                  axi_ar_monitor              -     @495 
-      ap                   uvm_analysis_port           -     @504 
-    ar_m1                  axi_ar_monitor              -     @590 
-      ap                   uvm_analysis_port           -     @599 
-    ar_m2                  axi_ar_monitor              -     @685 
-      ap                   uvm_analysis_port           -     @694 
-    ar_m3                  axi_ar_monitor              -     @780 
-      ap                   uvm_analysis_port           -     @789 
-    ar_s                   axi_ar_monitor              -     @875 
-      ap                   uvm_analysis_port           -     @884 
-    aw_m0                  axi_aw_monitor              -     @438 
-      ap                   uvm_analysis_port           -     @447 
-    aw_m1                  axi_aw_monitor              -     @533 
-      ap                   uvm_analysis_port           -     @542 
-    aw_m2                  axi_aw_monitor              -     @628 
-      ap                   uvm_analysis_port           -     @637 
-    aw_m3                  axi_aw_monitor              -     @723 
-      ap                   uvm_analysis_port           -     @732 
-    aw_s                   axi_aw_monitor              -     @818 
-      ap                   uvm_analysis_port           -     @827 
-    b_m0                   axi_b_monitor               -     @476 
-      ap                   uvm_analysis_port           -     @485 
-    b_m1                   axi_b_monitor               -     @571 
-      ap                   uvm_analysis_port           -     @580 
-    b_m2                   axi_b_monitor               -     @666 
-      ap                   uvm_analysis_port           -     @675 
-    b_m3                   axi_b_monitor               -     @761 
-      ap                   uvm_analysis_port           -     @770 
-    b_s                    axi_b_monitor               -     @856 
-      ap                   uvm_analysis_port           -     @865 
-    cov                    axi_cov                     -     @949 
-      ar_ap                uvm_analysis_export         -     @987 
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @1076
-        analysis_export    uvm_analysis_imp            -     @1125
-        get_ap             uvm_analysis_port           -     @1115
-        get_peek_export    uvm_get_peek_imp            -     @1095
-        put_ap             uvm_analysis_port           -     @1105
-        put_export         uvm_put_imp                 -     @1085
-      aw_ap                uvm_analysis_export         -     @977 
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @1017
-        analysis_export    uvm_analysis_imp            -     @1066
-        get_ap             uvm_analysis_port           -     @1056
-        get_peek_export    uvm_get_peek_imp            -     @1036
-        put_ap             uvm_analysis_port           -     @1046
-        put_export         uvm_put_imp                 -     @1026
-      b_ap                 uvm_analysis_export         -     @997 
-      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @1135
-        analysis_export    uvm_analysis_imp            -     @1184
-        get_ap             uvm_analysis_port           -     @1174
-        get_peek_export    uvm_get_peek_imp            -     @1154
-        put_ap             uvm_analysis_port           -     @1164
-        put_export         uvm_put_imp                 -     @1144
-      r_ap                 uvm_analysis_export         -     @1007
-      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @1194
-        analysis_export    uvm_analysis_imp            -     @1243
-        get_ap             uvm_analysis_port           -     @1233
-        get_peek_export    uvm_get_peek_imp            -     @1213
-        put_ap             uvm_analysis_port           -     @1223
-        put_export         uvm_put_imp                 -     @1203
-    d_sb                   data_sb                     -     @922 
-      ar_ap                uvm_analysis_export         -     @1273
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @1411
-        analysis_export    uvm_analysis_imp            -     @1460
-        get_ap             uvm_analysis_port           -     @1450
-        get_peek_export    uvm_get_peek_imp            -     @1430
-        put_ap             uvm_analysis_port           -     @1440
-        put_export         uvm_put_imp                 -     @1420
-      aw_ap                uvm_analysis_export         -     @1253
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @1293
-        analysis_export    uvm_analysis_imp            -     @1342
-        get_ap             uvm_analysis_port           -     @1332
-        get_peek_export    uvm_get_peek_imp            -     @1312
-        put_ap             uvm_analysis_port           -     @1322
-        put_export         uvm_put_imp                 -     @1302
-      r_ap                 uvm_analysis_export         -     @1283
-      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @1470
-        analysis_export    uvm_analysis_imp            -     @1519
-        get_ap             uvm_analysis_port           -     @1509
-        get_peek_export    uvm_get_peek_imp            -     @1489
-        put_ap             uvm_analysis_port           -     @1499
-        put_export         uvm_put_imp                 -     @1479
-      w_ap                 uvm_analysis_export         -     @1263
-      w_fifo               uvm_tlm_analysis_fifo #(T)  -     @1352
-        analysis_export    uvm_analysis_imp            -     @1401
-        get_ap             uvm_analysis_port           -     @1391
-        get_peek_export    uvm_get_peek_imp            -     @1371
-        put_ap             uvm_analysis_port           -     @1381
-        put_export         uvm_put_imp                 -     @1361
+    cov                    axi_cov                     -     @456 
+      ar_ap                uvm_analysis_export         -     @484 
+      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @573 
+        analysis_export    uvm_analysis_imp            -     @622 
+        get_ap             uvm_analysis_port           -     @612 
+        get_peek_export    uvm_get_peek_imp            -     @592 
+        put_ap             uvm_analysis_port           -     @602 
+        put_export         uvm_put_imp                 -     @582 
+      aw_ap                uvm_analysis_export         -     @474 
+      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @514 
+        analysis_export    uvm_analysis_imp            -     @563 
+        get_ap             uvm_analysis_port           -     @553 
+        get_peek_export    uvm_get_peek_imp            -     @533 
+        put_ap             uvm_analysis_port           -     @543 
+        put_export         uvm_put_imp                 -     @523 
+      b_ap                 uvm_analysis_export         -     @494 
+      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @632 
+        analysis_export    uvm_analysis_imp            -     @681 
+        get_ap             uvm_analysis_port           -     @671 
+        get_peek_export    uvm_get_peek_imp            -     @651 
+        put_ap             uvm_analysis_port           -     @661 
+        put_export         uvm_put_imp                 -     @641 
+      r_ap                 uvm_analysis_export         -     @504 
+      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @691 
+        analysis_export    uvm_analysis_imp            -     @740 
+        get_ap             uvm_analysis_port           -     @730 
+        get_peek_export    uvm_get_peek_imp            -     @710 
+        put_ap             uvm_analysis_port           -     @720 
+        put_export         uvm_put_imp                 -     @700 
     mst_ag0                axi_master_agent            -     @366 
-      drv_m0               axi_driver                  -     @1667
-        rsp_port           uvm_analysis_port           -     @1686
-        seq_item_port      uvm_seq_item_pull_port      -     @1676
-      mon_m0               axi_monitor                 -     @1696
-        ap                 uvm_analysis_port           -     @1705
-      sqr_m0               axi_sequencer               -     @1530
-        rsp_export         uvm_analysis_export         -     @1539
-        seq_item_export    uvm_seq_item_pull_imp       -     @1657
+      drv_m0               axi_driver                  -     @888 
+        rsp_port           uvm_analysis_port           -     @907 
+        seq_item_port      uvm_seq_item_pull_port      -     @897 
+      mon_m0               axi_monitor                 -     @917 
+        ap_ar              uvm_analysis_port           -     @956 
+        ap_aw              uvm_analysis_port           -     @926 
+        ap_b               uvm_analysis_port           -     @946 
+        ap_r               uvm_analysis_port           -     @966 
+        ap_w               uvm_analysis_port           -     @936 
+      sqr_m0               axi_sequencer               -     @751 
+        rsp_export         uvm_analysis_export         -     @760 
+        seq_item_export    uvm_seq_item_pull_imp       -     @878 
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
     mst_ag1                axi_master_agent            -     @384 
-      drv_m1               axi_driver                  -     @1859
-        rsp_port           uvm_analysis_port           -     @1878
-        seq_item_port      uvm_seq_item_pull_port      -     @1868
-      mon_m1               axi_monitor                 -     @1888
-        ap                 uvm_analysis_port           -     @1897
-      sqr_m1               axi_sequencer               -     @1722
-        rsp_export         uvm_analysis_export         -     @1731
-        seq_item_export    uvm_seq_item_pull_imp       -     @1849
+      drv_m1               axi_driver                  -     @1119
+        rsp_port           uvm_analysis_port           -     @1138
+        seq_item_port      uvm_seq_item_pull_port      -     @1128
+      mon_m1               axi_monitor                 -     @1148
+        ap_ar              uvm_analysis_port           -     @1187
+        ap_aw              uvm_analysis_port           -     @1157
+        ap_b               uvm_analysis_port           -     @1177
+        ap_r               uvm_analysis_port           -     @1197
+        ap_w               uvm_analysis_port           -     @1167
+      sqr_m1               axi_sequencer               -     @982 
+        rsp_export         uvm_analysis_export         -     @991 
+        seq_item_export    uvm_seq_item_pull_imp       -     @1109
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
     mst_ag2                axi_master_agent            -     @402 
-      drv_m2               axi_driver                  -     @2051
-        rsp_port           uvm_analysis_port           -     @2070
-        seq_item_port      uvm_seq_item_pull_port      -     @2060
-      mon_m2               axi_monitor                 -     @2080
-        ap                 uvm_analysis_port           -     @2089
-      sqr_m2               axi_sequencer               -     @1914
-        rsp_export         uvm_analysis_export         -     @1923
-        seq_item_export    uvm_seq_item_pull_imp       -     @2041
+      drv_m2               axi_driver                  -     @1350
+        rsp_port           uvm_analysis_port           -     @1369
+        seq_item_port      uvm_seq_item_pull_port      -     @1359
+      mon_m2               axi_monitor                 -     @1379
+        ap_ar              uvm_analysis_port           -     @1418
+        ap_aw              uvm_analysis_port           -     @1388
+        ap_b               uvm_analysis_port           -     @1408
+        ap_r               uvm_analysis_port           -     @1428
+        ap_w               uvm_analysis_port           -     @1398
+      sqr_m2               axi_sequencer               -     @1213
+        rsp_export         uvm_analysis_export         -     @1222
+        seq_item_export    uvm_seq_item_pull_imp       -     @1340
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
     mst_ag3                axi_master_agent            -     @420 
-      drv_m3               axi_driver                  -     @2243
-        rsp_port           uvm_analysis_port           -     @2262
-        seq_item_port      uvm_seq_item_pull_port      -     @2252
-      mon_m3               axi_monitor                 -     @2272
-        ap                 uvm_analysis_port           -     @2281
-      sqr_m3               axi_sequencer               -     @2106
-        rsp_export         uvm_analysis_export         -     @2115
-        seq_item_export    uvm_seq_item_pull_imp       -     @2233
+      drv_m3               axi_driver                  -     @1581
+        rsp_port           uvm_analysis_port           -     @1600
+        seq_item_port      uvm_seq_item_pull_port      -     @1590
+      mon_m3               axi_monitor                 -     @1610
+        ap_ar              uvm_analysis_port           -     @1649
+        ap_aw              uvm_analysis_port           -     @1619
+        ap_b               uvm_analysis_port           -     @1639
+        ap_r               uvm_analysis_port           -     @1659
+        ap_w               uvm_analysis_port           -     @1629
+      sqr_m3               axi_sequencer               -     @1444
+        rsp_export         uvm_analysis_export         -     @1453
+        seq_item_export    uvm_seq_item_pull_imp       -     @1571
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
-    proto_chk              axi_protocol_checker        -     @958 
-      ar_ap                uvm_analysis_export         -     @2327
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @2524
-        analysis_export    uvm_analysis_imp            -     @2573
-        get_ap             uvm_analysis_port           -     @2563
-        get_peek_export    uvm_get_peek_imp            -     @2543
-        put_ap             uvm_analysis_port           -     @2553
-        put_export         uvm_put_imp                 -     @2533
-      aw_ap                uvm_analysis_export         -     @2297
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @2347
-        analysis_export    uvm_analysis_imp            -     @2396
-        get_ap             uvm_analysis_port           -     @2386
-        get_peek_export    uvm_get_peek_imp            -     @2366
-        put_ap             uvm_analysis_port           -     @2376
-        put_export         uvm_put_imp                 -     @2356
-      b_ap                 uvm_analysis_export         -     @2317
-      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @2465
-        analysis_export    uvm_analysis_imp            -     @2514
-        get_ap             uvm_analysis_port           -     @2504
-        get_peek_export    uvm_get_peek_imp            -     @2484
-        put_ap             uvm_analysis_port           -     @2494
-        put_export         uvm_put_imp                 -     @2474
-      r_ap                 uvm_analysis_export         -     @2337
-      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @2583
-        analysis_export    uvm_analysis_imp            -     @2632
-        get_ap             uvm_analysis_port           -     @2622
-        get_peek_export    uvm_get_peek_imp            -     @2602
-        put_ap             uvm_analysis_port           -     @2612
-        put_export         uvm_put_imp                 -     @2592
-      w_ap                 uvm_analysis_export         -     @2307
-      w_fifo               uvm_tlm_analysis_fifo #(T)  -     @2406
-        analysis_export    uvm_analysis_imp            -     @2455
-        get_ap             uvm_analysis_port           -     @2445
-        get_peek_export    uvm_get_peek_imp            -     @2425
-        put_ap             uvm_analysis_port           -     @2435
-        put_export         uvm_put_imp                 -     @2415
-    r_m0                   axi_r_monitor               -     @514 
-      ap                   uvm_analysis_port           -     @523 
-    r_m1                   axi_r_monitor               -     @609 
-      ap                   uvm_analysis_port           -     @618 
-    r_m2                   axi_r_monitor               -     @704 
-      ap                   uvm_analysis_port           -     @713 
-    r_m3                   axi_r_monitor               -     @799 
-      ap                   uvm_analysis_port           -     @808 
-    r_s                    axi_r_monitor               -     @894 
-      ap                   uvm_analysis_port           -     @903 
-    r_sb                   routing_sb                  -     @913 
-      mst_ar_ap            uvm_analysis_export         -     @2667
-      mst_ar_fifo          uvm_tlm_analysis_fifo #(T)  -     @2805
-        analysis_export    uvm_analysis_imp            -     @2854
-        get_ap             uvm_analysis_port           -     @2844
-        get_peek_export    uvm_get_peek_imp            -     @2824
-        put_ap             uvm_analysis_port           -     @2834
-        put_export         uvm_put_imp                 -     @2814
-      mst_aw_ap            uvm_analysis_export         -     @2647
-      mst_aw_fifo          uvm_tlm_analysis_fifo #(T)  -     @2687
-        analysis_export    uvm_analysis_imp            -     @2736
-        get_ap             uvm_analysis_port           -     @2726
-        get_peek_export    uvm_get_peek_imp            -     @2706
-        put_ap             uvm_analysis_port           -     @2716
-        put_export         uvm_put_imp                 -     @2696
-      slv_ar_ap            uvm_analysis_export         -     @2677
-      slv_ar_fifo          uvm_tlm_analysis_fifo #(T)  -     @2864
-        analysis_export    uvm_analysis_imp            -     @2913
-        get_ap             uvm_analysis_port           -     @2903
-        get_peek_export    uvm_get_peek_imp            -     @2883
-        put_ap             uvm_analysis_port           -     @2893
-        put_export         uvm_put_imp                 -     @2873
-      slv_aw_ap            uvm_analysis_export         -     @2657
-      slv_aw_fifo          uvm_tlm_analysis_fifo #(T)  -     @2746
-        analysis_export    uvm_analysis_imp            -     @2795
-        get_ap             uvm_analysis_port           -     @2785
-        get_peek_export    uvm_get_peek_imp            -     @2765
-        put_ap             uvm_analysis_port           -     @2775
-        put_export         uvm_put_imp                 -     @2755
-    refm                   reference_model             -     @940 
-      ar_ap                uvm_analysis_export         -     @2933
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @3002
-        analysis_export    uvm_analysis_imp            -     @3051
-        get_ap             uvm_analysis_port           -     @3041
-        get_peek_export    uvm_get_peek_imp            -     @3021
-        put_ap             uvm_analysis_port           -     @3031
-        put_export         uvm_put_imp                 -     @3011
-      aw_ap                uvm_analysis_export         -     @2923
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @2943
-        analysis_export    uvm_analysis_imp            -     @2992
-        get_ap             uvm_analysis_port           -     @2982
-        get_peek_export    uvm_get_peek_imp            -     @2962
-        put_ap             uvm_analysis_port           -     @2972
-        put_export         uvm_put_imp                 -     @2952
-      pred_ar_ap           uvm_analysis_port           -     @3071
-      pred_aw_ap           uvm_analysis_port           -     @3061
-    resp_sb                response_sb                 -     @931 
-      ar_ap                uvm_analysis_export         -     @3111
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @3308
-        analysis_export    uvm_analysis_imp            -     @3357
-        get_ap             uvm_analysis_port           -     @3347
-        get_peek_export    uvm_get_peek_imp            -     @3327
-        put_ap             uvm_analysis_port           -     @3337
-        put_export         uvm_put_imp                 -     @3317
-      aw_ap                uvm_analysis_export         -     @3081
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @3131
-        analysis_export    uvm_analysis_imp            -     @3180
-        get_ap             uvm_analysis_port           -     @3170
-        get_peek_export    uvm_get_peek_imp            -     @3150
-        put_ap             uvm_analysis_port           -     @3160
-        put_export         uvm_put_imp                 -     @3140
-      b_ap                 uvm_analysis_export         -     @3101
-      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @3249
-        analysis_export    uvm_analysis_imp            -     @3298
-        get_ap             uvm_analysis_port           -     @3288
-        get_peek_export    uvm_get_peek_imp            -     @3268
-        put_ap             uvm_analysis_port           -     @3278
-        put_export         uvm_put_imp                 -     @3258
-      r_ap                 uvm_analysis_export         -     @3121
-      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @3367
-        analysis_export    uvm_analysis_imp            -     @3416
-        get_ap             uvm_analysis_port           -     @3406
-        get_peek_export    uvm_get_peek_imp            -     @3386
-        put_ap             uvm_analysis_port           -     @3396
-        put_export         uvm_put_imp                 -     @3376
-      w_ap                 uvm_analysis_export         -     @3091
-      w_fifo               uvm_tlm_analysis_fifo #(T)  -     @3190
-        analysis_export    uvm_analysis_imp            -     @3239
-        get_ap             uvm_analysis_port           -     @3229
-        get_peek_export    uvm_get_peek_imp            -     @3209
-        put_ap             uvm_analysis_port           -     @3219
-        put_export         uvm_put_imp                 -     @3199
+    proto_chk              axi_protocol_checker        -     @465 
+      ar_ap                uvm_analysis_export         -     @1704
+      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @1901
+        analysis_export    uvm_analysis_imp            -     @1950
+        get_ap             uvm_analysis_port           -     @1940
+        get_peek_export    uvm_get_peek_imp            -     @1920
+        put_ap             uvm_analysis_port           -     @1930
+        put_export         uvm_put_imp                 -     @1910
+      aw_ap                uvm_analysis_export         -     @1674
+      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @1724
+        analysis_export    uvm_analysis_imp            -     @1773
+        get_ap             uvm_analysis_port           -     @1763
+        get_peek_export    uvm_get_peek_imp            -     @1743
+        put_ap             uvm_analysis_port           -     @1753
+        put_export         uvm_put_imp                 -     @1733
+      b_ap                 uvm_analysis_export         -     @1694
+      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @1842
+        analysis_export    uvm_analysis_imp            -     @1891
+        get_ap             uvm_analysis_port           -     @1881
+        get_peek_export    uvm_get_peek_imp            -     @1861
+        put_ap             uvm_analysis_port           -     @1871
+        put_export         uvm_put_imp                 -     @1851
+      r_ap                 uvm_analysis_export         -     @1714
+      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @1960
+        analysis_export    uvm_analysis_imp            -     @2009
+        get_ap             uvm_analysis_port           -     @1999
+        get_peek_export    uvm_get_peek_imp            -     @1979
+        put_ap             uvm_analysis_port           -     @1989
+        put_export         uvm_put_imp                 -     @1969
+      w_ap                 uvm_analysis_export         -     @1684
+      w_fifo               uvm_tlm_analysis_fifo #(T)  -     @1783
+        analysis_export    uvm_analysis_imp            -     @1832
+        get_ap             uvm_analysis_port           -     @1822
+        get_peek_export    uvm_get_peek_imp            -     @1802
+        put_ap             uvm_analysis_port           -     @1812
+        put_export         uvm_put_imp                 -     @1792
+    refm                   reference_model             -     @447 
+      ar_ap                uvm_analysis_export         -     @2029
+      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @2098
+        analysis_export    uvm_analysis_imp            -     @2147
+        get_ap             uvm_analysis_port           -     @2137
+        get_peek_export    uvm_get_peek_imp            -     @2117
+        put_ap             uvm_analysis_port           -     @2127
+        put_export         uvm_put_imp                 -     @2107
+      aw_ap                uvm_analysis_export         -     @2019
+      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @2039
+        analysis_export    uvm_analysis_imp            -     @2088
+        get_ap             uvm_analysis_port           -     @2078
+        get_peek_export    uvm_get_peek_imp            -     @2058
+        put_ap             uvm_analysis_port           -     @2068
+        put_export         uvm_put_imp                 -     @2048
+      pred_ar_ap           uvm_analysis_port           -     @2167
+      pred_aw_ap           uvm_analysis_port           -     @2157
+    sb                     axi_scoreboard              -     @438 
+      ar_d_fifo            uvm_tlm_analysis_fifo #(T)  -     @2660
+        analysis_export    uvm_analysis_imp            -     @2709
+        get_ap             uvm_analysis_port           -     @2699
+        get_peek_export    uvm_get_peek_imp            -     @2679
+        put_ap             uvm_analysis_port           -     @2689
+        put_export         uvm_put_imp                 -     @2669
+      ar_imp               uvm_analysis_imp_ar         -     @2207
+      ar_p_fifo            uvm_tlm_analysis_fifo #(T)  -     @2719
+        analysis_export    uvm_analysis_imp            -     @2768
+        get_ap             uvm_analysis_port           -     @2758
+        get_peek_export    uvm_get_peek_imp            -     @2738
+        put_ap             uvm_analysis_port           -     @2748
+        put_export         uvm_put_imp                 -     @2728
+      ar_r_fifo            uvm_tlm_analysis_fifo #(T)  -     @2601
+        analysis_export    uvm_analysis_imp            -     @2650
+        get_ap             uvm_analysis_port           -     @2640
+        get_peek_export    uvm_get_peek_imp            -     @2620
+        put_ap             uvm_analysis_port           -     @2630
+        put_export         uvm_put_imp                 -     @2610
+      aw_d_fifo            uvm_tlm_analysis_fifo #(T)  -     @2306
+        analysis_export    uvm_analysis_imp            -     @2355
+        get_ap             uvm_analysis_port           -     @2345
+        get_peek_export    uvm_get_peek_imp            -     @2325
+        put_ap             uvm_analysis_port           -     @2335
+        put_export         uvm_put_imp                 -     @2315
+      aw_imp               uvm_analysis_imp_aw         -     @2177
+      aw_p_fifo            uvm_tlm_analysis_fifo #(T)  -     @2365
+        analysis_export    uvm_analysis_imp            -     @2414
+        get_ap             uvm_analysis_port           -     @2404
+        get_peek_export    uvm_get_peek_imp            -     @2384
+        put_ap             uvm_analysis_port           -     @2394
+        put_export         uvm_put_imp                 -     @2374
+      aw_r_fifo            uvm_tlm_analysis_fifo #(T)  -     @2247
+        analysis_export    uvm_analysis_imp            -     @2296
+        get_ap             uvm_analysis_port           -     @2286
+        get_peek_export    uvm_get_peek_imp            -     @2266
+        put_ap             uvm_analysis_port           -     @2276
+        put_export         uvm_put_imp                 -     @2256
+      b_imp                uvm_analysis_imp_b          -     @2197
+      b_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2542
+        analysis_export    uvm_analysis_imp            -     @2591
+        get_ap             uvm_analysis_port           -     @2581
+        get_peek_export    uvm_get_peek_imp            -     @2561
+        put_ap             uvm_analysis_port           -     @2571
+        put_export         uvm_put_imp                 -     @2551
+      r_d_fifo             uvm_tlm_analysis_fifo #(T)  -     @2778
+        analysis_export    uvm_analysis_imp            -     @2827
+        get_ap             uvm_analysis_port           -     @2817
+        get_peek_export    uvm_get_peek_imp            -     @2797
+        put_ap             uvm_analysis_port           -     @2807
+        put_export         uvm_put_imp                 -     @2787
+      r_imp                uvm_analysis_imp_r          -     @2217
+      r_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2837
+        analysis_export    uvm_analysis_imp            -     @2886
+        get_ap             uvm_analysis_port           -     @2876
+        get_peek_export    uvm_get_peek_imp            -     @2856
+        put_ap             uvm_analysis_port           -     @2866
+        put_export         uvm_put_imp                 -     @2846
+      slv_ar_fifo          uvm_tlm_analysis_fifo #(T)  -     @2955
+        analysis_export    uvm_analysis_imp            -     @3004
+        get_ap             uvm_analysis_port           -     @2994
+        get_peek_export    uvm_get_peek_imp            -     @2974
+        put_ap             uvm_analysis_port           -     @2984
+        put_export         uvm_put_imp                 -     @2964
+      slv_ar_imp           uvm_analysis_imp_slv_ar     -     @2237
+      slv_aw_fifo          uvm_tlm_analysis_fifo #(T)  -     @2896
+        analysis_export    uvm_analysis_imp            -     @2945
+        get_ap             uvm_analysis_port           -     @2935
+        get_peek_export    uvm_get_peek_imp            -     @2915
+        put_ap             uvm_analysis_port           -     @2925
+        put_export         uvm_put_imp                 -     @2905
+      slv_aw_imp           uvm_analysis_imp_slv_aw     -     @2227
+      w_d_fifo             uvm_tlm_analysis_fifo #(T)  -     @2424
+        analysis_export    uvm_analysis_imp            -     @2473
+        get_ap             uvm_analysis_port           -     @2463
+        get_peek_export    uvm_get_peek_imp            -     @2443
+        put_ap             uvm_analysis_port           -     @2453
+        put_export         uvm_put_imp                 -     @2433
+      w_imp                uvm_analysis_imp_w          -     @2187
+      w_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2483
+        analysis_export    uvm_analysis_imp            -     @2532
+        get_ap             uvm_analysis_port           -     @2522
+        get_peek_export    uvm_get_peek_imp            -     @2502
+        put_ap             uvm_analysis_port           -     @2512
+        put_export         uvm_put_imp                 -     @2492
     slv_ag0                axi_slave_agent             -     @375 
+      mon_s0               axi_monitor                 -     @3015
+        ap_ar              uvm_analysis_port           -     @3054
+        ap_aw              uvm_analysis_port           -     @3024
+        ap_b               uvm_analysis_port           -     @3044
+        ap_r               uvm_analysis_port           -     @3064
+        ap_w               uvm_analysis_port           -     @3034
     slv_ag1                axi_slave_agent             -     @393 
+      mon_s1               axi_monitor                 -     @3075
+        ap_ar              uvm_analysis_port           -     @3114
+        ap_aw              uvm_analysis_port           -     @3084
+        ap_b               uvm_analysis_port           -     @3104
+        ap_r               uvm_analysis_port           -     @3124
+        ap_w               uvm_analysis_port           -     @3094
     slv_ag2                axi_slave_agent             -     @411 
+      mon_s2               axi_monitor                 -     @3135
+        ap_ar              uvm_analysis_port           -     @3174
+        ap_aw              uvm_analysis_port           -     @3144
+        ap_b               uvm_analysis_port           -     @3164
+        ap_r               uvm_analysis_port           -     @3184
+        ap_w               uvm_analysis_port           -     @3154
     slv_ag3                axi_slave_agent             -     @429 
-    w_m0                   axi_w_monitor               -     @457 
-      ap                   uvm_analysis_port           -     @466 
-    w_m1                   axi_w_monitor               -     @552 
-      ap                   uvm_analysis_port           -     @561 
-    w_m2                   axi_w_monitor               -     @647 
-      ap                   uvm_analysis_port           -     @656 
-    w_m3                   axi_w_monitor               -     @742 
-      ap                   uvm_analysis_port           -     @751 
-    w_s                    axi_w_monitor               -     @837 
-      ap                   uvm_analysis_port           -     @846 
+      mon_s3               axi_monitor                 -     @3195
+        ap_ar              uvm_analysis_port           -     @3234
+        ap_aw              uvm_analysis_port           -     @3204
+        ap_b               uvm_analysis_port           -     @3224
+        ap_r               uvm_analysis_port           -     @3244
+        ap_w               uvm_analysis_port           -     @3214
 ------------------------------------------------------------------
 
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_traversal.svh(279) @ 0: reporter [UVM/COMP/NAMECHECK] This implementation of the component name checks requires DPI to be enabled
-UVM_INFO ./uvm/tb/../agent/axi_driver.sv(33) @ 0: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=15 addr=0x00005718 len=7 size=2 burst=0 mst=0 slv=0
-Interrupt at time 59420175000
+UVM_INFO ./uvm/axi_driver.sv(28) @ 0: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=15 addr=0x00005718 len=7 size=2 burst=1 mst=0 slv=0
+Interrupt at time 29850645000
 
 q
             V C S   S i m u l a t i o n   R e p o r t 
-Time: 59420175000 ps
-CPU Time:     83.710 seconds;       Data structure size:   1.3Mb
-Mon Jun  1 16:47:05 2026
-CPU time: 9.462 seconds to compile + .320 seconds to elab + .561 seconds to link + 83.739 seconds in simulation
+Time: 29850645000 ps
+CPU Time:     52.100 seconds;       Data structure size:   1.2Mb
+Wed Jun  3 15:38:00 2026
+CPU time: 9.449 seconds to compile + .322 seconds to elab + .568 seconds to link + 52.125 seconds in simulation
