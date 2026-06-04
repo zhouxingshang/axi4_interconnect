@@ -25,13 +25,18 @@ class axi_transaction extends uvm_sequence_item;
     bit                     rlast;          // RLAST (reads only)
 
     //---- Meta (filled by monitor / reference model) ----
-    int                     mst_id;         // which master sent this
+    rand int                mst_id;         // which master sent this
     int                     slv_id;         // which slave it was routed to
     bit                     is_split;       // was this split across 4KB?
 
     //---- Constraints ----
     constraint addr_range_c {
         addr inside {[0:32'h7FFF]};              // within slave address map
+    }
+
+    constraint size_c {
+        //size inside {[0:2]}; 
+        size == 2;                    // 1/2/4 bytes per beat (32-bit bus)
     }
 
     constraint addr_align_c {

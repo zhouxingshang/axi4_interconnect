@@ -263,6 +263,11 @@ generate
         assign m_arsize[m]   = m_ARSIZE_i[TRANS_DATA_SIZE_W*(m+1)-1 -: TRANS_DATA_SIZE_W];
         assign m_arvalid[m]  = m_ARVALID_i[m];
         assign m_ARREADY_o[m] = m_arready[m];
+        // TRACE
+        always @(posedge AXI_CLK) begin
+            if (m == 0 && m_ARREADY_o[m])
+                $display("[TRACE] %0t XBAR M_ARREADY m=%0d", $time, m);
+        end
         
         // R 通道
         assign m_rid[m]    = m_rsid[m];                // pass full W_SID, no stripping
@@ -309,6 +314,11 @@ generate
 
             // AR 通道
             assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = s_arid[s];
+        // TRACE
+        always @(posedge AXI_CLK) begin
+            if (s_ARVALID_o[s])
+                $display("[TRACE] %0t XBAR S_ARVALID s=%0d addr=0x%08h", $time, s, s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH]);
+        end
             assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr[s];
             assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_arburst[s];
             assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_arlen[s];
@@ -394,6 +404,11 @@ generate
         for(s = 0; s < SLV_AMT; s = s + 1) begin : AGG_SLV
             assign aw_rdy_vec[s] = m_awready_m2s[s][m];
             assign w_rdy_vec[s]  = m_wready_m2s[s][m];
+        // TRACE
+        always @(posedge AXI_CLK) begin
+            if (m_arready[0])
+                $display("[TRACE] %0t XBAR m_arready[0]=1 ar_rdy_vec=%b", $time, ar_rdy_vec);
+        end
             assign ar_rdy_vec[s] = m_arready_m2s[s][m];
         end
         assign m_awready[m] = |aw_rdy_vec;

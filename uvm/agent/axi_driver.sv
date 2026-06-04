@@ -1,6 +1,6 @@
 //=============================================================================
 // AXI Master Driver: drives AXI bus from sequencer transactions
-// Supports back-pressure injection via configurable ready delays
+// Uses negedge-set / posedge-handshake pattern to avoid class-RTL race
 //=============================================================================
 `ifndef AXI_DRIVER_SV
 `define AXI_DRIVER_SV
@@ -10,18 +10,12 @@ class axi_driver extends uvm_driver #(axi_transaction);
     virtual axi_if vif;
     int mst_id;
 
-    // Back-pressure control: min/max random wait cycles before asserting VALID
-    int aw_valid_delay_min = 0, aw_valid_delay_max = 3;
-    int  w_valid_delay_min = 0,  w_valid_delay_max = 3;
-    int ar_valid_delay_min = 0, ar_valid_delay_max = 3;
-
     `uvm_component_utils(axi_driver)
 
     function new(string name = "axi_driver", uvm_component parent);
         super.new(name, parent);
     endfunction
 
-    //---- Main run phase ----
     task run_phase(uvm_phase phase);
         forever begin
             seq_item_port.get_next_item(req);
@@ -34,76 +28,85 @@ class axi_driver extends uvm_driver #(axi_transaction);
         end
     endtask
 
-    //---- Write: AW + W, wait for B ----
+    //===================================================================
+    // Write: AW (negedge) + W (negedge per beat) + wait B
+    //===================================================================
     task drive_write(axi_transaction t);
-        // AW channel
-        random_delay(aw_valid_delay_min, aw_valid_delay_max);
-        vif.M_AWVALID[mst_id] = 1'b1;
+        // AW channel: drive at negedge, handshake at posedge
+        @(negedge vif.ACLK);
+        vif.M_AWVALID[mst_id]   = 1'b1;
         vif.M_AWID[mst_id*4+:4] = t.id;
         vif.M_AWADDR[mst_id*32+:32] = t.addr;
-        vif.M_AWLEN[mst_id*8+:8] = t.len;
-        vif.M_AWSIZE[mst_id*3+:3] = t.size;
-        vif.M_AWBURST[mst_id*2+:2] = t.burst;
+        vif.M_AWLEN[mst_id*8+:8]    = t.len;
+        vif.M_AWSIZE[mst_id*3+:3]   = t.size;
+        vif.M_AWBURST[mst_id*2+:2]  = t.burst;
+        `uvm_info("TRACE", $sformatf("M[%0d] DRV AW start addr=0x%08h len=%0d", mst_id, t.addr, t.len), UVM_MEDIUM)
         @(posedge vif.ACLK);
         while (!vif.M_AWREADY[mst_id]) @(posedge vif.ACLK);
+        `uvm_info("TRACE", $sformatf("M[%0d] DRV AW handshake done", mst_id), UVM_MEDIUM)
+        @(negedge vif.ACLK);
         vif.M_AWVALID[mst_id] = 1'b0;
 
-        // W channel: send each beat
+        // W channel: each beat driven at negedge
         for (int b = 0; b <= t.len; b++) begin
-            random_delay(w_valid_delay_min, w_valid_delay_max);
-            vif.M_WVALID[mst_id] = 1'b1;
-            vif.M_WDATA[mst_id*32+:32] = t.data[b];
-            vif.M_WSTRB[mst_id*4+:4] = t.strb[b];
-            vif.M_WLAST[mst_id] = (b == t.len);
+            @(negedge vif.ACLK);
+            vif.M_WVALID[mst_id]   = 1'b1;
+            vif.M_WDATA[mst_id*32+:32]  = t.data[b];
+            vif.M_WSTRB[mst_id*4+:4]    = t.strb[b];
+            vif.M_WLAST[mst_id]   = (b == t.len) ? 1'b1 : 1'b0;
+            `uvm_info("TRACE", $sformatf("M[%0d] DRV W beat %0d/%0d last=%b", mst_id, b, t.len, vif.M_WLAST[mst_id]), UVM_MEDIUM)
             @(posedge vif.ACLK);
             while (!vif.M_WREADY[mst_id]) @(posedge vif.ACLK);
+            @(negedge vif.ACLK);
+            vif.M_WVALID[mst_id] = 1'b0;
         end
-        vif.M_WVALID[mst_id] = 1'b0;
-        vif.M_WLAST[mst_id] = 1'b0;
 
         // B channel: wait for response
+        `uvm_info("TRACE", $sformatf("M[%0d] DRV B wait", mst_id), UVM_MEDIUM)
+        @(negedge vif.ACLK);
         vif.M_BREADY[mst_id] = 1'b1;
         @(posedge vif.ACLK);
         while (!vif.M_BVALID[mst_id]) @(posedge vif.ACLK);
+        @(negedge vif.ACLK);
         t.resp = vif.M_BRESP[mst_id*2+:2];
+        `uvm_info("TRACE", $sformatf("M[%0d] DRV B resp=%0d", mst_id, t.resp), UVM_MEDIUM)
         vif.M_BREADY[mst_id] = 1'b0;
     endtask
 
-    //---- Read: AR, wait for R beats ----
+    //===================================================================
+    // Read: AR (negedge) + R beats (negedge per beat)
+    //===================================================================
     task drive_read(axi_transaction t);
-        // AR channel
-        random_delay(ar_valid_delay_min, ar_valid_delay_max);
-        vif.M_ARVALID[mst_id] = 1'b1;
+        // AR channel: drive at negedge, handshake at posedge
+        @(negedge vif.ACLK);
+        vif.M_ARVALID[mst_id]   = 1'b1;
         vif.M_ARID[mst_id*4+:4] = t.id;
         vif.M_ARADDR[mst_id*32+:32] = t.addr;
-        vif.M_ARLEN[mst_id*8+:8] = t.len;
-        vif.M_ARSIZE[mst_id*3+:3] = t.size;
-        vif.M_ARBURST[mst_id*2+:2] = t.burst;
+        vif.M_ARLEN[mst_id*8+:8]    = t.len;
+        vif.M_ARSIZE[mst_id*3+:3]   = t.size;
+        vif.M_ARBURST[mst_id*2+:2]  = t.burst;
+        `uvm_info("TRACE", $sformatf("M[%0d] DRV AR start addr=0x%08h len=%0d", mst_id, t.addr, t.len), UVM_MEDIUM)
         @(posedge vif.ACLK);
         while (!vif.M_ARREADY[mst_id]) @(posedge vif.ACLK);
+        `uvm_info("TRACE", $sformatf("M[%0d] DRV AR handshake done", mst_id), UVM_MEDIUM)
+        @(negedge vif.ACLK);
         vif.M_ARVALID[mst_id] = 1'b0;
 
-        // R channel: receive each beat (may be out-of-order via RID)
+        // R channel: each beat driven at negedge
         for (int b = 0; b <= t.len; b++) begin
+            `uvm_info("TRACE", $sformatf("M[%0d] DRV R wait beat %0d/%0d", mst_id, b, t.len), UVM_MEDIUM)
+            @(negedge vif.ACLK);
             vif.M_RREADY[mst_id] = 1'b1;
             @(posedge vif.ACLK);
             while (!vif.M_RVALID[mst_id]) @(posedge vif.ACLK);
+            @(negedge vif.ACLK);
             t.data[b] = vif.M_RDATA[mst_id*32+:32];
             t.resp    = vif.M_RRESP[mst_id*2+:2];
             t.rlast   = vif.M_RLAST[mst_id];
+            vif.M_RREADY[mst_id] = 1'b0;
             if (t.rlast && b != t.len) begin
                 `uvm_warning("DRIVER", $sformatf("M[%0d] early RLAST at beat %0d/%0d", mst_id, b, t.len))
             end
-        end
-        vif.M_RREADY[mst_id] = 1'b0;
-    endtask
-
-    //---- Random delay for back-pressure ----
-    task random_delay(int min_d, int max_d);
-        int d;
-        if (max_d > 0) begin
-            d = min_d + ($urandom % (max_d - min_d + 1));
-            repeat(d) @(posedge vif.ACLK);
         end
     endtask
 

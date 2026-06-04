@@ -376,6 +376,11 @@ generate
         assign S_AXI_ARBURST_o [BURST_W*(s+1)-1 -: BURST_W] = s_arburst_out[s];
         assign S_AXI_ARVALID_o [s] = s_arvalid_out[s];
         assign s_arready_out[s] = S_AXI_ARREADY_i[s];
+            // TRACE: slave AR valid
+            always @(posedge AXI_CLK) begin
+                if (s_arvalid_out[s])
+                    $display("[TRACE] %0t AR at slave s=%0d addr=0x%08h", $time, s, s_araddr_out[s]);
+            end
 
         // Inputs (from top to slave pre-FIFO)
         assign s_bid_in[s]   = S_AXI_BID_i[W_SID*(s+1)-1 -: W_SID];
@@ -503,6 +508,15 @@ generate
             .rd_dout ({M_ARID[m], M_ARADDR[m], M_ARLEN[m],
                        M_ARSIZE[m], M_ARBURST[m]})
         );
+            // TRACE: pre-crossbar AR FIFO output
+            reg _prev_arv;
+            always @(posedge AXI_CLK) begin
+                _prev_arv <= M_ARVALID[m];
+                if (AXI_RSTn && M_ARVALID[m] !== _prev_arv)
+                    $display("[TRACE] %0t AR pre-FIFO vld m=%0d vld=%b rdy=%b", $time, m, M_ARVALID[m], M_ARREADY[m]);
+                if (M_ARVALID[m] && M_ARREADY[m])
+                    $display("[TRACE] %0t AR pre-FIFO out m=%0d addr=0x%08h", $time, m, M_ARADDR[m]);
+            end
     end
 endgenerate
 
@@ -566,6 +580,17 @@ endgenerate
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : GEN_ARREADY_GATE
         assign S_ARREADY[s] = S_ARREADY_FIFO[s] & sid_buf_push_rdy[s];
+        // TRACE: ARREADY gate (every cycle for s=2)
+        //always @(posedge AXI_CLK) begin
+            //if (AXI_RSTn)
+                //$display("[TRACE] %0t S_ARREADY s=%0d fifo=%b sid=%b final=%b", $time, s, S_ARREADY_FIFO[s], sid_buf_push_rdy[s], S_ARREADY[s]);
+        //end
+        // TRACE: ARREADY gate
+        always @(posedge AXI_CLK) begin
+            if (S_ARREADY_FIFO[s] !== sid_buf_push_rdy[s])
+                $display("[TRACE] %0t S_ARREADY s=%0d fifo=%b sid=%b final=%b",
+                         $time, s, S_ARREADY_FIFO[s], sid_buf_push_rdy[s], S_ARREADY[s]);
+        end
     end
 endgenerate
 
@@ -1057,5 +1082,64 @@ axi_crossbar #(
     .arbiter_type(arbiter_type),
     .slv_en_i({SLV_AMT{1'b1}})
 );
+
+//===================================================================
+// TRACE: 5-channel handshake monitoring for ALL masters and slaves
+//===================================================================
+genvar tm, ts;
+// ---- Master side: pre-FIFO output + response per master ----
+generate
+    for (tm = 0; tm < MST_AMT; tm = tm + 1) begin : TRACE_MST
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                if (M_AWVALID[tm] && M_AWREADY[tm])
+                    $display("[TRACE] %0t AW pre-FIFO m=%0d addr=0x%08h len=%0d", $time, tm, M_AWADDR[tm], M_AWLEN[tm]);
+                if (M_WVALID[tm] && M_WREADY[tm])
+                    $display("[TRACE] %0t W  pre-FIFO m=%0d", $time, tm);
+                if (M_BVALID[tm] && M_BREADY[tm])
+                    $display("[TRACE] %0t B  to master m=%0d", $time, tm);
+                if (M_ARVALID[tm] && M_ARREADY[tm])
+                    $display("[TRACE] %0t AR pre-FIFO m=%0d addr=0x%08h len=%0d", $time, tm, M_ARADDR[tm], M_ARLEN[tm]);
+                if (M_RVALID[tm] && M_RREADY[tm])
+                    $display("[TRACE] %0t R  to master m=%0d", $time, tm);
+            end
+        end
+    end
+endgenerate
+
+// ---- Slave side: request arrival + response per slave ----
+generate
+    for (ts = 0; ts < SLV_AMT; ts = ts + 1) begin : TRACE_SLV
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                if (s_awvalid_out[ts])
+                    $display("[TRACE] %0t AW at slave s=%0d addr=0x%08h len=%0d", $time, ts, s_awaddr_out[ts], s_awlen_out[ts]);
+                if (s_wvalid_out[ts])
+                    $display("[TRACE] %0t W  at slave s=%0d", $time, ts);
+                if (s_bvalid_in[ts] && s_bready_in[ts])
+                    $display("[TRACE] %0t B  from slave s=%0d", $time, ts);
+                if (s_arvalid_out[ts])
+                    $display("[TRACE] %0t AR at slave s=%0d addr=0x%08h len=%0d", $time, ts, s_araddr_out[ts], s_arlen_out[ts]);
+                if (s_rvalid_in[ts] && s_rready_in[ts])
+                    $display("[TRACE] %0t R  from slave s=%0d", $time, ts);
+            end
+        end
+    end
+endgenerate
+
+// TRACE: WLAST monitoring — master write to FIFO and read from FIFO
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        // FIFO write side (master drives)
+        if (c4k_wvalid[0] && c4k_wready[0])
+            $display("[TRACE] %0t W FIFO write m=0 last=%b data=0x%08h", $time, c4k_wlast[0], c4k_wdata[0]);
+        // FIFO read side (to crossbar)
+        if (M_WVALID[0] && M_WREADY[0])
+            $display("[TRACE] %0t W FIFO read m=0 last=%b data=0x%08h", $time, M_WLAST[0], M_WDATA[0]);
+        // Slave side
+        if (s_wvalid_out[0])
+            $display("[TRACE] %0t W at slave s=0 last=%b data=0x%08h", $time, s_wlast_out[0], s_wdata_out[0]);
+    end
+end
 
 endmodule
