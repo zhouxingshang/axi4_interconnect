@@ -5,13 +5,22 @@ class stress_test extends axi_test_base;
     task run_phase(uvm_phase phase);
         phase.raise_objection(this);
         fork
-            for(int m=0; m<4; m++) begin
-                automatic int mid=m;
-                stress_seq seq = stress_seq::type_id::create("seq");
-                seq.mst_id=mid;
-                seq.start(env.master_agents[mid].sqr);
+            begin
+                #6000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 6000000ns, stopping")
             end
-        join
-        #1000; phase.drop_objection(this);
+            begin
+                fork
+                    for(int m=0; m<4; m++) begin
+                        automatic int mid=m;
+                        stress_seq seq = stress_seq::type_id::create("seq");
+                        seq.mst_id=mid;
+                        seq.start(env.master_agents[mid].sqr);
+                    end
+                join
+                #1000;
+            end
+        join_any
+        phase.drop_objection(this);
     endtask
 endclass

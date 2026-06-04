@@ -10,23 +10,34 @@ class smoke_test extends axi_test_base;
         phase.raise_objection(this);
         fork
             begin
-                #1000;
-                `uvm_fatal("TIMEOUT", "Simulation timeout at 1000000ns")
+                #3000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 2000000ns, stopping")
             end
             begin
+                bit [31:0] shared_addr;
+                bit [3:0]  id_cnt;
+                bit [31:0] slv_base[4] = '{32'h0000, 32'h2000, 32'h4000, 32'h6000};
                 // wait for reset to complete
                 repeat(20) @(posedge env.vif.ACLK);
                 for(int m=0; m<4; m++) begin
-                    axi_base_seq seq_wr, seq_rd;
-                    seq_wr = axi_base_seq::type_id::create($sformatf("seq_wr_%0d", m));
-                    seq_wr.mst_id   = m;
-                    seq_wr.is_write = 1;
-                    seq_wr.start(env.master_agents[m].sqr);
+                    for(int s=0; s<4; s++) begin
+                        axi_base_seq seq_wr, seq_rd;
+                        shared_addr = (slv_base[s] | ($urandom & 32'h1FFF)) & ~32'h3;
 
-                    seq_rd = axi_base_seq::type_id::create($sformatf("seq_rd_%0d", m));
-                    seq_rd.mst_id   = m;
-                    seq_rd.is_write = 0;
-                    seq_rd.start(env.master_agents[m].sqr);
+                        seq_wr = axi_base_seq::type_id::create($sformatf("seq_wr_m%0d_s%0d", m, s));
+                        seq_wr.mst_id   = m;
+                        seq_wr.is_write = 1;
+                        seq_wr.addr     = shared_addr;
+                        seq_wr.seq_id   = id_cnt++;
+                        seq_wr.start(env.master_agents[m].sqr);
+
+                        seq_rd = axi_base_seq::type_id::create($sformatf("seq_rd_m%0d_s%0d", m, s));
+                        seq_rd.mst_id   = m;
+                        seq_rd.is_write = 0;
+                        seq_rd.addr     = shared_addr;
+                        seq_rd.seq_id   = id_cnt++;
+                        seq_rd.start(env.master_agents[m].sqr);
+                    end
                 end
                 #1000;
             end

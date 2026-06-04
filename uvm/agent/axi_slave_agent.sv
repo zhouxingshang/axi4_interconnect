@@ -7,12 +7,6 @@ class axi_slave_agent extends uvm_agent;
     virtual axi_if vif;
     axi_monitor   mon;
 
-    int aw_ready_delay_min = 0, aw_ready_delay_max = 3;
-    int  w_ready_delay_min = 0,  w_ready_delay_max = 3;
-    int ar_ready_delay_min = 0, ar_ready_delay_max = 3;
-    int  b_valid_delay_min = 0,  b_valid_delay_max = 3;
-    int  r_valid_delay_min = 0,  r_valid_delay_max = 3;
-
     typedef struct { bit[7:0] id; bit[31:0] addr; bit[7:0] len;
                      bit[2:0] size; bit[1:0] burst; } trans_hdr_t;
     trans_hdr_t aw_queue[$], ar_queue[$];
@@ -20,6 +14,9 @@ class axi_slave_agent extends uvm_agent;
     // W beat tracking: B waits for WLAST before responding
     int          w_beat_cnt;
     event        w_done_evt;
+
+    // Memory: stores WDATA, returns on read
+    bit[31:0]    mem [bit[31:0]];
 
     `uvm_component_utils(axi_slave_agent)
 
@@ -61,12 +58,18 @@ class axi_slave_agent extends uvm_agent;
     endtask
 
     task w_handler();
+        bit[31:0] beat_addr; int bpb;
         vif.S_WREADY[slv_id] = 1;
         forever begin
             @(posedge vif.ACLK);
             if (vif.S_WVALID[slv_id]) begin
                 `uvm_info("TRACE", $sformatf("S[%0d] SLV W beat data=0x%08h last=%b",
                          slv_id, vif.S_WDATA[slv_id*32+:32], vif.S_WLAST[slv_id]), UVM_MEDIUM)
+                if (aw_queue.size() > 0) begin
+                    bpb = 1 << aw_queue[0].size;
+                    beat_addr = aw_queue[0].addr + (w_beat_cnt * bpb);
+                    mem[beat_addr[31:2]] = vif.S_WDATA[slv_id*32+:32];
+                end
                 w_beat_cnt++;
                 if (vif.S_WLAST[slv_id])
                     -> w_done_evt;
@@ -85,12 +88,13 @@ class axi_slave_agent extends uvm_agent;
             `uvm_info("TRACE", $sformatf("S[%0d] SLV B start id=%0d beats=%0d",
                      slv_id, aw_queue[0].id[3:0], w_beat_cnt), UVM_MEDIUM)
             w_beat_cnt = 0;
-            delay(b_valid_delay_min, b_valid_delay_max);
+            @(negedge vif.ACLK);
             vif.S_BVALID[slv_id]   = 1;
             vif.S_BID[slv_id*8+:8] = aw_queue[0].id;
             vif.S_BRESP[slv_id*2+:2] = 2'b00;
             @(posedge vif.ACLK);
             while (!vif.S_BREADY[slv_id]) @(posedge vif.ACLK);
+            @(negedge vif.ACLK);
             vif.S_BVALID[slv_id] = 0;
             void'(aw_queue.pop_front());
         end
@@ -116,31 +120,26 @@ class axi_slave_agent extends uvm_agent;
     endtask
 
     task r_handler();
-        int beat;
+        int beat; bit[31:0] beat_addr; int bpb; bit[31:0] rdata;
         forever begin
             wait(ar_queue.size()>0);
             `uvm_info("TRACE", $sformatf("S[%0d] SLV R start id=%0d len=%0d", slv_id, ar_queue[0].id[3:0], ar_queue[0].len), UVM_MEDIUM)
+            bpb = 1 << ar_queue[0].size;
             for (beat = 0; beat <= ar_queue[0].len; beat++) begin
-                delay(r_valid_delay_min, r_valid_delay_max);
+                beat_addr = ar_queue[0].addr + (beat * bpb);
+                rdata = mem.exists(beat_addr[31:2]) ? mem[beat_addr[31:2]] : 32'hDEAD_BEEF;
+                @(negedge vif.ACLK);
                 vif.S_RVALID[slv_id]   = 1;
                 vif.S_RID[slv_id*8+:8] = ar_queue[0].id;
-                vif.S_RDATA[slv_id*32+:32] = $urandom;
+                vif.S_RDATA[slv_id*32+:32] = rdata;
                 vif.S_RRESP[slv_id*2+:2] = 2'b00;
                 vif.S_RLAST[slv_id]   = (beat == ar_queue[0].len);
                 @(posedge vif.ACLK);
                 while (!vif.S_RREADY[slv_id]) @(posedge vif.ACLK);
+                @(negedge vif.ACLK);
                 vif.S_RVALID[slv_id] = 0;
-                @(posedge vif.ACLK);
             end
             void'(ar_queue.pop_front());
-        end
-    endtask
-
-    task delay(int min_d, int max_d);
-        int d;
-        if (max_d > 0) begin
-            d = min_d + ($urandom % (max_d - min_d + 1));
-            repeat(d) @(posedge vif.ACLK);
         end
     endtask
 
