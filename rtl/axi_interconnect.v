@@ -1142,4 +1142,48 @@ always @(posedge AXI_CLK) begin
     end
 end
 
+// TRACE: B merge monitor for m=0
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        if (c4k_bvalid[0] && c4k_bready[0])
+            $display("[TRACE] %0t B merge in m=0 id=0x%02h resp=%b", $time, c4k_bid[0], c4k_bresp[0]);
+        if (m_bvalid[0] && m_bready[0])
+            $display("[TRACE] %0t B merge out m=0 id=0x%02h resp=%b", $time, m_bid[0], m_bresp[0]);
+    end
+end
+
+// TRACE: Crossbar B channel interface (slave side → master side)
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        // Slave side: pre-FIFO output → crossbar input
+        if (x_s_BVALID[0] || x_s_BREADY[0])
+            $display("[TRACE_XBAR_B] %0t S side s=0 s_bvalid=%b s_bready=%b",
+                     $time, x_s_BVALID[0], x_s_BREADY[0]);
+        // Master side: crossbar output → post-FIFO input
+        if (x_m_BVALID[0] || x_m_BREADY[0])
+            $display("[TRACE_XBAR_B] %0t M side m=0 m_bvalid=%b m_bready=%b",
+                     $time, x_m_BVALID[0], x_m_BREADY[0]);
+    end
+end
+
+// TRACE: B path from slave to merge (for slave 0)
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        // Slave drives B (pre-FIFO write)
+        if (s_bvalid_in[0] && s_bready_in[0])
+            $display("[TRACE] %0t B slave handshake s=0 id=0x%02h", $time, s_bid_in[0]);
+        // Pre-FIFO output to crossbar (pre-FIFO read)
+        if (s_bvalid_fifo[0] && s_bready_fifo[0])
+            $display("[TRACE] %0t B pre-FIFO out s=0 id=0x%02h", $time, s_bid_fifo[0]);
+        // Pre-FIFO has data but crossbar not reading
+        if (s_bvalid_fifo[0] && !s_bready_fifo[0])
+            $display("[TRACE] %0t B pre-FIFO stuck s=0 vld=1 rdy=0", $time);
+        // Post-FIFO (master side) status: wr_rdy determines if crossbar can write
+        if (M_BVALID[0] && !M_BREADY[0])
+            $display("[TRACE] %0t B post-FIFO stuck m=0 wr_vld=1 wr_rdy=0", $time);
+        if (M_BVALID[0] && M_BREADY[0])
+            $display("[TRACE] %0t B post-FIFO out m=0 id=0x%02h", $time, M_BID[0]);
+    end
+end
+
 endmodule

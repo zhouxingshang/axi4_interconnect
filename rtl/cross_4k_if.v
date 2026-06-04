@@ -148,8 +148,8 @@ always @(posedge clk) begin
         ST_AR_C4K <= 0;
     end else begin
         case (ST_AR_C4K)
-            IDLE: begin 
-                if (ar_cross4k_flag) begin
+            IDLE: begin
+                if (ar_cross4k_flag && m_axi_arvalid) begin
                     ST_AR_C4K  <= TRANS1;
                 end
             end
@@ -212,8 +212,8 @@ always @(posedge clk) begin
         ST_AW_C4K <= 0;
     end else begin
         case (ST_AW_C4K)
-            IDLE: begin 
-                if (aw_cross4k_flag) begin
+            IDLE: begin
+                if (aw_cross4k_flag && m_axi_awvalid) begin
                     ST_AW_C4K  <= TRANS1;
                 end
             end
@@ -281,17 +281,23 @@ reg [W_LEN-1:0] w_beat_cnt;        // beat index within the original transaction
 reg             w_trans1_done;      // sub-transaction 1 W phase completed
 reg             w_aw_split;         // current write transaction was split
 reg [W_LEN-1:0] orig_awlen_reg;    // original AWLEN (from master, before split)
+reg             w_stall_rel;        // latch: once sub-AW2 accepted, permanently release W stall
 
 // Capture original AWLEN when AW handshake completes on master side
 always @(posedge clk) begin
     if (!rst_n) begin
         orig_awlen_reg <= 0;
         w_aw_split     <= 0;
+        w_stall_rel    <= 0;
     end else begin
         if (m_axi_awvalid && m_axi_awready) begin
             orig_awlen_reg <= m_axi_awlen;
             w_aw_split     <= aw_cross4k_flag;
+            w_stall_rel    <= 1'b0;   // reset for new transaction
         end
+        // Release W stall once sub-AW2 is accepted by slave
+        if (ST_AW_C4K == TRANS2 && s_axi_awvalid && s_axi_awready)
+            w_stall_rel <= 1;
     end
 end
 
@@ -301,7 +307,7 @@ always @(posedge clk) begin
         w_beat_cnt    <= 0;
         w_trans1_done <= 0;
     end else begin
-        // Load / start on TRANS1 AW handshake
+        // Load / start on TRANS1 AW handshake (reset for each new split transaction)
         if (ST_AW_C4K == TRANS1 && s_axi_awvalid && s_axi_awready && aw_cross4k_flag) begin
             w_beat_cnt    <= 0;
             w_trans1_done <= 0;
@@ -319,10 +325,9 @@ always @(posedge clk) begin
 end
 
 // W channel routing
-// Stalling: between TRANS1 W done and TRANS2 AW accepted, stall W to prevent
-// sub-transaction 2 data from reaching the slave before its AW is sent.
-wire w_stall = w_trans1_done && w_aw_split &&
-               !(ST_AW_C4K == TRANS2 && s_axi_awvalid && s_axi_awready);
+// Stalling: between sub-W1 WLAST and sub-AW2 acceptance, stall W.
+// Once sub-AW2 is accepted (w_stall_rel=1), stall is permanently released.
+wire w_stall = w_trans1_done && w_aw_split && !w_stall_rel;
 
 assign s_axi_wdata  = m_axi_wdata;
 assign s_axi_wstrb  = m_axi_wstrb;
@@ -331,5 +336,21 @@ assign s_axi_wlast  = (!w_trans1_done && w_aw_split && w_beat_cnt == trans1_awle
                       ? 1'b1              // force WLAST on last beat of sub-transaction 1
                       : m_axi_wlast;      // passthrough otherwise
 assign m_axi_wready = s_axi_wready && !w_stall;
+
+// TRACE: 4KB split debug
+always @(posedge clk) begin
+    if (rst_n) begin
+        if (w_aw_split || w_trans1_done)
+            $display("[TRACE_C4K] %0t ST_AW=%0d split=%b t1done=%b stall=%b beat=%0d",
+                     $time, ST_AW_C4K, w_aw_split, w_trans1_done, w_stall, w_beat_cnt);
+    end
+end
+always @(posedge clk) begin
+    if (rst_n) begin
+        if (m_axi_wvalid || s_axi_wvalid)
+            $display("[TRACE_C4K] %0t W m_vld=%b m_rdy=%b s_vld=%b s_rdy=%b slast=%b",
+                     $time, m_axi_wvalid, m_axi_wready, s_axi_wvalid, s_axi_wready, s_axi_wlast);
+    end
+end
 
 endmodule

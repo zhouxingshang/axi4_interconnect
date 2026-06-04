@@ -123,4 +123,18 @@ module axi_fifo_sync
        end
    end
 
+   // TRACE: FIFO internal state — only on handshake or backpressure
+   always @(posedge clk) begin
+       if (rstn) begin
+           // write or read handshake completed
+           if ((wr_vld && wr_rdy) || (rd_vld && rd_rdy))
+               $display("[TRACE_FIFO] %0t %m wr_vld=%b wr_rdy=%b rd_vld=%b rd_rdy=%b cnt=%0d full=%b empty=%b",
+                        $time, wr_vld, wr_rdy, rd_vld, rd_rdy, item_cnt, full, empty);
+           // backpressure: valid asserted but not ready
+           if ((wr_vld && !wr_rdy) || (rd_vld && !rd_rdy))
+               $display("[TRACE_FIFO] %0t %m STUCK wr_vld=%b wr_rdy=%b rd_vld=%b rd_rdy=%b cnt=%0d full=%b empty=%b",
+                        $time, wr_vld, wr_rdy, rd_vld, rd_rdy, item_cnt, full, empty);
+       end
+   end
+
 endmodule

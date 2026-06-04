@@ -124,7 +124,7 @@ module axi_split_b_merge #(
 
     assign s_axi_bready = has_pending      ? 1'b0             // wait: merged B first
                         : can_accept       ? 1'b1             // absorb / allocate
-                        :                    m_axi_bready;    // non-split passthrough
+                        :                    (m_axi_bready === 1'b1);  // non-split passthrough (sanitize z->0)
 
     always @(*) begin
         if (has_pending) begin
@@ -186,6 +186,35 @@ module axi_split_b_merge #(
                 // else: key not found & no free slot → drop (should not happen
                 //       if MAX_SPLIT ≥ outstanding split transactions)
             end
+        end
+    end
+
+    //=========================================================================
+    // TRACE: B merge internal state
+    //=========================================================================
+    always @(posedge clk) begin
+        if (rst_n) begin
+            if (s_axi_bvalid || has_pending || |entry_valid) begin
+                $display("[TRACE_BMERGE] %0t s_bvld=%b s_brdy=%b pend=%b key=%b free=%b can=%b split=%b b_st=%b bid=0x%02h sid=0x%02h",
+                         $time, s_axi_bvalid, s_axi_bready, has_pending,
+                         |key_match, has_free, can_accept, b_is_split,
+                         b_split_st, s_axi_bid, b_strip_id);
+                for (int i = 0; i < MAX_SPLIT; i++) begin
+                    if (entry_valid[i])
+                        $display("[TRACE_BMERGE] %0t   E[%0d] id=0x%02h t1=%b t2=%b resp=%b done=%b",
+                                 $time, i, entry_orig_id[i], entry_got_t1[i],
+                                 entry_got_t2[i], entry_resp[i], entry_done[i]);
+                end
+            end
+            if (s_axi_bvalid && s_axi_bready && b_is_split)
+                $display("[TRACE_BMERGE] %0t ABSORB t1=%b t2=%b alloc=%0d",
+                         $time, b_is_trans1, b_is_trans2, alloc_idx);
+            if (has_pending)
+                $display("[TRACE_BMERGE] %0t PENDING done_idx=%0d id=0x%02h resp=%b m_bvld=%b m_brdy=%b",
+                         $time, done_idx, entry_orig_id[done_idx],
+                         entry_resp[done_idx], m_axi_bvalid, m_axi_bready);
+            if (has_pending && m_axi_bvalid && m_axi_bready)
+                $display("[TRACE_BMERGE] %0t DEALLOC idx=%0d", $time, done_idx);
         end
     end
 

@@ -11,9 +11,11 @@ class axi_slave_agent extends uvm_agent;
                      bit[2:0] size; bit[1:0] burst; } trans_hdr_t;
     trans_hdr_t aw_queue[$], ar_queue[$];
 
-    // W beat tracking: B waits for WLAST before responding
+    // W beat tracking: per-burst isolation for 4KB split support
+    typedef struct { bit[31:0] addr; bit[2:0] size; } wr_aw_t;
+    wr_aw_t      wr_aw_q    [$];    // AW info per W burst (for w_handler addressing)
     int          w_beat_cnt;
-    event        w_done_evt;
+    int          w_done_q   [$];    // beat count per completed W burst
 
     // Memory: stores WDATA, returns on read
     bit[31:0]    mem [bit[31:0]];
@@ -53,6 +55,7 @@ class axi_slave_agent extends uvm_agent;
                 wt.size = vif.S_AWSIZE[slv_id*3+:3];
                 wt.burst= vif.S_AWBURST[slv_id*2+:2];
                 aw_queue.push_back(wt);
+                wr_aw_q.push_back('{addr: wt.addr, size: wt.size});
             end
         end
     endtask
@@ -65,29 +68,31 @@ class axi_slave_agent extends uvm_agent;
             if (vif.S_WVALID[slv_id]) begin
                 `uvm_info("TRACE", $sformatf("S[%0d] SLV W beat data=0x%08h last=%b",
                          slv_id, vif.S_WDATA[slv_id*32+:32], vif.S_WLAST[slv_id]), UVM_MEDIUM)
-                if (aw_queue.size() > 0) begin
-                    bpb = 1 << aw_queue[0].size;
-                    beat_addr = aw_queue[0].addr + (w_beat_cnt * bpb);
+                if (wr_aw_q.size() > 0) begin
+                    bpb = 1 << wr_aw_q[0].size;
+                    beat_addr = wr_aw_q[0].addr + (w_beat_cnt * bpb);
                     mem[beat_addr[31:2]] = vif.S_WDATA[slv_id*32+:32];
                 end
                 w_beat_cnt++;
-                if (vif.S_WLAST[slv_id])
-                    -> w_done_evt;
+                if (vif.S_WLAST[slv_id]) begin
+                    w_done_q.push_back(w_beat_cnt);
+                    w_beat_cnt = 0;
+                end
             end
         end
     endtask
 
     task b_handler();
-        int exp_beats;
+        int exp_beats, actual_beats;
         forever begin
             wait(aw_queue.size()>0);
-            // Wait for all W beats to arrive
-            exp_beats = aw_queue[0].len + 1;
-            while (w_beat_cnt < exp_beats)
-                @(w_done_evt);
-            `uvm_info("TRACE", $sformatf("S[%0d] SLV B start id=%0d beats=%0d",
-                     slv_id, aw_queue[0].id[3:0], w_beat_cnt), UVM_MEDIUM)
-            w_beat_cnt = 0;
+            // Wait for a W burst to complete
+            while (w_done_q.size() == 0)
+                @(posedge vif.ACLK);
+            exp_beats   = aw_queue[0].len + 1;
+            actual_beats = w_done_q.pop_front();
+            `uvm_info("TRACE", $sformatf("S[%0d] SLV B start id=%0d exp=%0d act=%0d",
+                     slv_id, aw_queue[0].id[3:0], exp_beats, actual_beats), UVM_MEDIUM)
             @(negedge vif.ACLK);
             vif.S_BVALID[slv_id]   = 1;
             vif.S_BID[slv_id*8+:8] = aw_queue[0].id;
@@ -97,6 +102,7 @@ class axi_slave_agent extends uvm_agent;
             @(negedge vif.ACLK);
             vif.S_BVALID[slv_id] = 0;
             void'(aw_queue.pop_front());
+            void'(wr_aw_q.pop_front());
         end
     endtask
 

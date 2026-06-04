@@ -352,1262 +352,845 @@ uvm_test_top               split4k_test                -     @343
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_traversal.svh(279) @ 0: reporter [UVM/COMP/NAMECHECK] This implementation of the component name checks requires DPI to be enabled
 UVM_INFO ./uvm/axi_driver.sv(22) @ 0: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: WR id=15 addr=0x00000ff0 len=7 size=2 burst=1 mst=0 slv=0
 UVM_INFO ./uvm/axi_driver.sv(43) @ 10000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW start addr=0x00000ff0 len=7
+[TRACE_XBAR_B] 105000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_XBAR_B] 115000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 115000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_aw wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
 UVM_INFO ./uvm/axi_driver.sv(46) @ 125000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW handshake done
+[TRACE_XBAR_B] 125000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 125000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
+[TRACE_FIFO] 125000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_aw wr_vld=1 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 125000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_aw_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
+[TRACE_XBAR_B] 135000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 135000 AW pre-FIFO m=0 addr=0x00001000 len=3
 [TRACE] 135000 AW at slave s=0 addr=0x00000ff0 len=3
+[TRACE_C4K] 135000 ST_AW=0 split=1 t1done=0 stall=0 beat=0
+[TRACE_FIFO] 135000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_aw wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 135000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_aw_slv wr_vld=1 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 140000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 0/7 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
 [TRACE] 145000 W FIFO write m=0 last=0 data=0x119cb34d
+[TRACE_XBAR_B] 145000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 145000 AW at slave s=0 addr=0x00001000 len=3
+[TRACE_C4K] 145000 ST_AW=0 split=1 t1done=0 stall=0 beat=0
+[TRACE_C4K] 145000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 145000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 145000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_aw_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 [TRACE] 155000 W FIFO read m=0 last=0 data=0x119cb34d
-[TRACE] 155000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
+[TRACE_XBAR_B] 155000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 155000 W  pre-FIFO m=0
+[TRACE_FIFO] 155000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 155000 ST_AW=0 split=1 t1done=0 stall=0 beat=1
+[TRACE_FIFO] 155000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 160000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 1/7 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 165000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
 [TRACE] 165000 W FIFO write m=0 last=0 data=0x6dea7bbf
-[TRACE] 165000 AW pre-FIFO m=0 addr=0x00001000 len=3
-[TRACE] 165000 AW at slave s=0 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x119cb34d last=0
+[TRACE_XBAR_B] 165000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 165000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 165000 ST_AW=0 split=1 t1done=0 stall=0 beat=1
+[TRACE_C4K] 165000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 165000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 165000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x119cb34d last=0
 [TRACE] 175000 W FIFO read m=0 last=0 data=0x6dea7bbf
 [TRACE] 175000 W at slave s=0 last=0 data=0x119cb34d
+[TRACE_XBAR_B] 175000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 175000 W  pre-FIFO m=0
-[TRACE] 175000 AW at slave s=0 addr=0x00001000 len=3
 [TRACE] 175000 W  at slave s=0
+[TRACE_FIFO] 175000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 175000 ST_AW=0 split=1 t1done=0 stall=0 beat=2
+[TRACE_FIFO] 175000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 175000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 180000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 2/7 last=0
 [TRACE] 185000 W FIFO write m=0 last=0 data=0x9b11e01b
-[TRACE] 185000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x6dea7bbf last=0
+[TRACE_XBAR_B] 185000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 185000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 185000 ST_AW=0 split=1 t1done=0 stall=0 beat=2
+[TRACE_C4K] 185000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 185000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 185000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x6dea7bbf last=0
 [TRACE] 195000 W FIFO read m=0 last=0 data=0x9b11e01b
 [TRACE] 195000 W at slave s=0 last=0 data=0x6dea7bbf
-[TRACE] 195000 AW pre-FIFO m=0 addr=0x00001000 len=3
+[TRACE_XBAR_B] 195000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 195000 W  pre-FIFO m=0
-[TRACE] 195000 AW at slave s=0 addr=0x00000ff0 len=3
 [TRACE] 195000 W  at slave s=0
+[TRACE_FIFO] 195000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 195000 ST_AW=0 split=1 t1done=0 stall=0 beat=3
+[TRACE_FIFO] 195000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 195000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 200000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 3/7 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 205000 W FIFO write m=0 last=0 data=0xd85b22c8
-[TRACE] 205000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x9b11e01b last=0
-[TRACE] 215000 W FIFO read m=0 last=0 data=0xd85b22c8
+[TRACE] 205000 W FIFO write m=0 last=1 data=0xd85b22c8
+[TRACE_XBAR_B] 205000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 205000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 205000 ST_AW=0 split=1 t1done=0 stall=0 beat=3
+[TRACE_C4K] 205000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+[TRACE_FIFO] 205000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 205000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x9b11e01b last=0
+[TRACE] 215000 W FIFO read m=0 last=1 data=0xd85b22c8
 [TRACE] 215000 W at slave s=0 last=0 data=0x9b11e01b
-[TRACE] 215000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
+[TRACE_XBAR_B] 215000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 215000 W  pre-FIFO m=0
 [TRACE] 215000 W  at slave s=0
+[TRACE_FIFO] 215000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 215000 ST_AW=0 split=1 t1done=1 stall=0 beat=4
+[TRACE_FIFO] 215000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 215000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 220000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 4/7 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
 [TRACE] 225000 W FIFO write m=0 last=0 data=0x0788f874
-[TRACE] 225000 AW pre-FIFO m=0 addr=0x00001000 len=3
-[TRACE] 225000 AW at slave s=0 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xd85b22c8 last=0
+[TRACE_XBAR_B] 225000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 225000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 225000 ST_AW=0 split=1 t1done=1 stall=0 beat=4
+[TRACE_C4K] 225000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 225000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 225000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xd85b22c8 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=15 exp=4 act=4
 [TRACE] 235000 W FIFO read m=0 last=0 data=0x0788f874
-[TRACE] 235000 W at slave s=0 last=0 data=0xd85b22c8
+[TRACE] 235000 W at slave s=0 last=1 data=0xd85b22c8
+[TRACE_XBAR_B] 235000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 235000 W  pre-FIFO m=0
-[TRACE] 235000 AW at slave s=0 addr=0x00001000 len=3
 [TRACE] 235000 W  at slave s=0
+[TRACE_FIFO] 235000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_C4K] 235000 ST_AW=0 split=1 t1done=1 stall=0 beat=5
+[TRACE_FIFO] 235000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 235000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 240000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 5/7 last=0
 [TRACE] 245000 W FIFO write m=0 last=0 data=0x1dcad065
-[TRACE] 245000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x0788f874 last=0
+[TRACE_XBAR_B] 245000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 245000 B slave handshake s=0 id=0x1f
+[TRACE] 245000 B  from slave s=0
+[TRACE_FIFO] 245000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 245000 ST_AW=0 split=1 t1done=1 stall=0 beat=5
+[TRACE_C4K] 245000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 245000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 245000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 245000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x0788f874 last=0
 [TRACE] 255000 W FIFO read m=0 last=0 data=0x1dcad065
 [TRACE] 255000 W at slave s=0 last=0 data=0x0788f874
+[TRACE_XBAR_B] 255000 S side s=0 s_bvalid=1 s_bready=1
+[TRACE_XBAR_B] 255000 M side m=0 m_bvalid=1 m_bready=1
+[TRACE] 255000 B pre-FIFO out s=0 id=0x1f
+[TRACE] 255000 B post-FIFO out m=0 id=0x1f
 [TRACE] 255000 W  pre-FIFO m=0
-[TRACE] 255000 AW at slave s=0 addr=0x00000ff0 len=3
+[TRACE] 255000 B  to master m=0
 [TRACE] 255000 W  at slave s=0
+[TRACE_FIFO] 255000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 255000 ST_AW=0 split=1 t1done=1 stall=0 beat=6
+[TRACE_FIFO] 255000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 255000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 255000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 255000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
 UVM_INFO ./uvm/axi_driver.sv(57) @ 260000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 6/7 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
 [TRACE] 265000 W FIFO write m=0 last=0 data=0x904eca72
-[TRACE] 265000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x1dcad065 last=0
+[TRACE] 265000 B merge in m=0 id=0x1f resp=00
+[TRACE_XBAR_B] 265000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 265000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 265000 ST_AW=0 split=1 t1done=1 stall=0 beat=6
+[TRACE_C4K] 265000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 265000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 265000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 265000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 265000 s_bvld=1 s_brdy=1 pend=0 key=0 free=1 can=1 split=1 b_st=01 bid=0x1f sid=0x0f
+[TRACE_BMERGE] 265000 ABSORB t1=1 t2=0 alloc=0
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x1dcad065 last=0
 [TRACE] 275000 W FIFO read m=0 last=0 data=0x904eca72
 [TRACE] 275000 W at slave s=0 last=0 data=0x1dcad065
+[TRACE_XBAR_B] 275000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 275000 W  pre-FIFO m=0
-[TRACE] 275000 AW at slave s=0 addr=0x00001000 len=3
 [TRACE] 275000 W  at slave s=0
+[TRACE_FIFO] 275000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 275000 ST_AW=0 split=1 t1done=1 stall=0 beat=7
+[TRACE_FIFO] 275000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 275000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 275000 s_bvld=0 s_brdy=0 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 275000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
 UVM_INFO ./uvm/axi_driver.sv(57) @ 280000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 7/7 last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
 [TRACE] 285000 W FIFO write m=0 last=1 data=0x2eb45e44
-[TRACE] 285000 AW at slave s=0 addr=0x00001000 len=3
+[TRACE_XBAR_B] 285000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 285000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 285000 ST_AW=0 split=1 t1done=1 stall=0 beat=7
+[TRACE_C4K] 285000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+[TRACE_FIFO] 285000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 285000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 285000 s_bvld=0 s_brdy=0 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 285000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
 UVM_INFO ./uvm/axi_driver.sv(65) @ 290000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B wait
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x904eca72 last=0
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x904eca72 last=0
 [TRACE] 295000 W FIFO read m=0 last=1 data=0x2eb45e44
 [TRACE] 295000 W at slave s=0 last=0 data=0x904eca72
+[TRACE_XBAR_B] 295000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 295000 W  pre-FIFO m=0
-[TRACE] 295000 AW at slave s=0 addr=0x00001000 len=3
 [TRACE] 295000 W  at slave s=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 305000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(66) @ 315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x2eb45e44 last=1
+[TRACE_FIFO] 295000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 295000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 295000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 295000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 295000 s_bvld=0 s_brdy=0 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 295000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
+[TRACE_XBAR_B] 305000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 305000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 305000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 305000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 305000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 305000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x2eb45e44 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=15 exp=4 act=4
 [TRACE] 315000 W at slave s=0 last=1 data=0x2eb45e44
-[TRACE] 315000 AW pre-FIFO m=0 addr=0x00001000 len=3
-[TRACE] 315000 AW at slave s=0 addr=0x00001000 len=3
+[TRACE_XBAR_B] 315000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 315000 W  at slave s=0
-UVM_INFO ./uvm/axi_slave_agent.sv(88) @ 315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=15 beats=8
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 325000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
-[TRACE] 325000 AW at slave s=0 addr=0x00001000 len=3
+[TRACE_C4K] 315000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 315000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 315000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 315000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
+[TRACE_XBAR_B] 325000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 325000 B slave handshake s=0 id=0x2f
 [TRACE] 325000 B  from slave s=0
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=31 addr=0x00000ff0 len=3
+[TRACE_C4K] 325000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 325000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 325000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 325000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
+[TRACE_XBAR_B] 335000 S side s=0 s_bvalid=1 s_bready=1
+[TRACE_XBAR_B] 335000 M side m=0 m_bvalid=1 m_bready=1
+[TRACE] 335000 B pre-FIFO out s=0 id=0x2f
+[TRACE] 335000 B post-FIFO out m=0 id=0x2f
 [TRACE] 335000 B  to master m=0
-[TRACE] 335000 AW at slave s=0 addr=0x00000ff0 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 345000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 355000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 365000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 375000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 385000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 395000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 405000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 415000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 425000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 435000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 445000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 455000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 465000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 475000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 485000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 495000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 505000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 505000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 515000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 515000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 525000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 525000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 535000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 545000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 545000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 555000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 565000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 575000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 575000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 585000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 595000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 605000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 615000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 625000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
+[TRACE_C4K] 335000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 335000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 335000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 335000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 335000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
+[TRACE] 345000 B merge in m=0 id=0x2f resp=00
+[TRACE_XBAR_B] 345000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 345000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 345000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 345000 s_bvld=1 s_brdy=1 pend=0 key=1 free=1 can=1 split=1 b_st=10 bid=0x2f sid=0x0f
+[TRACE_BMERGE] 345000   E[0] id=0x0f t1=1 t2=0 resp=00 done=0
+[TRACE_BMERGE] 345000 ABSORB t1=0 t2=1 alloc=1
+[TRACE] 355000 B merge out m=0 id=0x0f resp=00
+[TRACE_XBAR_B] 355000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 355000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_BMERGE] 355000 s_bvld=0 s_brdy=0 pend=1 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 355000   E[0] id=0x0f t1=1 t2=1 resp=00 done=1
+[TRACE_BMERGE] 355000 PENDING done_idx=0 id=0x0f resp=00 m_bvld=1 m_brdy=1
+[TRACE_BMERGE] 355000 DEALLOC idx=0
+UVM_INFO ./uvm/axi_driver.sv(72) @ 360000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 360000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=9 addr=0x00000ff0 len=7 size=2 burst=1 mst=0 slv=0
+[TRACE_XBAR_B] 365000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 365000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+UVM_INFO ./uvm/axi_driver.sv(88) @ 370000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00000ff0 len=7
+[TRACE_XBAR_B] 375000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 375000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 385000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 385000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 385000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_ar wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_driver.sv(91) @ 395000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+[TRACE_XBAR_B] 395000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 395000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 395000 AR pre-FIFO out m=0 addr=0x00000ff0
+[TRACE] 395000 AR pre-FIFO m=0 addr=0x00000ff0 len=3
+[TRACE] 395000 XBAR M_ARREADY m=0
+[TRACE] 395000 XBAR S_ARVALID s=0 addr=0x00000ff0
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 395000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE_C4K] 395000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 395000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_ar wr_vld=1 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 395000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_ar_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_driver.sv(97) @ 400000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/7
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=25 addr=0x00000ff0 len=3
+[TRACE_XBAR_B] 405000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 405000 AR at slave s=0 addr=0x00000ff0
+[TRACE] 405000 AR pre-FIFO out m=0 addr=0x00001000
+[TRACE] 405000 AR pre-FIFO m=0 addr=0x00001000 len=3
+[TRACE] 405000 AR at slave s=0 addr=0x00000ff0 len=3
+[TRACE] 405000 XBAR M_ARREADY m=0
+[TRACE] 405000 XBAR S_ARVALID s=0 addr=0x00001000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 405000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE_C4K] 405000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 405000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_ar wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 405000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_ar_slv wr_vld=1 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=9 len=3
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=41 addr=0x00001000 len=3
+[TRACE_XBAR_B] 415000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 415000 AR at slave s=0 addr=0x00001000
+[TRACE] 415000 AR pre-FIFO vld m=0 vld=0 rdy=0
+[TRACE] 415000 AR at slave s=0 addr=0x00001000 len=3
+[TRACE] 415000 R  from slave s=0
+[TRACE_C4K] 415000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 415000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_ar_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 415000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 425000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 425000 R  to master m=0
+[TRACE_C4K] 425000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 425000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 425000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 435000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 435000 R  from slave s=0
+[TRACE_C4K] 435000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 435000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 435000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 440000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 1/7
+[TRACE_XBAR_B] 445000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 445000 R  to master m=0
+[TRACE_C4K] 445000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 445000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 445000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 455000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 455000 R  from slave s=0
+[TRACE_C4K] 455000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 455000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 455000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 460000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 2/7
+[TRACE_XBAR_B] 465000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 465000 R  to master m=0
+[TRACE_C4K] 465000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 465000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 465000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 475000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 475000 R  from slave s=0
+[TRACE_C4K] 475000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 475000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 475000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 480000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 3/7
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 480000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=9 len=3
+[TRACE_XBAR_B] 485000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 485000 R  to master m=0
+[TRACE_C4K] 485000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 485000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 485000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 495000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 495000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 495000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 495000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 495000 S_ARREADY s=3 fifo=1 sid=0 final=0
+[TRACE] 495000 R  from slave s=0
+[TRACE_C4K] 495000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 495000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 495000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 500000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 4/7
+[TRACE_XBAR_B] 505000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 505000 R  to master m=0
+[TRACE_C4K] 505000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 505000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 505000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 515000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 515000 R  from slave s=0
+[TRACE_C4K] 515000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 515000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 515000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 520000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 5/7
+[TRACE_XBAR_B] 525000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 525000 R  to master m=0
+[TRACE_C4K] 525000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 525000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 525000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 535000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 535000 R  from slave s=0
+[TRACE_C4K] 535000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 535000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 535000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 540000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 6/7
+[TRACE_XBAR_B] 545000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 545000 R  to master m=0
+[TRACE_C4K] 545000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 545000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 545000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 555000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 555000 R  from slave s=0
+[TRACE_C4K] 555000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 555000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_FIFO] 555000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(97) @ 560000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 7/7
+[TRACE_XBAR_B] 565000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 565000 R  to master m=0
+[TRACE_C4K] 565000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 565000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_r_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 565000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_XBAR_B] 575000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 575000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 575000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 575000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 575000 S_ARREADY s=3 fifo=1 sid=0 final=0
+[TRACE_C4K] 575000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 575000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_r_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 580000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: WR id=10 addr=0x00000ff0 len=7 size=2 burst=1 mst=0 slv=0
+[TRACE_XBAR_B] 585000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 585000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+UVM_INFO ./uvm/axi_driver.sv(43) @ 590000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW start addr=0x00000ff0 len=7
+[TRACE_XBAR_B] 595000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 595000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 605000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 605000 ST_AW=1 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 605000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_aw wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_driver.sv(46) @ 615000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW handshake done
+[TRACE_XBAR_B] 615000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 615000 AW pre-FIFO m=0 addr=0x00000ff0 len=3
+[TRACE_C4K] 615000 ST_AW=2 split=1 t1done=0 stall=0 beat=0
+[TRACE_FIFO] 615000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_aw wr_vld=1 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 615000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_aw_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=26 addr=0x00000ff0 len=3
+[TRACE_XBAR_B] 625000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 625000 AW pre-FIFO m=0 addr=0x00001000 len=3
+[TRACE] 625000 AW at slave s=0 addr=0x00000ff0 len=3
+[TRACE_C4K] 625000 ST_AW=0 split=1 t1done=0 stall=0 beat=0
+[TRACE_FIFO] 625000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_aw wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 625000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_aw_slv wr_vld=1 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 630000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 0/7 last=0
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=42 addr=0x00001000 len=3
+[TRACE] 635000 W FIFO write m=0 last=0 data=0x0d292a45
+[TRACE_XBAR_B] 635000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 635000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 645000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 645000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 655000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 665000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 675000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 685000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 695000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 705000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 715000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 725000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 735000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 745000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 755000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 765000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 775000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 785000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 795000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 805000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 815000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 825000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 825000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 835000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 845000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 855000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 865000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 865000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 875000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 885000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 885000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 895000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 895000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 905000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 905000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 915000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 925000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 935000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 935000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 945000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 955000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 965000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 965000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 975000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 985000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 985000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 995000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1005000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1005000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1015000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1025000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1025000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1035000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1035000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1045000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1045000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1055000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1055000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1065000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1065000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1075000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1075000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1085000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1095000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1095000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1105000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1105000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1115000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1125000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1125000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1135000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1145000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1155000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1155000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1165000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1165000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1175000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1185000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1195000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1205000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1215000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1225000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1235000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1245000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1245000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1255000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1265000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1275000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1285000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1295000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1305000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1315000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1325000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1335000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1345000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1355000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1365000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1375000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1385000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1395000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1405000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1415000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1425000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1435000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1445000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1455000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1465000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1475000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1485000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1495000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1505000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1505000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1515000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1515000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1525000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1525000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1535000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1545000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1545000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1555000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1565000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1575000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1575000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1585000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1595000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1605000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1615000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1625000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1635000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1645000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1645000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1655000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1665000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1675000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1685000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1695000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1705000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1715000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1725000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1735000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1745000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1755000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1765000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1775000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1785000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1795000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1805000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1815000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1825000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1825000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1835000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1845000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1855000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1865000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1865000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1875000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1885000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1885000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1895000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1895000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1905000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1905000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1915000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1925000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1935000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1935000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1945000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1955000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1965000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1965000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1975000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1985000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1985000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 1995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 1995000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2005000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2005000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2015000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2025000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2025000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2035000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2035000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2045000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2045000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2055000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2055000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2065000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2065000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2075000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2075000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2085000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2095000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2095000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2105000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2105000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2115000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2125000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2125000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2135000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2145000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2155000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2155000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2165000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2165000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2175000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2185000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2195000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2205000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2215000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2225000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2235000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2245000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2245000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2255000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2265000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2275000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2285000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2295000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2305000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2315000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2325000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2335000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2345000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2355000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2365000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2375000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2385000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2395000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2405000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2415000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2425000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2435000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2445000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2455000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2465000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2475000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2485000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2495000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2505000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2505000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2515000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2515000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2525000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2525000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2535000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2545000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2545000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2555000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2565000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2575000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2575000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2585000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2595000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2605000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2615000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2625000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2635000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2645000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2645000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2655000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2665000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2675000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2685000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2695000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2705000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2715000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2725000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2735000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2745000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2755000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2765000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2775000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2785000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2795000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2805000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2815000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2825000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2825000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2835000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2845000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2855000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2865000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2865000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2875000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2885000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2885000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2895000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2895000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2905000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2905000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2915000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2925000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2935000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2935000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2945000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2955000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2965000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2965000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2975000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2985000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2985000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 2995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 2995000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3005000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3005000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3015000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3025000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3025000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3035000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3035000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3045000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3045000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3055000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3055000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3065000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3065000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3075000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3075000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3085000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3095000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3095000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3105000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3105000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3115000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3125000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3125000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3135000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3145000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3155000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3155000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3165000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3165000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3175000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3185000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3195000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3205000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3215000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3225000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3235000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3245000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3245000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3255000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3265000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3275000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3285000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3295000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3305000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3315000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3325000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3335000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3345000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3355000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3365000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3375000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3385000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3395000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3405000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3415000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3425000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3435000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3445000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3455000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3465000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3475000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3485000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3495000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3505000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3505000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3515000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3515000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3525000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3525000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3535000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3545000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3545000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3555000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3565000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3575000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3575000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3585000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3595000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3605000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3615000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3625000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3635000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3645000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3645000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3655000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3665000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3675000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3685000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3695000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3705000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3715000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3725000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3735000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3745000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3755000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3765000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3775000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3785000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3795000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3805000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3815000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3825000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3825000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3835000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3845000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3855000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3865000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3865000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3875000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3885000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3885000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3895000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3895000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3905000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3905000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3915000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3925000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3935000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3935000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3945000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3955000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3965000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3965000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3975000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3985000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3985000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 3995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 3995000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4005000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4005000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4015000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4025000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4025000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4035000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4035000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4045000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4045000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4055000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4055000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4065000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4065000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4075000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4075000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4085000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4095000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4095000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4105000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4105000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4115000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4125000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4125000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4135000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4145000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4155000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4155000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4165000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4165000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4175000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4185000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4195000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4205000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4215000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4225000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4235000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4245000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4245000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4255000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4265000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4275000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4285000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4295000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4305000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4315000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4325000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4335000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4345000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4355000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4365000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4375000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4385000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4395000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4405000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4415000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4425000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4435000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4445000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4455000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4465000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4475000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4485000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4495000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4505000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4505000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4515000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4515000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4525000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4525000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4535000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4545000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4545000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4555000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4565000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4575000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4575000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4585000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4595000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4605000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4615000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4625000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4635000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4645000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4645000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4655000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4665000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4675000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4685000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4695000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4705000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4715000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4725000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4735000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4745000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4755000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4765000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4775000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4785000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4795000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4805000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4815000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4825000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4825000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4835000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4845000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4855000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4865000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4865000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4875000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4885000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4885000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4895000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4895000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4905000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4905000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4915000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4925000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4935000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4935000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4945000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4955000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4965000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4965000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4975000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4985000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4985000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 4995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 4995000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5005000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5005000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5015000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5025000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5025000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5035000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5035000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5045000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5045000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5055000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5055000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5065000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5065000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5075000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5075000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5085000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5095000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5095000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5105000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5105000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5115000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5125000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5125000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5135000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5145000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5145000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5155000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5155000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5165000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5165000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5175000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5175000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5185000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5195000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5195000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5205000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5215000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5225000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5235000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5245000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5245000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5255000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5265000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5275000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5285000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5295000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5305000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5315000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5325000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5335000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5345000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5355000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5365000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5375000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5385000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5395000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5405000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5405000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5415000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5425000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5435000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5445000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5455000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5465000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5475000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5485000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5495000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5505000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5505000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5515000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5515000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5525000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5525000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5535000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5545000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5545000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5555000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5565000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5575000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5575000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5585000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5595000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5605000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5615000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5625000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5625000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5635000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5645000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5645000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5655000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5665000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5675000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5685000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5695000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5705000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5715000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5725000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5735000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5745000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5755000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5765000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5775000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5785000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5795000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5805000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5815000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5825000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5825000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5835000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5845000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5855000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5865000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5865000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5875000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5885000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5885000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5895000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5895000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5905000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5905000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5915000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5925000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5935000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5935000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5945000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5955000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5965000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5965000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5975000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5985000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5985000 AW at slave s=0 addr=0x00001000 len=3
-UVM_INFO ./uvm/axi_slave_agent.sv(47) @ 5995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=47 addr=0x00001000 len=3
-[TRACE] 5995000 AW at slave s=0 addr=0x00001000 len=3
-UVM_WARNING ./uvm/split4k_test.sv(10) @ 6000000: uvm_test_top [TIMEOUT] Simulation timeout at 6000000ns, stopping
-UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_objection.svh(1276) @ 6000000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+[TRACE_C4K] 635000 ST_AW=0 split=1 t1done=0 stall=0 beat=0
+[TRACE_C4K] 635000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 635000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 635000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_aw_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE] 645000 W FIFO read m=0 last=0 data=0x0d292a45
+[TRACE_XBAR_B] 645000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 645000 W  pre-FIFO m=0
+[TRACE_FIFO] 645000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 645000 ST_AW=0 split=1 t1done=0 stall=0 beat=1
+[TRACE_FIFO] 645000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 650000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 1/7 last=0
+[TRACE] 655000 W FIFO write m=0 last=0 data=0xb19efc4a
+[TRACE_XBAR_B] 655000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 655000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 655000 ST_AW=0 split=1 t1done=0 stall=0 beat=1
+[TRACE_C4K] 655000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 655000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 655000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 665000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x0d292a45 last=0
+[TRACE] 665000 W FIFO read m=0 last=0 data=0xb19efc4a
+[TRACE] 665000 W at slave s=0 last=0 data=0x0d292a45
+[TRACE_XBAR_B] 665000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 665000 W  pre-FIFO m=0
+[TRACE] 665000 W  at slave s=0
+[TRACE_FIFO] 665000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 665000 ST_AW=0 split=1 t1done=0 stall=0 beat=2
+[TRACE_FIFO] 665000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 665000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 670000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 2/7 last=0
+[TRACE] 675000 W FIFO write m=0 last=0 data=0x3522fd91
+[TRACE_XBAR_B] 675000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 675000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 675000 ST_AW=0 split=1 t1done=0 stall=0 beat=2
+[TRACE_C4K] 675000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 675000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 675000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 685000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xb19efc4a last=0
+[TRACE] 685000 W FIFO read m=0 last=0 data=0x3522fd91
+[TRACE] 685000 W at slave s=0 last=0 data=0xb19efc4a
+[TRACE_XBAR_B] 685000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 685000 W  pre-FIFO m=0
+[TRACE] 685000 W  at slave s=0
+[TRACE_FIFO] 685000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 685000 ST_AW=0 split=1 t1done=0 stall=0 beat=3
+[TRACE_FIFO] 685000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 685000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 690000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 3/7 last=0
+[TRACE] 695000 W FIFO write m=0 last=1 data=0xdb682de7
+[TRACE_XBAR_B] 695000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 695000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 695000 ST_AW=0 split=1 t1done=0 stall=0 beat=3
+[TRACE_C4K] 695000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+[TRACE_FIFO] 695000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 695000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x3522fd91 last=0
+[TRACE] 705000 W FIFO read m=0 last=1 data=0xdb682de7
+[TRACE] 705000 W at slave s=0 last=0 data=0x3522fd91
+[TRACE_XBAR_B] 705000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 705000 W  pre-FIFO m=0
+[TRACE] 705000 W  at slave s=0
+[TRACE_FIFO] 705000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 705000 ST_AW=0 split=1 t1done=1 stall=0 beat=4
+[TRACE_FIFO] 705000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 705000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 710000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 4/7 last=0
+[TRACE] 715000 W FIFO write m=0 last=0 data=0x03bc0f5d
+[TRACE_XBAR_B] 715000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 715000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 715000 ST_AW=0 split=1 t1done=1 stall=0 beat=4
+[TRACE_C4K] 715000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 715000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 715000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xdb682de7 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=10 exp=4 act=4
+[TRACE] 725000 W FIFO read m=0 last=0 data=0x03bc0f5d
+[TRACE] 725000 W at slave s=0 last=1 data=0xdb682de7
+[TRACE_XBAR_B] 725000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 725000 W  pre-FIFO m=0
+[TRACE] 725000 W  at slave s=0
+[TRACE_FIFO] 725000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_C4K] 725000 ST_AW=0 split=1 t1done=1 stall=0 beat=5
+[TRACE_FIFO] 725000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 725000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 730000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 5/7 last=0
+[TRACE] 735000 W FIFO write m=0 last=0 data=0xcb01eb66
+[TRACE_XBAR_B] 735000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 735000 B slave handshake s=0 id=0x1a
+[TRACE] 735000 B  from slave s=0
+[TRACE_FIFO] 735000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 735000 ST_AW=0 split=1 t1done=1 stall=0 beat=5
+[TRACE_C4K] 735000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 735000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 735000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 735000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 745000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x03bc0f5d last=0
+[TRACE] 745000 W FIFO read m=0 last=0 data=0xcb01eb66
+[TRACE] 745000 W at slave s=0 last=0 data=0x03bc0f5d
+[TRACE_XBAR_B] 745000 S side s=0 s_bvalid=1 s_bready=1
+[TRACE_XBAR_B] 745000 M side m=0 m_bvalid=1 m_bready=1
+[TRACE] 745000 B pre-FIFO out s=0 id=0x1a
+[TRACE] 745000 B post-FIFO out m=0 id=0x1a
+[TRACE] 745000 W  pre-FIFO m=0
+[TRACE] 745000 B  to master m=0
+[TRACE] 745000 W  at slave s=0
+[TRACE_FIFO] 745000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 745000 ST_AW=0 split=1 t1done=1 stall=0 beat=6
+[TRACE_FIFO] 745000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 745000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 745000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 745000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+UVM_INFO ./uvm/axi_driver.sv(57) @ 750000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 6/7 last=0
+[TRACE] 755000 W FIFO write m=0 last=0 data=0xde8be83e
+[TRACE] 755000 B merge in m=0 id=0x1a resp=00
+[TRACE_XBAR_B] 755000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 755000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 755000 ST_AW=0 split=1 t1done=1 stall=0 beat=6
+[TRACE_C4K] 755000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
+[TRACE_FIFO] 755000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 755000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 755000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 755000 s_bvld=1 s_brdy=1 pend=0 key=0 free=1 can=1 split=1 b_st=01 bid=0x1a sid=0x0a
+[TRACE_BMERGE] 755000 ABSORB t1=1 t2=0 alloc=0
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xcb01eb66 last=0
+[TRACE] 765000 W FIFO read m=0 last=0 data=0xde8be83e
+[TRACE] 765000 W at slave s=0 last=0 data=0xcb01eb66
+[TRACE_XBAR_B] 765000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 765000 W  pre-FIFO m=0
+[TRACE] 765000 W  at slave s=0
+[TRACE_FIFO] 765000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 765000 ST_AW=0 split=1 t1done=1 stall=0 beat=7
+[TRACE_FIFO] 765000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 765000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 765000 s_bvld=0 s_brdy=0 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 765000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+UVM_INFO ./uvm/axi_driver.sv(57) @ 770000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 7/7 last=1
+[TRACE] 775000 W FIFO write m=0 last=1 data=0x6febef00
+[TRACE_XBAR_B] 775000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 775000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 775000 ST_AW=0 split=1 t1done=1 stall=0 beat=7
+[TRACE_C4K] 775000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+[TRACE_FIFO] 775000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_FIFO] 775000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 775000 s_bvld=0 s_brdy=0 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 775000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+UVM_INFO ./uvm/axi_driver.sv(65) @ 780000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 785000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xde8be83e last=0
+[TRACE] 785000 W FIFO read m=0 last=1 data=0x6febef00
+[TRACE] 785000 W at slave s=0 last=0 data=0xde8be83e
+[TRACE_XBAR_B] 785000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 785000 W  pre-FIFO m=0
+[TRACE] 785000 W  at slave s=0
+[TRACE_FIFO] 785000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_C4K] 785000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 785000 tb_top.dut.INST_FIFO_AW_W_AR[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 785000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 785000 s_bvld=0 s_brdy=0 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 785000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+[TRACE_XBAR_B] 795000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_FIFO] 795000 tb_top.dut.u_axi_crossbar.INST_M2S[0].u_axi_m2s.W_FIFO_PER_MASTER[0].u_fifo_w wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_C4K] 795000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 795000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 795000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 795000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x6febef00 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 805000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=10 exp=4 act=4
+[TRACE] 805000 W at slave s=0 last=1 data=0x6febef00
+[TRACE_XBAR_B] 805000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 805000 W  at slave s=0
+[TRACE_C4K] 805000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 805000 tb_top.dut.INST_POST_FIFO_AW_W_AR[0].u_fifo_w_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 805000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 805000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+[TRACE_XBAR_B] 815000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE] 815000 B slave handshake s=0 id=0x2a
+[TRACE] 815000 B  from slave s=0
+[TRACE_C4K] 815000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 815000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=0 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 815000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 815000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+[TRACE_XBAR_B] 825000 S side s=0 s_bvalid=1 s_bready=1
+[TRACE_XBAR_B] 825000 M side m=0 m_bvalid=1 m_bready=1
+[TRACE] 825000 B pre-FIFO out s=0 id=0x2a
+[TRACE] 825000 B post-FIFO out m=0 id=0x2a
+[TRACE] 825000 B  to master m=0
+[TRACE_C4K] 825000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 825000 tb_top.dut.INST_PRE_FIFO_B_R[0].u_fifo_b_slv wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_FIFO] 825000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=1 wr_rdy=1 rd_vld=0 rd_rdy=1 cnt=0 full=0 empty=1
+[TRACE_BMERGE] 825000 s_bvld=0 s_brdy=1 pend=0 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 825000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+[TRACE] 835000 B merge in m=0 id=0x2a resp=00
+[TRACE_XBAR_B] 835000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 835000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_FIFO] 835000 tb_top.dut.INST_FIFO_B_R_MST[0].u_fifo_b_mst wr_vld=0 wr_rdy=1 rd_vld=1 rd_rdy=1 cnt=1 full=0 empty=0
+[TRACE_BMERGE] 835000 s_bvld=1 s_brdy=1 pend=0 key=1 free=1 can=1 split=1 b_st=10 bid=0x2a sid=0x0a
+[TRACE_BMERGE] 835000   E[0] id=0x0a t1=1 t2=0 resp=00 done=0
+[TRACE_BMERGE] 835000 ABSORB t1=0 t2=1 alloc=1
+[TRACE] 845000 B merge out m=0 id=0x0a resp=00
+[TRACE_XBAR_B] 845000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 845000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_BMERGE] 845000 s_bvld=0 s_brdy=0 pend=1 key=0 free=1 can=0 split=0 b_st=00 bid=0x00 sid=0x00
+[TRACE_BMERGE] 845000   E[0] id=0x0a t1=1 t2=1 resp=00 done=1
+[TRACE_BMERGE] 845000 PENDING done_idx=0 id=0x0a resp=00 m_bvld=1 m_brdy=1
+[TRACE_BMERGE] 845000 DEALLOC idx=0
+UVM_INFO ./uvm/axi_driver.sv(72) @ 850000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B resp=0
+[TRACE_XBAR_B] 855000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 855000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 865000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 865000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 875000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 875000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 885000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 885000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 895000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 895000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 905000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 905000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 915000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 915000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 925000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 925000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 935000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 935000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 945000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 945000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 955000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 955000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 965000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 965000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 975000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 975000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 985000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 985000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 995000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 995000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1005000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1005000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1015000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1015000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1025000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1025000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1035000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1035000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1045000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1045000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1055000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1055000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1065000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1065000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1075000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1075000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1085000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1085000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1095000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1095000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1105000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1105000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1115000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1115000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1125000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1125000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1135000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1135000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1145000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1145000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1155000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1155000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1165000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1165000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1175000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1175000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1185000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1185000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1195000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1195000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1205000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1205000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1215000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1215000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1225000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1225000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1235000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1235000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1245000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1245000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1255000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1255000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1265000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1265000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1275000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1275000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1285000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1285000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1295000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1295000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1305000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1305000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1315000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1315000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1325000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1325000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1335000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1335000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1345000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1345000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1355000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1355000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1365000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1365000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1375000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1375000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1385000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1385000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1395000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1395000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1405000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1405000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1415000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1415000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1425000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1425000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1435000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1435000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1445000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1445000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1455000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1455000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1465000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1465000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1475000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1475000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1485000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1485000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1495000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1495000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1505000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1505000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1515000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1515000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1525000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1525000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1535000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1535000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1545000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1545000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1555000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1555000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1565000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1565000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1575000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1575000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1585000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1585000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1595000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1595000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1605000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1605000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1615000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1615000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1625000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1625000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1635000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1635000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1645000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1645000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1655000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1655000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1665000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1665000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1675000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1675000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1685000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1685000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1695000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1695000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1705000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1705000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1715000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1715000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1725000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1725000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1735000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1735000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1745000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1745000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1755000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1755000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1765000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1765000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1775000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1775000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1785000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1785000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1795000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1795000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1805000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1805000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1815000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1815000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1825000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1825000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1835000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1835000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+[TRACE_XBAR_B] 1845000 M side m=0 m_bvalid=0 m_bready=1
+[TRACE_C4K] 1845000 ST_AW=0 split=1 t1done=1 stall=0 beat=8
+UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_objection.svh(1276) @ 1850000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
 COVERAGE REPORT:
-  Outstanding: AW peak=1 AR peak=0
-  Arbitration: 1 total grants
-  4KB Splits: 1 total
-    by_len: 1-3=0 4-7=1 8-15=0
-    by_slv: S0=1 S1=0 S2=0 S3=0
-    by_pos: early=0 mid=1 late=0
+  Outstanding: AW peak=1 AR peak=1
+  Arbitration: 3 total grants
+  4KB Splits: 2 total
+    by_len: 1-3=0 4-7=2 8-15=0
+    by_slv: S0=2 S1=0 S2=0 S3=0
+    by_pos: early=0 mid=2 late=0
   Reorder: 0 events, max depth=0
   Default Slave: 0 hits
-PROTOCOL CHECKER: 1 writes, 0 reads, 0 protocol errors
-REF MODEL: 1 writes, 0 reads, 1 4KB splits predicted
+PROTOCOL CHECKER: 2 writes, 1 reads, 0 protocol errors
+REF MODEL: 2 writes, 1 reads, 2 4KB splits predicted
 AXI SCOREBOARD:
-  Routing : 1 checks, 0 errors
-  Data    : 0 checks, 0 errors
-  Response: 1 writes, 0 reads, 0 errors, 0 reorder events
-UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_catcher.svh(705) @ 6000000: reporter [UVM/REPORT/CATCHER] 
+  Routing : 3 checks, 0 errors
+  Data    : 8 checks, 0 errors
+  Response: 2 writes, 1 reads, 0 errors, 0 reorder events
+UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_catcher.svh(705) @ 1850000: reporter [UVM/REPORT/CATCHER] 
 --- UVM Report catcher Summary ---
 
 
@@ -1618,25 +1201,24 @@ Number of caught UVM_FATAL reports   :    0
 Number of caught UVM_ERROR reports   :    0
 Number of caught UVM_WARNING reports :    0
 
-UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_server.svh(894) @ 6000000: reporter [UVM/REPORT/SERVER] 
+UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_server.svh(894) @ 1850000: reporter [UVM/REPORT/SERVER] 
 --- UVM Report Summary ---
 
 ** Report counts by severity
-UVM_INFO :  611
-UVM_WARNING :    1
+UVM_INFO :   72
+UVM_WARNING :    0
 UVM_ERROR :    0
 UVM_FATAL :    0
 ** Report counts by id
-[DRIVER]     1
+[DRIVER]     3
 [NO_DPI_TSTNAME]     1
 [RNTST]     1
 [TEST_DONE]     1
-[TIMEOUT]     1
-[TRACE]   603
+[TRACE]    62
 [UVM/COMP/NAMECHECK]     1
 [UVM/RELNOTES]     1
 [UVM/REPORT/CATCHER]     1
 [UVMTOP]     1
 
 $finish called from file "/home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh", line 527.
-$finish at simulation time              6000000
+$finish at simulation time              1850000
