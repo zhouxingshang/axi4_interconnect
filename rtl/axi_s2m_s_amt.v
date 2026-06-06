@@ -150,6 +150,7 @@ endgenerate
 //=========================================================================
 // Debug: R channel monitoring
 //=========================================================================
+/*
 genvar di;
 generate
     for (di = 0; di < SLV_AMT; di = di + 1) begin : DBG_S_R
@@ -173,5 +174,6 @@ always @(posedge AXI_CLK) begin
         $display("[%0t] S2M[M%0d] R: RSELECT=0x%0h RGRANT=0x%0h rgrant_d=0x%0h S_RVALID=0x%0h M_RREADY=%0d M_RVALID=%0d",
                  $time, MASTER_ID, RSELECT, RGRANT, rgrant_d, S_RVALID, M_RREADY, M_RVALID);
 end
+*/
 
 endmodule

@@ -124,6 +124,7 @@ module axi_fifo_sync
    end
 
    // TRACE: FIFO internal state — only on handshake or backpressure
+   /*
    always @(posedge clk) begin
        if (rstn) begin
            // write or read handshake completed
@@ -136,5 +137,6 @@ module axi_fifo_sync
                         $time, wr_vld, wr_rdy, rd_vld, rd_rdy, item_cnt, full, empty);
        end
    end
+   */
 
 endmodule

@@ -1086,6 +1086,7 @@ axi_crossbar #(
 //===================================================================
 // TRACE: 5-channel handshake monitoring for ALL masters and slaves
 //===================================================================
+/*
 genvar tm, ts;
 // ---- Master side: pre-FIFO output + response per master ----
 generate
@@ -1185,5 +1186,6 @@ always @(posedge AXI_CLK) begin
             $display("[TRACE] %0t B post-FIFO out m=0 id=0x%02h", $time, M_BID[0]);
     end
 end
+*/
 
 endmodule

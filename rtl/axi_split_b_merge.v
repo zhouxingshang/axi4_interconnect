@@ -192,6 +192,7 @@ module axi_split_b_merge #(
     //=========================================================================
     // TRACE: B merge internal state
     //=========================================================================
+    /*
     always @(posedge clk) begin
         if (rst_n) begin
             if (s_axi_bvalid || has_pending || |entry_valid) begin
@@ -217,5 +218,6 @@ module axi_split_b_merge #(
                 $display("[TRACE_BMERGE] %0t DEALLOC idx=%0d", $time, done_idx);
         end
     end
+    */
 
 endmodule
