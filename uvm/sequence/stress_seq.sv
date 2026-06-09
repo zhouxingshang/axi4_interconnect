@@ -14,7 +14,7 @@ class stress_seq extends uvm_sequence #(axi_transaction);
             t = axi_transaction::type_id::create("t");
             start_item(t);
             if (!t.randomize() with { mst_id==local::mst_id; len inside {[0:15]};
-                burst == 1; size == 2; id == i;
+                burst == 1; size == 2;
                 is_write dist {1:=1, 0:=1};
             }) `uvm_fatal("SEQ","randomize failed")
             finish_item(t);

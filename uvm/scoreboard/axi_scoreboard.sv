@@ -50,8 +50,10 @@ class axi_scoreboard extends uvm_scoreboard;
     typedef struct {
         bit[7:0] mst_id; bit[3:0] id; bit[7:0] len; int r_beat_cnt;
     } rd_out_t;
-    wr_out_t wr_out[int];
-    rd_out_t rd_out[int];
+    typedef wr_out_t wr_out_q[$];
+    typedef rd_out_t rd_out_q[$];
+    wr_out_q  wr_out[int];   // key={mst_id,id} → queue, supports same-ID outstanding
+    rd_out_q  rd_out[int];
     int wr_order[$], rd_order[$], b_order[$];
     int resp_err=0, wr_cnt=0, rd_cnt=0, reorder_cnt=0;
 
@@ -195,16 +197,14 @@ class axi_scoreboard extends uvm_scoreboard;
     // 3) Response: per-master outstanding tracking
     //=======================================================================
     task process_aw_resp();
-        axi_aw_item t; int key;
+        axi_aw_item t; int key; wr_out_t entry;
         forever begin
             aw_p_fifo.get(t);
             if(!t.is_master_side) continue;
             key = {8'(t.mst_id), t.id};
-            if(wr_out.exists(key)) begin resp_err++;
-                `uvm_error("RESP",$sformatf("DUPLICATE AW M[%0d] id=%0d",t.mst_id,t.id))
-            end
-            wr_out[key].mst_id=t.mst_id; wr_out[key].id=t.id;
-            wr_out[key].len=t.len; wr_out[key].w_beat_cnt=0; wr_out[key].b_received=0;
+            entry.mst_id=t.mst_id; entry.id=t.id;
+            entry.len=t.len; entry.w_beat_cnt=0; entry.b_received=0;
+            wr_out[key].push_back(entry);
             wr_order.push_back(key); wr_cnt++;
         end
     endtask
@@ -215,17 +215,19 @@ class axi_scoreboard extends uvm_scoreboard;
             w_p_fifo.get(t);
             if(!t.is_master_side) continue;
             found=0;
-            // Search wr_order for first pending write belonging to this master
             foreach(wr_order[i]) begin
                 key=wr_order[i];
-                if(wr_out[key].mst_id == t.mst_id && wr_out[key].w_beat_cnt <= wr_out[key].len) begin
-                    wr_out[key].w_beat_cnt++;
-                    if(t.last && wr_out[key].w_beat_cnt != wr_out[key].len+1) begin resp_err++;
-                        `uvm_error("RESP",$sformatf("WLAST mismatch M[%0d] id=%0d",
-                                  wr_out[key].mst_id,wr_out[key].id))
+                foreach(wr_out[key][j]) begin
+                    if(wr_out[key][j].mst_id == t.mst_id && wr_out[key][j].w_beat_cnt <= wr_out[key][j].len) begin
+                        wr_out[key][j].w_beat_cnt++;
+                        if(t.last && wr_out[key][j].w_beat_cnt != wr_out[key][j].len+1) begin resp_err++;
+                            `uvm_error("RESP",$sformatf("WLAST mismatch M[%0d] id=%0d",
+                                      wr_out[key][j].mst_id,wr_out[key][j].id))
+                        end
+                        found=1; break;
                     end
-                    found=1; break;
                 end
+                if(found) break;
             end
             if(!found) begin resp_err++;
                 `uvm_error("RESP","W beat with no matching outstanding AW")
@@ -239,29 +241,35 @@ class axi_scoreboard extends uvm_scoreboard;
             b_p_fifo.get(t);
             if(!t.is_master_side) continue;
             key = {8'(t.mst_id), t.id};
-            if(!wr_out.exists(key)) begin resp_err++;
+            if(wr_out[key].size() == 0) begin resp_err++;
                 `uvm_error("RESP",$sformatf("BID mismatch M[%0d] id=%0d",t.mst_id,t.id))
                 continue;
             end
-            wr_out[key].b_received=1;
+            wr_out[key][0].b_received=1;
             if(t.resp!=2'b00) begin resp_err++;
                 `uvm_error("RESP",$sformatf("BRESP error M[%0d] id=%0d resp=%b",t.mst_id,t.id,t.resp))
             end
-            b_order.push_back(key);
-            if(wr_out[key].w_beat_cnt < wr_out[key].len+1) begin resp_err++;
+            if(wr_out[key][0].w_beat_cnt < wr_out[key][0].len+1) begin resp_err++;
                 `uvm_error("RESP",$sformatf("B before WLAST M[%0d] id=%0d",t.mst_id,t.id))
+            end
+            b_order.push_back(key);
+            void'(wr_out[key].pop_front());
+            if(wr_out[key].size() == 0) begin
+                for(int i=0; i<wr_order.size(); i++)
+                    if(wr_order[i]==key) begin wr_order.delete(i); break; end
             end
         end
     endtask
 
     task process_ar_resp();
-        axi_ar_item t; int key;
+        axi_ar_item t; int key; rd_out_t entry;
         forever begin
             ar_p_fifo.get(t);
             if(!t.is_master_side) continue;
             key = {8'(t.mst_id), t.id};
-            rd_out[key].mst_id=t.mst_id; rd_out[key].id=t.id;
-            rd_out[key].len=t.len; rd_out[key].r_beat_cnt=0;
+            entry.mst_id=t.mst_id; entry.id=t.id;
+            entry.len=t.len; entry.r_beat_cnt=0;
+            rd_out[key].push_back(entry);
             rd_order.push_back(key); rd_cnt++;
         end
     endtask
@@ -272,21 +280,24 @@ class axi_scoreboard extends uvm_scoreboard;
             r_p_fifo.get(t);
             if(!t.is_master_side) continue;
             key = {8'(t.mst_id), t.id};
-            if(!rd_out.exists(key)) begin resp_err++;
+            if(rd_out[key].size() == 0) begin resp_err++;
                 `uvm_error("RESP",$sformatf("RID mismatch M[%0d] id=%0d",t.mst_id,t.id))
                 continue;
             end
-            rd_out[key].r_beat_cnt++;
+            rd_out[key][0].r_beat_cnt++;
             if(t.resp!=2'b00) begin resp_err++;
                 `uvm_error("RESP",$sformatf("RRESP error M[%0d] id=%0d resp=%b",t.mst_id,t.id,t.resp))
             end
-            if(t.last && rd_out[key].r_beat_cnt != rd_out[key].len+1) begin resp_err++;
+            if(t.last && rd_out[key][0].r_beat_cnt != rd_out[key][0].len+1) begin resp_err++;
                 `uvm_error("RESP",$sformatf("RLAST mismatch M[%0d] id=%0d",t.mst_id,t.id))
             end
             if(rd_order.size()>0 && rd_order[0]!=key) reorder_cnt++;
             if(t.last) begin
-                for(int i=0; i<rd_order.size(); i++)
-                    if(rd_order[i]==key) begin rd_order.delete(i); break; end
+                void'(rd_out[key].pop_front());
+                if(rd_out[key].size() == 0) begin
+                    for(int i=0; i<rd_order.size(); i++)
+                        if(rd_order[i]==key) begin rd_order.delete(i); break; end
+                end
             end
         end
     endtask

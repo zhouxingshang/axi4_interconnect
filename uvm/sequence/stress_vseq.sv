@@ -8,7 +8,7 @@ class stress_vseq extends axi_virtual_sequence;
 
     `uvm_object_utils(stress_vseq)
 
-    int tx_count = 16;   // transactions per master
+    int tx_count = 32;   // transactions per master
 
     function new(string name = "stress_vseq");
         super.new(name);
