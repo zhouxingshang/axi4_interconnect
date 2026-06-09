@@ -48,11 +48,19 @@ package axi_pkg;
     `include "axi_slave_agent.sv"
 
     //---- Sequences ----
+    `include "axi_virtual_sequencer.sv"
+    `include "axi_virtual_sequence.sv"
     `include "axi_base_seq.sv"
     `include "burst_seq.sv"
     `include "outstanding_seq.sv"
+    `include "outstanding_vseq.sv"
     `include "split4k_seq.sv"
     `include "stress_seq.sv"
+    `include "smoke_vseq.sv"
+    `include "burst_vseq.sv"
+    `include "split4k_vseq.sv"
+    `include "stress_vseq.sv"
+    `include "arb_vseq.sv"
 
     //---- Model ----
     `include "addr_decoder.sv"
@@ -76,6 +84,7 @@ package axi_pkg;
     `include "arb_test.sv"
     `include "split4k_test.sv"
     `include "stress_test.sv"
+    `include "outstanding_test.sv"
 
 endpackage
 

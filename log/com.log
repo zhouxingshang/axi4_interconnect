@@ -1,6 +1,6 @@
 Command: vcs -q -full64 -sverilog -f ./list/flist.f -R +v2k -debug_access+all -timescale=1ns/1ps \
--fsdb +define+FSDB -l com.log +lint=TFIPC-L +lint=PCWM -ntb_opts uvm-1.2 +UVM_TESTNAME=arb_test \
-
+-fsdb +define+FSDB -l com.log +lint=TFIPC-L +lint=PCWM -ntb_opts uvm-1.2 +UVM_TESTNAME=outstanding_test \
++ntb_random_seed_automatic
 
 Warning-[IPDW] Identifier previously declared
 ./rtl/axi_interconnect.v, 762
@@ -43,7 +43,8 @@ g++ -w  -pipe -DVCS -DUVM_DPI_DO_TYPE_CHECK -fPIC -O -I/home/synopsys/vcs/O-2018
 -c /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/verdi/dpi/uvm_verdi_dpi.cpp
 ../simv up to date
 make[1]: Leaving directory '/home/ICer/project/axi4/csrc'
-Command: /home/ICer/project/axi4/./simv -q +v2k +define+FSDB -a com.log +lint=TFIPC-L +lint=PCWM +UVM_TESTNAME=arb_test
+Command: /home/ICer/project/axi4/./simv -q +v2k +define+FSDB -a com.log +lint=TFIPC-L +lint=PCWM +UVM_TESTNAME=outstanding_test +ntb_random_seed_automatic
+NOTE: automatic random seed used: 373420625
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh(402) @ 0: reporter [UVM/RELNOTES] 
 ----------------------------------------------------------------
 UVM-1.2.Synopsys
@@ -76,536 +77,827 @@ FSDB Dumper for VCS, Release Verdi_O-2018.09-SP2, Linux x86_64/64bit, 02/21/2019
 *Verdi* : Enable +mda and +packedmda dumping.
 *Verdi* : End of traversing the MDAs.
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh(463) @ 0: reporter [NO_DPI_TSTNAME] UVM_NO_DPI defined--getting UVM_TESTNAME directly, without DPI
-UVM_INFO @ 0: reporter [RNTST] Running test arb_test...
+UVM_INFO @ 0: reporter [RNTST] Running test outstanding_test...
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh(589) @ 0: reporter [UVMTOP] UVM testbench topology:
 ------------------------------------------------------------------
 Name                       Type                        Size  Value
 ------------------------------------------------------------------
-uvm_test_top               arb_test                    -     @343 
+uvm_test_top               outstanding_test            -     @343 
   env                      axi_env                     -     @356 
-    cov                    axi_cov                     -     @456 
-      ar_ap                uvm_analysis_export         -     @484 
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @573 
-        analysis_export    uvm_analysis_imp            -     @622 
-        get_ap             uvm_analysis_port           -     @612 
-        get_peek_export    uvm_get_peek_imp            -     @592 
-        put_ap             uvm_analysis_port           -     @602 
-        put_export         uvm_put_imp                 -     @582 
-      aw_ap                uvm_analysis_export         -     @474 
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @514 
-        analysis_export    uvm_analysis_imp            -     @563 
-        get_ap             uvm_analysis_port           -     @553 
-        get_peek_export    uvm_get_peek_imp            -     @533 
-        put_ap             uvm_analysis_port           -     @543 
-        put_export         uvm_put_imp                 -     @523 
-      b_ap                 uvm_analysis_export         -     @494 
-      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @632 
-        analysis_export    uvm_analysis_imp            -     @681 
-        get_ap             uvm_analysis_port           -     @671 
-        get_peek_export    uvm_get_peek_imp            -     @651 
-        put_ap             uvm_analysis_port           -     @661 
-        put_export         uvm_put_imp                 -     @641 
-      r_ap                 uvm_analysis_export         -     @504 
-      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @691 
-        analysis_export    uvm_analysis_imp            -     @740 
-        get_ap             uvm_analysis_port           -     @730 
-        get_peek_export    uvm_get_peek_imp            -     @710 
-        put_ap             uvm_analysis_port           -     @720 
-        put_export         uvm_put_imp                 -     @700 
+    cov                    axi_cov                     -     @593 
+      ar_ap                uvm_analysis_export         -     @621 
+      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @710 
+        analysis_export    uvm_analysis_imp            -     @759 
+        get_ap             uvm_analysis_port           -     @749 
+        get_peek_export    uvm_get_peek_imp            -     @729 
+        put_ap             uvm_analysis_port           -     @739 
+        put_export         uvm_put_imp                 -     @719 
+      aw_ap                uvm_analysis_export         -     @611 
+      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @651 
+        analysis_export    uvm_analysis_imp            -     @700 
+        get_ap             uvm_analysis_port           -     @690 
+        get_peek_export    uvm_get_peek_imp            -     @670 
+        put_ap             uvm_analysis_port           -     @680 
+        put_export         uvm_put_imp                 -     @660 
+      b_ap                 uvm_analysis_export         -     @631 
+      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @769 
+        analysis_export    uvm_analysis_imp            -     @818 
+        get_ap             uvm_analysis_port           -     @808 
+        get_peek_export    uvm_get_peek_imp            -     @788 
+        put_ap             uvm_analysis_port           -     @798 
+        put_export         uvm_put_imp                 -     @778 
+      r_ap                 uvm_analysis_export         -     @641 
+      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @828 
+        analysis_export    uvm_analysis_imp            -     @877 
+        get_ap             uvm_analysis_port           -     @867 
+        get_peek_export    uvm_get_peek_imp            -     @847 
+        put_ap             uvm_analysis_port           -     @857 
+        put_export         uvm_put_imp                 -     @837 
     mst_ag0                axi_master_agent            -     @366 
-      drv_m0               axi_driver                  -     @888 
-        rsp_port           uvm_analysis_port           -     @907 
-        seq_item_port      uvm_seq_item_pull_port      -     @897 
-      mon_m0               axi_monitor                 -     @917 
-        ap_ar              uvm_analysis_port           -     @956 
-        ap_aw              uvm_analysis_port           -     @926 
-        ap_b               uvm_analysis_port           -     @946 
-        ap_r               uvm_analysis_port           -     @966 
-        ap_w               uvm_analysis_port           -     @936 
-      sqr_m0               axi_sequencer               -     @751 
-        rsp_export         uvm_analysis_export         -     @760 
-        seq_item_export    uvm_seq_item_pull_imp       -     @878 
+      drv_m0               axi_driver                  -     @1025
+        rsp_port           uvm_analysis_port           -     @1044
+        seq_item_port      uvm_seq_item_pull_port      -     @1034
+      mon_m0               axi_monitor                 -     @1054
+        ap_ar              uvm_analysis_port           -     @1093
+        ap_aw              uvm_analysis_port           -     @1063
+        ap_b               uvm_analysis_port           -     @1083
+        ap_r               uvm_analysis_port           -     @1103
+        ap_w               uvm_analysis_port           -     @1073
+      sqr_m0               axi_sequencer               -     @888 
+        rsp_export         uvm_analysis_export         -     @897 
+        seq_item_export    uvm_seq_item_pull_imp       -     @1015
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
     mst_ag1                axi_master_agent            -     @384 
-      drv_m1               axi_driver                  -     @1119
-        rsp_port           uvm_analysis_port           -     @1138
-        seq_item_port      uvm_seq_item_pull_port      -     @1128
-      mon_m1               axi_monitor                 -     @1148
-        ap_ar              uvm_analysis_port           -     @1187
-        ap_aw              uvm_analysis_port           -     @1157
-        ap_b               uvm_analysis_port           -     @1177
-        ap_r               uvm_analysis_port           -     @1197
-        ap_w               uvm_analysis_port           -     @1167
-      sqr_m1               axi_sequencer               -     @982 
-        rsp_export         uvm_analysis_export         -     @991 
-        seq_item_export    uvm_seq_item_pull_imp       -     @1109
+      drv_m1               axi_driver                  -     @1256
+        rsp_port           uvm_analysis_port           -     @1275
+        seq_item_port      uvm_seq_item_pull_port      -     @1265
+      mon_m1               axi_monitor                 -     @1285
+        ap_ar              uvm_analysis_port           -     @1324
+        ap_aw              uvm_analysis_port           -     @1294
+        ap_b               uvm_analysis_port           -     @1314
+        ap_r               uvm_analysis_port           -     @1334
+        ap_w               uvm_analysis_port           -     @1304
+      sqr_m1               axi_sequencer               -     @1119
+        rsp_export         uvm_analysis_export         -     @1128
+        seq_item_export    uvm_seq_item_pull_imp       -     @1246
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
     mst_ag2                axi_master_agent            -     @402 
-      drv_m2               axi_driver                  -     @1350
-        rsp_port           uvm_analysis_port           -     @1369
-        seq_item_port      uvm_seq_item_pull_port      -     @1359
-      mon_m2               axi_monitor                 -     @1379
-        ap_ar              uvm_analysis_port           -     @1418
-        ap_aw              uvm_analysis_port           -     @1388
-        ap_b               uvm_analysis_port           -     @1408
-        ap_r               uvm_analysis_port           -     @1428
-        ap_w               uvm_analysis_port           -     @1398
-      sqr_m2               axi_sequencer               -     @1213
-        rsp_export         uvm_analysis_export         -     @1222
-        seq_item_export    uvm_seq_item_pull_imp       -     @1340
+      drv_m2               axi_driver                  -     @1487
+        rsp_port           uvm_analysis_port           -     @1506
+        seq_item_port      uvm_seq_item_pull_port      -     @1496
+      mon_m2               axi_monitor                 -     @1516
+        ap_ar              uvm_analysis_port           -     @1555
+        ap_aw              uvm_analysis_port           -     @1525
+        ap_b               uvm_analysis_port           -     @1545
+        ap_r               uvm_analysis_port           -     @1565
+        ap_w               uvm_analysis_port           -     @1535
+      sqr_m2               axi_sequencer               -     @1350
+        rsp_export         uvm_analysis_export         -     @1359
+        seq_item_export    uvm_seq_item_pull_imp       -     @1477
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
     mst_ag3                axi_master_agent            -     @420 
-      drv_m3               axi_driver                  -     @1581
-        rsp_port           uvm_analysis_port           -     @1600
-        seq_item_port      uvm_seq_item_pull_port      -     @1590
-      mon_m3               axi_monitor                 -     @1610
-        ap_ar              uvm_analysis_port           -     @1649
-        ap_aw              uvm_analysis_port           -     @1619
-        ap_b               uvm_analysis_port           -     @1639
-        ap_r               uvm_analysis_port           -     @1659
-        ap_w               uvm_analysis_port           -     @1629
-      sqr_m3               axi_sequencer               -     @1444
-        rsp_export         uvm_analysis_export         -     @1453
-        seq_item_export    uvm_seq_item_pull_imp       -     @1571
+      drv_m3               axi_driver                  -     @1718
+        rsp_port           uvm_analysis_port           -     @1737
+        seq_item_port      uvm_seq_item_pull_port      -     @1727
+      mon_m3               axi_monitor                 -     @1747
+        ap_ar              uvm_analysis_port           -     @1786
+        ap_aw              uvm_analysis_port           -     @1756
+        ap_b               uvm_analysis_port           -     @1776
+        ap_r               uvm_analysis_port           -     @1796
+        ap_w               uvm_analysis_port           -     @1766
+      sqr_m3               axi_sequencer               -     @1581
+        rsp_export         uvm_analysis_export         -     @1590
+        seq_item_export    uvm_seq_item_pull_imp       -     @1708
         arbitration_queue  array                       0     -    
         lock_queue         array                       0     -    
         num_last_reqs      integral                    32    'd1  
         num_last_rsps      integral                    32    'd1  
-    proto_chk              axi_protocol_checker        -     @465 
-      ar_ap                uvm_analysis_export         -     @1704
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @1901
-        analysis_export    uvm_analysis_imp            -     @1950
-        get_ap             uvm_analysis_port           -     @1940
-        get_peek_export    uvm_get_peek_imp            -     @1920
-        put_ap             uvm_analysis_port           -     @1930
-        put_export         uvm_put_imp                 -     @1910
-      aw_ap                uvm_analysis_export         -     @1674
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @1724
-        analysis_export    uvm_analysis_imp            -     @1773
-        get_ap             uvm_analysis_port           -     @1763
-        get_peek_export    uvm_get_peek_imp            -     @1743
-        put_ap             uvm_analysis_port           -     @1753
-        put_export         uvm_put_imp                 -     @1733
-      b_ap                 uvm_analysis_export         -     @1694
-      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @1842
-        analysis_export    uvm_analysis_imp            -     @1891
-        get_ap             uvm_analysis_port           -     @1881
-        get_peek_export    uvm_get_peek_imp            -     @1861
-        put_ap             uvm_analysis_port           -     @1871
-        put_export         uvm_put_imp                 -     @1851
-      r_ap                 uvm_analysis_export         -     @1714
-      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @1960
-        analysis_export    uvm_analysis_imp            -     @2009
-        get_ap             uvm_analysis_port           -     @1999
-        get_peek_export    uvm_get_peek_imp            -     @1979
-        put_ap             uvm_analysis_port           -     @1989
-        put_export         uvm_put_imp                 -     @1969
-      w_ap                 uvm_analysis_export         -     @1684
-      w_fifo               uvm_tlm_analysis_fifo #(T)  -     @1783
-        analysis_export    uvm_analysis_imp            -     @1832
-        get_ap             uvm_analysis_port           -     @1822
-        get_peek_export    uvm_get_peek_imp            -     @1802
-        put_ap             uvm_analysis_port           -     @1812
-        put_export         uvm_put_imp                 -     @1792
-    refm                   reference_model             -     @447 
-      ar_ap                uvm_analysis_export         -     @2029
-      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @2098
-        analysis_export    uvm_analysis_imp            -     @2147
-        get_ap             uvm_analysis_port           -     @2137
-        get_peek_export    uvm_get_peek_imp            -     @2117
-        put_ap             uvm_analysis_port           -     @2127
-        put_export         uvm_put_imp                 -     @2107
-      aw_ap                uvm_analysis_export         -     @2019
-      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @2039
-        analysis_export    uvm_analysis_imp            -     @2088
-        get_ap             uvm_analysis_port           -     @2078
-        get_peek_export    uvm_get_peek_imp            -     @2058
-        put_ap             uvm_analysis_port           -     @2068
-        put_export         uvm_put_imp                 -     @2048
-      pred_ar_ap           uvm_analysis_port           -     @2167
-      pred_aw_ap           uvm_analysis_port           -     @2157
-    sb                     axi_scoreboard              -     @438 
-      ar_d_fifo            uvm_tlm_analysis_fifo #(T)  -     @2660
-        analysis_export    uvm_analysis_imp            -     @2709
-        get_ap             uvm_analysis_port           -     @2699
-        get_peek_export    uvm_get_peek_imp            -     @2679
-        put_ap             uvm_analysis_port           -     @2689
-        put_export         uvm_put_imp                 -     @2669
-      ar_imp               uvm_analysis_imp_ar         -     @2207
-      ar_p_fifo            uvm_tlm_analysis_fifo #(T)  -     @2719
-        analysis_export    uvm_analysis_imp            -     @2768
-        get_ap             uvm_analysis_port           -     @2758
-        get_peek_export    uvm_get_peek_imp            -     @2738
-        put_ap             uvm_analysis_port           -     @2748
-        put_export         uvm_put_imp                 -     @2728
-      ar_r_fifo            uvm_tlm_analysis_fifo #(T)  -     @2601
-        analysis_export    uvm_analysis_imp            -     @2650
-        get_ap             uvm_analysis_port           -     @2640
-        get_peek_export    uvm_get_peek_imp            -     @2620
-        put_ap             uvm_analysis_port           -     @2630
-        put_export         uvm_put_imp                 -     @2610
-      aw_d_fifo            uvm_tlm_analysis_fifo #(T)  -     @2306
-        analysis_export    uvm_analysis_imp            -     @2355
-        get_ap             uvm_analysis_port           -     @2345
-        get_peek_export    uvm_get_peek_imp            -     @2325
-        put_ap             uvm_analysis_port           -     @2335
-        put_export         uvm_put_imp                 -     @2315
-      aw_imp               uvm_analysis_imp_aw         -     @2177
-      aw_p_fifo            uvm_tlm_analysis_fifo #(T)  -     @2365
-        analysis_export    uvm_analysis_imp            -     @2414
-        get_ap             uvm_analysis_port           -     @2404
-        get_peek_export    uvm_get_peek_imp            -     @2384
-        put_ap             uvm_analysis_port           -     @2394
-        put_export         uvm_put_imp                 -     @2374
-      aw_r_fifo            uvm_tlm_analysis_fifo #(T)  -     @2247
-        analysis_export    uvm_analysis_imp            -     @2296
-        get_ap             uvm_analysis_port           -     @2286
-        get_peek_export    uvm_get_peek_imp            -     @2266
-        put_ap             uvm_analysis_port           -     @2276
-        put_export         uvm_put_imp                 -     @2256
-      b_imp                uvm_analysis_imp_b          -     @2197
-      b_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2542
-        analysis_export    uvm_analysis_imp            -     @2591
-        get_ap             uvm_analysis_port           -     @2581
-        get_peek_export    uvm_get_peek_imp            -     @2561
-        put_ap             uvm_analysis_port           -     @2571
-        put_export         uvm_put_imp                 -     @2551
-      r_d_fifo             uvm_tlm_analysis_fifo #(T)  -     @2778
-        analysis_export    uvm_analysis_imp            -     @2827
-        get_ap             uvm_analysis_port           -     @2817
-        get_peek_export    uvm_get_peek_imp            -     @2797
-        put_ap             uvm_analysis_port           -     @2807
-        put_export         uvm_put_imp                 -     @2787
-      r_imp                uvm_analysis_imp_r          -     @2217
-      r_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2837
-        analysis_export    uvm_analysis_imp            -     @2886
-        get_ap             uvm_analysis_port           -     @2876
-        get_peek_export    uvm_get_peek_imp            -     @2856
-        put_ap             uvm_analysis_port           -     @2866
-        put_export         uvm_put_imp                 -     @2846
-      slv_ar_fifo          uvm_tlm_analysis_fifo #(T)  -     @2955
-        analysis_export    uvm_analysis_imp            -     @3004
-        get_ap             uvm_analysis_port           -     @2994
-        get_peek_export    uvm_get_peek_imp            -     @2974
-        put_ap             uvm_analysis_port           -     @2984
-        put_export         uvm_put_imp                 -     @2964
-      slv_ar_imp           uvm_analysis_imp_slv_ar     -     @2237
-      slv_aw_fifo          uvm_tlm_analysis_fifo #(T)  -     @2896
-        analysis_export    uvm_analysis_imp            -     @2945
-        get_ap             uvm_analysis_port           -     @2935
-        get_peek_export    uvm_get_peek_imp            -     @2915
-        put_ap             uvm_analysis_port           -     @2925
-        put_export         uvm_put_imp                 -     @2905
-      slv_aw_imp           uvm_analysis_imp_slv_aw     -     @2227
-      w_d_fifo             uvm_tlm_analysis_fifo #(T)  -     @2424
-        analysis_export    uvm_analysis_imp            -     @2473
-        get_ap             uvm_analysis_port           -     @2463
-        get_peek_export    uvm_get_peek_imp            -     @2443
-        put_ap             uvm_analysis_port           -     @2453
-        put_export         uvm_put_imp                 -     @2433
-      w_imp                uvm_analysis_imp_w          -     @2187
-      w_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2483
-        analysis_export    uvm_analysis_imp            -     @2532
-        get_ap             uvm_analysis_port           -     @2522
-        get_peek_export    uvm_get_peek_imp            -     @2502
-        put_ap             uvm_analysis_port           -     @2512
-        put_export         uvm_put_imp                 -     @2492
+    proto_chk              axi_protocol_checker        -     @602 
+      ar_ap                uvm_analysis_export         -     @1841
+      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @2038
+        analysis_export    uvm_analysis_imp            -     @2087
+        get_ap             uvm_analysis_port           -     @2077
+        get_peek_export    uvm_get_peek_imp            -     @2057
+        put_ap             uvm_analysis_port           -     @2067
+        put_export         uvm_put_imp                 -     @2047
+      aw_ap                uvm_analysis_export         -     @1811
+      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @1861
+        analysis_export    uvm_analysis_imp            -     @1910
+        get_ap             uvm_analysis_port           -     @1900
+        get_peek_export    uvm_get_peek_imp            -     @1880
+        put_ap             uvm_analysis_port           -     @1890
+        put_export         uvm_put_imp                 -     @1870
+      b_ap                 uvm_analysis_export         -     @1831
+      b_fifo               uvm_tlm_analysis_fifo #(T)  -     @1979
+        analysis_export    uvm_analysis_imp            -     @2028
+        get_ap             uvm_analysis_port           -     @2018
+        get_peek_export    uvm_get_peek_imp            -     @1998
+        put_ap             uvm_analysis_port           -     @2008
+        put_export         uvm_put_imp                 -     @1988
+      r_ap                 uvm_analysis_export         -     @1851
+      r_fifo               uvm_tlm_analysis_fifo #(T)  -     @2097
+        analysis_export    uvm_analysis_imp            -     @2146
+        get_ap             uvm_analysis_port           -     @2136
+        get_peek_export    uvm_get_peek_imp            -     @2116
+        put_ap             uvm_analysis_port           -     @2126
+        put_export         uvm_put_imp                 -     @2106
+      w_ap                 uvm_analysis_export         -     @1821
+      w_fifo               uvm_tlm_analysis_fifo #(T)  -     @1920
+        analysis_export    uvm_analysis_imp            -     @1969
+        get_ap             uvm_analysis_port           -     @1959
+        get_peek_export    uvm_get_peek_imp            -     @1939
+        put_ap             uvm_analysis_port           -     @1949
+        put_export         uvm_put_imp                 -     @1929
+    refm                   reference_model             -     @584 
+      ar_ap                uvm_analysis_export         -     @2166
+      ar_fifo              uvm_tlm_analysis_fifo #(T)  -     @2235
+        analysis_export    uvm_analysis_imp            -     @2284
+        get_ap             uvm_analysis_port           -     @2274
+        get_peek_export    uvm_get_peek_imp            -     @2254
+        put_ap             uvm_analysis_port           -     @2264
+        put_export         uvm_put_imp                 -     @2244
+      aw_ap                uvm_analysis_export         -     @2156
+      aw_fifo              uvm_tlm_analysis_fifo #(T)  -     @2176
+        analysis_export    uvm_analysis_imp            -     @2225
+        get_ap             uvm_analysis_port           -     @2215
+        get_peek_export    uvm_get_peek_imp            -     @2195
+        put_ap             uvm_analysis_port           -     @2205
+        put_export         uvm_put_imp                 -     @2185
+      pred_ar_ap           uvm_analysis_port           -     @2304
+      pred_aw_ap           uvm_analysis_port           -     @2294
+    sb                     axi_scoreboard              -     @575 
+      ar_d_fifo            uvm_tlm_analysis_fifo #(T)  -     @2797
+        analysis_export    uvm_analysis_imp            -     @2846
+        get_ap             uvm_analysis_port           -     @2836
+        get_peek_export    uvm_get_peek_imp            -     @2816
+        put_ap             uvm_analysis_port           -     @2826
+        put_export         uvm_put_imp                 -     @2806
+      ar_imp               uvm_analysis_imp_ar         -     @2344
+      ar_p_fifo            uvm_tlm_analysis_fifo #(T)  -     @2856
+        analysis_export    uvm_analysis_imp            -     @2905
+        get_ap             uvm_analysis_port           -     @2895
+        get_peek_export    uvm_get_peek_imp            -     @2875
+        put_ap             uvm_analysis_port           -     @2885
+        put_export         uvm_put_imp                 -     @2865
+      ar_r_fifo            uvm_tlm_analysis_fifo #(T)  -     @2738
+        analysis_export    uvm_analysis_imp            -     @2787
+        get_ap             uvm_analysis_port           -     @2777
+        get_peek_export    uvm_get_peek_imp            -     @2757
+        put_ap             uvm_analysis_port           -     @2767
+        put_export         uvm_put_imp                 -     @2747
+      aw_d_fifo            uvm_tlm_analysis_fifo #(T)  -     @2443
+        analysis_export    uvm_analysis_imp            -     @2492
+        get_ap             uvm_analysis_port           -     @2482
+        get_peek_export    uvm_get_peek_imp            -     @2462
+        put_ap             uvm_analysis_port           -     @2472
+        put_export         uvm_put_imp                 -     @2452
+      aw_imp               uvm_analysis_imp_aw         -     @2314
+      aw_p_fifo            uvm_tlm_analysis_fifo #(T)  -     @2502
+        analysis_export    uvm_analysis_imp            -     @2551
+        get_ap             uvm_analysis_port           -     @2541
+        get_peek_export    uvm_get_peek_imp            -     @2521
+        put_ap             uvm_analysis_port           -     @2531
+        put_export         uvm_put_imp                 -     @2511
+      aw_r_fifo            uvm_tlm_analysis_fifo #(T)  -     @2384
+        analysis_export    uvm_analysis_imp            -     @2433
+        get_ap             uvm_analysis_port           -     @2423
+        get_peek_export    uvm_get_peek_imp            -     @2403
+        put_ap             uvm_analysis_port           -     @2413
+        put_export         uvm_put_imp                 -     @2393
+      b_imp                uvm_analysis_imp_b          -     @2334
+      b_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2679
+        analysis_export    uvm_analysis_imp            -     @2728
+        get_ap             uvm_analysis_port           -     @2718
+        get_peek_export    uvm_get_peek_imp            -     @2698
+        put_ap             uvm_analysis_port           -     @2708
+        put_export         uvm_put_imp                 -     @2688
+      r_d_fifo             uvm_tlm_analysis_fifo #(T)  -     @2915
+        analysis_export    uvm_analysis_imp            -     @2964
+        get_ap             uvm_analysis_port           -     @2954
+        get_peek_export    uvm_get_peek_imp            -     @2934
+        put_ap             uvm_analysis_port           -     @2944
+        put_export         uvm_put_imp                 -     @2924
+      r_imp                uvm_analysis_imp_r          -     @2354
+      r_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2974
+        analysis_export    uvm_analysis_imp            -     @3023
+        get_ap             uvm_analysis_port           -     @3013
+        get_peek_export    uvm_get_peek_imp            -     @2993
+        put_ap             uvm_analysis_port           -     @3003
+        put_export         uvm_put_imp                 -     @2983
+      slv_ar_fifo          uvm_tlm_analysis_fifo #(T)  -     @3092
+        analysis_export    uvm_analysis_imp            -     @3141
+        get_ap             uvm_analysis_port           -     @3131
+        get_peek_export    uvm_get_peek_imp            -     @3111
+        put_ap             uvm_analysis_port           -     @3121
+        put_export         uvm_put_imp                 -     @3101
+      slv_ar_imp           uvm_analysis_imp_slv_ar     -     @2374
+      slv_aw_fifo          uvm_tlm_analysis_fifo #(T)  -     @3033
+        analysis_export    uvm_analysis_imp            -     @3082
+        get_ap             uvm_analysis_port           -     @3072
+        get_peek_export    uvm_get_peek_imp            -     @3052
+        put_ap             uvm_analysis_port           -     @3062
+        put_export         uvm_put_imp                 -     @3042
+      slv_aw_imp           uvm_analysis_imp_slv_aw     -     @2364
+      w_d_fifo             uvm_tlm_analysis_fifo #(T)  -     @2561
+        analysis_export    uvm_analysis_imp            -     @2610
+        get_ap             uvm_analysis_port           -     @2600
+        get_peek_export    uvm_get_peek_imp            -     @2580
+        put_ap             uvm_analysis_port           -     @2590
+        put_export         uvm_put_imp                 -     @2570
+      w_imp                uvm_analysis_imp_w          -     @2324
+      w_p_fifo             uvm_tlm_analysis_fifo #(T)  -     @2620
+        analysis_export    uvm_analysis_imp            -     @2669
+        get_ap             uvm_analysis_port           -     @2659
+        get_peek_export    uvm_get_peek_imp            -     @2639
+        put_ap             uvm_analysis_port           -     @2649
+        put_export         uvm_put_imp                 -     @2629
     slv_ag0                axi_slave_agent             -     @375 
-      mon_s0               axi_monitor                 -     @3015
-        ap_ar              uvm_analysis_port           -     @3054
-        ap_aw              uvm_analysis_port           -     @3024
-        ap_b               uvm_analysis_port           -     @3044
-        ap_r               uvm_analysis_port           -     @3064
-        ap_w               uvm_analysis_port           -     @3034
+      mon_s0               axi_monitor                 -     @3152
+        ap_ar              uvm_analysis_port           -     @3191
+        ap_aw              uvm_analysis_port           -     @3161
+        ap_b               uvm_analysis_port           -     @3181
+        ap_r               uvm_analysis_port           -     @3201
+        ap_w               uvm_analysis_port           -     @3171
     slv_ag1                axi_slave_agent             -     @393 
-      mon_s1               axi_monitor                 -     @3075
-        ap_ar              uvm_analysis_port           -     @3114
-        ap_aw              uvm_analysis_port           -     @3084
-        ap_b               uvm_analysis_port           -     @3104
-        ap_r               uvm_analysis_port           -     @3124
-        ap_w               uvm_analysis_port           -     @3094
+      mon_s1               axi_monitor                 -     @3212
+        ap_ar              uvm_analysis_port           -     @3251
+        ap_aw              uvm_analysis_port           -     @3221
+        ap_b               uvm_analysis_port           -     @3241
+        ap_r               uvm_analysis_port           -     @3261
+        ap_w               uvm_analysis_port           -     @3231
     slv_ag2                axi_slave_agent             -     @411 
-      mon_s2               axi_monitor                 -     @3135
-        ap_ar              uvm_analysis_port           -     @3174
-        ap_aw              uvm_analysis_port           -     @3144
-        ap_b               uvm_analysis_port           -     @3164
-        ap_r               uvm_analysis_port           -     @3184
-        ap_w               uvm_analysis_port           -     @3154
+      mon_s2               axi_monitor                 -     @3272
+        ap_ar              uvm_analysis_port           -     @3311
+        ap_aw              uvm_analysis_port           -     @3281
+        ap_b               uvm_analysis_port           -     @3301
+        ap_r               uvm_analysis_port           -     @3321
+        ap_w               uvm_analysis_port           -     @3291
     slv_ag3                axi_slave_agent             -     @429 
-      mon_s3               axi_monitor                 -     @3195
-        ap_ar              uvm_analysis_port           -     @3234
-        ap_aw              uvm_analysis_port           -     @3204
-        ap_b               uvm_analysis_port           -     @3224
-        ap_r               uvm_analysis_port           -     @3244
-        ap_w               uvm_analysis_port           -     @3214
+      mon_s3               axi_monitor                 -     @3332
+        ap_ar              uvm_analysis_port           -     @3371
+        ap_aw              uvm_analysis_port           -     @3341
+        ap_b               uvm_analysis_port           -     @3361
+        ap_r               uvm_analysis_port           -     @3381
+        ap_w               uvm_analysis_port           -     @3351
+    vsqr                   axi_virtual_sequencer       -     @438 
+      rsp_export           uvm_analysis_export         -     @447 
+      seq_item_export      uvm_seq_item_pull_imp       -     @565 
+      arbitration_queue    array                       0     -    
+      lock_queue           array                       0     -    
+      num_last_reqs        integral                    32    'd1  
+      num_last_rsps        integral                    32    'd1  
 ------------------------------------------------------------------
 
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_traversal.svh(279) @ 0: reporter [UVM/COMP/NAMECHECK] This implementation of the component name checks requires DPI to be enabled
-UVM_INFO ./uvm/axi_driver.sv(22) @ 195000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: WR id=0 addr=0x00000100 len=0 size=2 burst=1 mst=0 slv=0
-UVM_INFO ./uvm/axi_driver.sv(43) @ 200000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW start addr=0x00000100 len=0
-UVM_INFO ./uvm/axi_driver.sv(46) @ 205000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW handshake done
-UVM_INFO ./uvm/axi_driver.sv(57) @ 220000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 0/0 last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=0 addr=0x00000100 len=0
-[TRACE_C4K] 225000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
-UVM_INFO ./uvm/axi_driver.sv(65) @ 230000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B wait
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x50b9dbbd last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=0 exp=1 act=1
-UVM_INFO ./uvm/axi_driver.sv(72) @ 290000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B resp=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 290000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: WR id=0 addr=0x00000100 len=7 size=2 burst=0 mst=1 slv=0
-UVM_INFO ./uvm/axi_driver.sv(43) @ 300000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW start addr=0x00000100 len=7
-UVM_INFO ./uvm/axi_driver.sv(46) @ 305000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW handshake done
-UVM_INFO ./uvm/axi_driver.sv(57) @ 320000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 0/7 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=64 addr=0x00000100 len=7
-[TRACE_C4K] 325000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 340000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 1/7 last=0
-[TRACE_C4K] 345000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xb9c65bf3 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 360000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 2/7 last=0
-[TRACE_C4K] 365000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x825e0199 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 380000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 3/7 last=0
-[TRACE_C4K] 385000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xaf7682b4 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 400000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 4/7 last=0
-[TRACE_C4K] 405000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x706def0d last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 420000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 5/7 last=0
-[TRACE_C4K] 425000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 435000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xfd697b69 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 440000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 6/7 last=0
-[TRACE_C4K] 445000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x6d5f8a5c last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 460000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 7/7 last=1
-[TRACE_C4K] 465000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
-UVM_INFO ./uvm/axi_driver.sv(65) @ 470000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B wait
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 475000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x4c2fa7d4 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x8802279b last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=0 exp=8 act=8
-UVM_INFO ./uvm/axi_driver.sv(72) @ 530000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B resp=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 530000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: WR id=0 addr=0x00000100 len=13 size=2 burst=0 mst=2 slv=0
-UVM_INFO ./uvm/axi_driver.sv(43) @ 540000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AW start addr=0x00000100 len=13
-UVM_INFO ./uvm/axi_driver.sv(46) @ 545000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AW handshake done
-UVM_INFO ./uvm/axi_driver.sv(57) @ 560000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 0/13 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=128 addr=0x00000100 len=13
-[TRACE_C4K] 565000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 580000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 1/13 last=0
-[TRACE_C4K] 585000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 595000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x83806598 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 600000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 2/13 last=0
-[TRACE_C4K] 605000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 615000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x6d870e5d last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 620000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 3/13 last=0
-[TRACE_C4K] 625000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x299d6e9a last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 640000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 4/13 last=0
-[TRACE_C4K] 645000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x959abba2 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 660000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 5/13 last=0
-[TRACE_C4K] 665000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 675000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x99651487 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 680000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 6/13 last=0
-[TRACE_C4K] 685000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 695000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xb2be55a2 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 700000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 7/13 last=0
-[TRACE_C4K] 705000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 715000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x7d6fb122 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 720000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 8/13 last=0
-[TRACE_C4K] 725000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 735000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xf3b88c68 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 740000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 9/13 last=0
-[TRACE_C4K] 745000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x78160743 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 760000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 10/13 last=0
-[TRACE_C4K] 765000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x76e9da08 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 780000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 11/13 last=0
-[TRACE_C4K] 785000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 795000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x9fc6ef46 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 800000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 12/13 last=0
-[TRACE_C4K] 805000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 815000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x87b4081e last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 820000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 13/13 last=1
-[TRACE_C4K] 825000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
-UVM_INFO ./uvm/axi_driver.sv(65) @ 830000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV B wait
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 835000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x4b719215 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x220aebbb last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=0 exp=14 act=14
-UVM_INFO ./uvm/axi_driver.sv(72) @ 890000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV B resp=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 890000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=0 addr=0x00000100 len=9 size=2 burst=1 mst=3 slv=0
-UVM_INFO ./uvm/axi_driver.sv(43) @ 900000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x00000100 len=9
-UVM_INFO ./uvm/axi_driver.sv(46) @ 905000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
-UVM_INFO ./uvm/axi_driver.sv(57) @ 920000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/9 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 925000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=192 addr=0x00000100 len=9
-[TRACE_C4K] 925000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 940000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 1/9 last=0
-[TRACE_C4K] 945000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 955000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x73fde311 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 960000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 2/9 last=0
-[TRACE_C4K] 965000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 975000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xa2e392e8 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 980000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 3/9 last=0
-[TRACE_C4K] 985000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 995000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xf1a96d89 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 1000000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 4/9 last=0
-[TRACE_C4K] 1005000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xa4e30ac2 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 1020000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 5/9 last=0
-[TRACE_C4K] 1025000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1035000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x27586c3c last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 1040000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 6/9 last=0
-[TRACE_C4K] 1045000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1055000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xe2f5a09c last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 1060000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 7/9 last=0
-[TRACE_C4K] 1065000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1075000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x90374aac last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 1080000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 8/9 last=0
-[TRACE_C4K] 1085000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1095000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xee7ae712 last=0
-UVM_INFO ./uvm/axi_driver.sv(57) @ 1100000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 9/9 last=1
-[TRACE_C4K] 1105000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
-UVM_INFO ./uvm/axi_driver.sv(65) @ 1110000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xe54d9423 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x54737d1f last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 1135000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=0 exp=10 act=10
-UVM_INFO ./uvm/axi_driver.sv(72) @ 1170000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 1170000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=0 addr=0x00000100 len=7 size=2 burst=0 mst=0 slv=0
-UVM_INFO ./uvm/axi_driver.sv(88) @ 1180000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00000100 len=7
-UVM_INFO ./uvm/axi_driver.sv(91) @ 1185000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1190000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/7
-[TRACE] 1195000 AR pre-FIFO vld m=0 vld=1 rdy=1
-[TRACE] 1195000 AR pre-FIFO out m=0 addr=0x00000100
-[TRACE] 1195000 XBAR M_ARREADY m=0
-[TRACE] 1195000 XBAR S_ARVALID s=0 addr=0x00000100
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0001
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0001
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0001
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0001
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-[TRACE] 1195000 XBAR m_arready[0]=1 ar_rdy_vec=0000
-UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=0 addr=0x00000100 len=7
-[TRACE] 1205000 AR at slave s=0 addr=0x00000100
-[TRACE] 1205000 AR pre-FIFO vld m=0 vld=0 rdy=0
-UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1205000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1240000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 1/7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1260000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 2/7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1280000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 3/7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1300000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 4/7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1320000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 5/7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1340000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 6/7
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1360000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 7/7
-[TRACE] 1375000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 1375000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 1375000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 1375000 S_ARREADY s=3 fifo=1 sid=0 final=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 1380000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: RD id=0 addr=0x00000100 len=14 size=2 burst=0 mst=1 slv=0
-UVM_INFO ./uvm/axi_driver.sv(88) @ 1390000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x00000100 len=14
-UVM_INFO ./uvm/axi_driver.sv(91) @ 1395000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR handshake done
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1400000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 0/14
-[TRACE] 1405000 AR pre-FIFO vld m=1 vld=1 rdy=1
-[TRACE] 1405000 AR pre-FIFO out m=1 addr=0x00000100
-[TRACE] 1405000 XBAR S_ARVALID s=0 addr=0x00000100
-UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=64 addr=0x00000100 len=14
-[TRACE] 1415000 AR at slave s=0 addr=0x00000100
-[TRACE] 1415000 AR pre-FIFO vld m=1 vld=0 rdy=0
-UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1415000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1450000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 1/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1470000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 2/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1490000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 3/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1510000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 4/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1530000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 5/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1550000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 6/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1570000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 7/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1590000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 8/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1610000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 9/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1630000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 10/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1650000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 11/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1670000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 12/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1690000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 13/14
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1710000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 14/14
-[TRACE] 1725000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 1725000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 1725000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 1725000 S_ARREADY s=3 fifo=1 sid=0 final=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 1730000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=0 addr=0x00000100 len=1 size=2 burst=0 mst=2 slv=0
-UVM_INFO ./uvm/axi_driver.sv(88) @ 1740000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00000100 len=1
-UVM_INFO ./uvm/axi_driver.sv(91) @ 1745000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1750000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/1
-[TRACE] 1755000 AR pre-FIFO vld m=2 vld=1 rdy=1
-[TRACE] 1755000 AR pre-FIFO out m=2 addr=0x00000100
-[TRACE] 1755000 XBAR S_ARVALID s=0 addr=0x00000100
-UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=128 addr=0x00000100 len=1
-[TRACE] 1765000 AR at slave s=0 addr=0x00000100
-[TRACE] 1765000 AR pre-FIFO vld m=2 vld=0 rdy=0
-UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1765000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=1
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1800000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 1/1
-[TRACE] 1815000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 1815000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 1815000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 1815000 S_ARREADY s=3 fifo=1 sid=0 final=0
-UVM_INFO ./uvm/axi_driver.sv(22) @ 1820000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: RD id=0 addr=0x00000100 len=13 size=2 burst=1 mst=3 slv=0
-UVM_INFO ./uvm/axi_driver.sv(88) @ 1830000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AR start addr=0x00000100 len=13
-UVM_INFO ./uvm/axi_driver.sv(91) @ 1835000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AR handshake done
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1840000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 0/13
-[TRACE] 1845000 AR pre-FIFO vld m=3 vld=1 rdy=1
-[TRACE] 1845000 AR pre-FIFO out m=3 addr=0x00000100
-[TRACE] 1845000 XBAR S_ARVALID s=0 addr=0x00000100
-UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=192 addr=0x00000100 len=13
-[TRACE] 1855000 AR at slave s=0 addr=0x00000100
-[TRACE] 1855000 AR pre-FIFO vld m=3 vld=0 rdy=0
-UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1855000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1890000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 1/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1910000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 2/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1930000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 3/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1950000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 4/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1970000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 5/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 1990000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 6/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2010000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 7/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2030000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 8/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2050000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 9/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2070000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 10/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2090000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 11/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2110000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 12/13
-UVM_INFO ./uvm/axi_driver.sv(97) @ 2130000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 13/13
-[TRACE] 2145000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 2145000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 2145000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 2145000 S_ARREADY s=3 fifo=1 sid=0 final=0
-UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_objection.svh(1276) @ 3150000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+UVM_INFO ./uvm/axi_driver.sv(22) @ 195000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=4 addr=0x00000c74 len=0 size=2 burst=0 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 200000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00000c74 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 205000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 210000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/0
+[TRACE] 215000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 215000 AR pre-FIFO out m=0 addr=0x00000c74
+[TRACE] 215000 XBAR M_ARREADY m=0
+[TRACE] 215000 XBAR S_ARVALID s=0 addr=0x00000c74
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 215000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=4 addr=0x00000c74 len=0
+[TRACE] 225000 AR at slave s=0 addr=0x00000c74
+[TRACE] 225000 AR pre-FIFO vld m=0 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=4 len=0
+[TRACE] 255000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 255000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 255000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 255000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 260000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=0 addr=0x00001c94 len=0 size=2 burst=0 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 270000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00001c94 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 275000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 280000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/0
+[TRACE] 285000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 285000 AR pre-FIFO out m=0 addr=0x00001c94
+[TRACE] 285000 XBAR M_ARREADY m=0
+[TRACE] 285000 XBAR S_ARVALID s=0 addr=0x00001c94
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 285000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=0 addr=0x00001c94 len=0
+[TRACE] 295000 AR at slave s=0 addr=0x00001c94
+[TRACE] 295000 AR pre-FIFO vld m=0 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=0
+[TRACE] 325000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 325000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 325000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 325000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 330000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: WR id=6 addr=0x00000eec len=0 size=2 burst=0 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 340000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW start addr=0x00000eec len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 345000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 360000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=6 addr=0x00000eec len=0
+[TRACE_C4K] 365000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 370000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x184e09b0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 395000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=6 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 430000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 430000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=11 addr=0x00000cfc len=0 size=2 burst=1 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 440000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00000cfc len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 445000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 450000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/0
+[TRACE] 455000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 455000 AR pre-FIFO out m=0 addr=0x00000cfc
+[TRACE] 455000 XBAR M_ARREADY m=0
+[TRACE] 455000 XBAR S_ARVALID s=0 addr=0x00000cfc
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 455000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=11 addr=0x00000cfc len=0
+[TRACE] 465000 AR at slave s=0 addr=0x00000cfc
+[TRACE] 465000 AR pre-FIFO vld m=0 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 465000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=11 len=0
+[TRACE] 495000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 495000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 495000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 495000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 500000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=9 addr=0x00000460 len=0 size=2 burst=1 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 510000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00000460 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 515000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 520000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/0
+[TRACE] 525000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 525000 AR pre-FIFO out m=0 addr=0x00000460
+[TRACE] 525000 XBAR M_ARREADY m=0
+[TRACE] 525000 XBAR S_ARVALID s=0 addr=0x00000460
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 525000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=9 addr=0x00000460 len=0
+[TRACE] 535000 AR at slave s=0 addr=0x00000460
+[TRACE] 535000 AR pre-FIFO vld m=0 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 535000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=9 len=0
+[TRACE] 565000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 565000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 565000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 565000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 570000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: WR id=12 addr=0x000005b0 len=0 size=2 burst=1 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 580000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW start addr=0x000005b0 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 585000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 600000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 605000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=12 addr=0x000005b0 len=0
+[TRACE_C4K] 605000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 610000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xc50511cf last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=12 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 670000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 670000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=14 addr=0x00001414 len=0 size=2 burst=1 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 680000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00001414 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 685000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 690000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/0
+[TRACE] 695000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 695000 AR pre-FIFO out m=0 addr=0x00001414
+[TRACE] 695000 XBAR M_ARREADY m=0
+[TRACE] 695000 XBAR S_ARVALID s=0 addr=0x00001414
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 695000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=14 addr=0x00001414 len=0
+[TRACE] 705000 AR at slave s=0 addr=0x00001414
+[TRACE] 705000 AR pre-FIFO vld m=0 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=14 len=0
+[TRACE] 735000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 735000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 735000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 735000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 740000: uvm_test_top.env.mst_ag0.drv_m0 [DRIVER] M[0] driving: RD id=1 addr=0x00001444 len=0 size=2 burst=1 mst=0 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 750000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR start addr=0x00001444 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 755000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 760000: uvm_test_top.env.mst_ag0.drv_m0 [TRACE] M[0] DRV R wait beat 0/0
+[TRACE] 765000 AR pre-FIFO vld m=0 vld=1 rdy=1
+[TRACE] 765000 AR pre-FIFO out m=0 addr=0x00001444
+[TRACE] 765000 XBAR M_ARREADY m=0
+[TRACE] 765000 XBAR S_ARVALID s=0 addr=0x00001444
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0001
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+[TRACE] 765000 XBAR m_arready[0]=1 ar_rdy_vec=0000
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=1 addr=0x00001444 len=0
+[TRACE] 775000 AR at slave s=0 addr=0x00001444
+[TRACE] 775000 AR pre-FIFO vld m=0 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=1 len=0
+[TRACE] 805000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 805000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 805000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 805000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 810000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: RD id=1 addr=0x00000800 len=0 size=2 burst=1 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 820000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x00000800 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 825000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 830000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 0/0
+[TRACE] 835000 AR pre-FIFO vld m=1 vld=1 rdy=1
+[TRACE] 835000 AR pre-FIFO out m=1 addr=0x00000800
+[TRACE] 835000 XBAR S_ARVALID s=0 addr=0x00000800
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=65 addr=0x00000800 len=0
+[TRACE] 845000 AR at slave s=0 addr=0x00000800
+[TRACE] 845000 AR pre-FIFO vld m=1 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=1 len=0
+[TRACE] 875000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 875000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 875000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 875000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 880000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: WR id=4 addr=0x00001198 len=0 size=2 burst=0 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 890000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW start addr=0x00001198 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 895000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 910000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 915000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=68 addr=0x00001198 len=0
+[TRACE_C4K] 915000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 920000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xb5719802 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=4 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 980000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 980000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: RD id=15 addr=0x000013b0 len=0 size=2 burst=1 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 990000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x000013b0 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 995000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1000000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 0/0
+[TRACE] 1005000 AR pre-FIFO vld m=1 vld=1 rdy=1
+[TRACE] 1005000 AR pre-FIFO out m=1 addr=0x000013b0
+[TRACE] 1005000 XBAR S_ARVALID s=0 addr=0x000013b0
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=79 addr=0x000013b0 len=0
+[TRACE] 1015000 AR at slave s=0 addr=0x000013b0
+[TRACE] 1015000 AR pre-FIFO vld m=1 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=15 len=0
+[TRACE] 1045000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1045000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1045000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1045000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1050000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: WR id=10 addr=0x00000f18 len=0 size=2 burst=0 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 1060000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW start addr=0x00000f18 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 1065000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 1080000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 1085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=74 addr=0x00000f18 len=0
+[TRACE_C4K] 1085000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 1090000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xdfba7b03 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 1115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=10 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 1150000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1150000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: RD id=0 addr=0x0000156c len=0 size=2 burst=0 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1160000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x0000156c len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1165000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1170000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 0/0
+[TRACE] 1175000 AR pre-FIFO vld m=1 vld=1 rdy=1
+[TRACE] 1175000 AR pre-FIFO out m=1 addr=0x0000156c
+[TRACE] 1175000 XBAR S_ARVALID s=0 addr=0x0000156c
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=64 addr=0x0000156c len=0
+[TRACE] 1185000 AR at slave s=0 addr=0x0000156c
+[TRACE] 1185000 AR pre-FIFO vld m=1 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=0
+[TRACE] 1215000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1215000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1215000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1215000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1220000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: WR id=8 addr=0x00001970 len=0 size=2 burst=1 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 1230000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW start addr=0x00001970 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 1235000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 1250000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 1255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=72 addr=0x00001970 len=0
+[TRACE_C4K] 1255000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 1260000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x1205ce0f last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 1285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=8 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 1320000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1320000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: RD id=7 addr=0x0000172c len=0 size=2 burst=0 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1330000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x0000172c len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1335000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1340000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 0/0
+[TRACE] 1345000 AR pre-FIFO vld m=1 vld=1 rdy=1
+[TRACE] 1345000 AR pre-FIFO out m=1 addr=0x0000172c
+[TRACE] 1345000 XBAR S_ARVALID s=0 addr=0x0000172c
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=71 addr=0x0000172c len=0
+[TRACE] 1355000 AR at slave s=0 addr=0x0000172c
+[TRACE] 1355000 AR pre-FIFO vld m=1 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=7 len=0
+[TRACE] 1385000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1385000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1385000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1385000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1390000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] driving: RD id=14 addr=0x00000e5c len=0 size=2 burst=1 mst=1 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1400000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x00000e5c len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1405000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1410000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV R wait beat 0/0
+[TRACE] 1415000 AR pre-FIFO vld m=1 vld=1 rdy=1
+[TRACE] 1415000 AR pre-FIFO out m=1 addr=0x00000e5c
+[TRACE] 1415000 XBAR S_ARVALID s=0 addr=0x00000e5c
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=78 addr=0x00000e5c len=0
+[TRACE] 1425000 AR at slave s=0 addr=0x00000e5c
+[TRACE] 1425000 AR pre-FIFO vld m=1 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1425000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=14 len=0
+[TRACE] 1455000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1455000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1455000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1455000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1460000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=3 addr=0x00001694 len=0 size=2 burst=0 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1470000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00001694 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1475000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1480000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 1485000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 1485000 AR pre-FIFO out m=2 addr=0x00001694
+[TRACE] 1485000 XBAR S_ARVALID s=0 addr=0x00001694
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=131 addr=0x00001694 len=0
+[TRACE] 1495000 AR at slave s=0 addr=0x00001694
+[TRACE] 1495000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1495000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=3 len=0
+[TRACE] 1525000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1525000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1525000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1525000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1530000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=11 addr=0x00001744 len=0 size=2 burst=0 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1540000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00001744 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1545000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1550000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 1555000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 1555000 AR pre-FIFO out m=2 addr=0x00001744
+[TRACE] 1555000 XBAR S_ARVALID s=0 addr=0x00001744
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=139 addr=0x00001744 len=0
+[TRACE] 1565000 AR at slave s=0 addr=0x00001744
+[TRACE] 1565000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1565000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=11 len=0
+[TRACE] 1595000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1595000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1595000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1595000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1600000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=4 addr=0x00001c98 len=0 size=2 burst=1 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1610000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00001c98 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1615000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1620000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 1625000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 1625000 AR pre-FIFO out m=2 addr=0x00001c98
+[TRACE] 1625000 XBAR S_ARVALID s=0 addr=0x00001c98
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=132 addr=0x00001c98 len=0
+[TRACE] 1635000 AR at slave s=0 addr=0x00001c98
+[TRACE] 1635000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1635000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=4 len=0
+[TRACE] 1665000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1665000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1665000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1665000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1670000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=15 addr=0x00000424 len=0 size=2 burst=1 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1680000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00000424 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1685000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1690000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 1695000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 1695000 AR pre-FIFO out m=2 addr=0x00000424
+[TRACE] 1695000 XBAR S_ARVALID s=0 addr=0x00000424
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=143 addr=0x00000424 len=0
+[TRACE] 1705000 AR at slave s=0 addr=0x00000424
+[TRACE] 1705000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1705000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=15 len=0
+[TRACE] 1735000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1735000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1735000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1735000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1740000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=4 addr=0x000017cc len=0 size=2 burst=0 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1750000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x000017cc len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1755000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1760000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 1765000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 1765000 AR pre-FIFO out m=2 addr=0x000017cc
+[TRACE] 1765000 XBAR S_ARVALID s=0 addr=0x000017cc
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=132 addr=0x000017cc len=0
+[TRACE] 1775000 AR at slave s=0 addr=0x000017cc
+[TRACE] 1775000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1775000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=4 len=0
+[TRACE] 1805000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1805000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1805000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1805000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1810000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: WR id=8 addr=0x00001e48 len=0 size=2 burst=0 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 1820000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AW start addr=0x00001e48 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 1825000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 1840000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 1845000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=136 addr=0x00001e48 len=0
+[TRACE_C4K] 1845000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 1850000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 1875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xbd8424d1 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 1875000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=8 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 1910000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1910000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=13 addr=0x00001440 len=0 size=2 burst=1 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1920000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00001440 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1925000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 1930000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 1935000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 1935000 AR pre-FIFO out m=2 addr=0x00001440
+[TRACE] 1935000 XBAR S_ARVALID s=0 addr=0x00001440
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 1945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=141 addr=0x00001440 len=0
+[TRACE] 1945000 AR at slave s=0 addr=0x00001440
+[TRACE] 1945000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 1945000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=13 len=0
+[TRACE] 1975000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 1975000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 1975000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 1975000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 1980000: uvm_test_top.env.mst_ag2.drv_m2 [DRIVER] M[2] driving: RD id=0 addr=0x00001dd4 len=0 size=2 burst=1 mst=2 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 1990000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR start addr=0x00001dd4 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 1995000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 2000000: uvm_test_top.env.mst_ag2.drv_m2 [TRACE] M[2] DRV R wait beat 0/0
+[TRACE] 2005000 AR pre-FIFO vld m=2 vld=1 rdy=1
+[TRACE] 2005000 AR pre-FIFO out m=2 addr=0x00001dd4
+[TRACE] 2005000 XBAR S_ARVALID s=0 addr=0x00001dd4
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 2015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=128 addr=0x00001dd4 len=0
+[TRACE] 2015000 AR at slave s=0 addr=0x00001dd4
+[TRACE] 2015000 AR pre-FIFO vld m=2 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 2015000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=0 len=0
+[TRACE] 2045000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 2045000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 2045000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 2045000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2050000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=15 addr=0x00000b64 len=0 size=2 burst=1 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 2060000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x00000b64 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 2065000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 2080000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 2085000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=207 addr=0x00000b64 len=0
+[TRACE_C4K] 2085000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 2090000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 2115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x12b665a3 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 2115000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=15 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 2150000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2150000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=2 addr=0x00001a30 len=0 size=2 burst=1 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 2160000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x00001a30 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 2165000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 2180000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 2185000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=194 addr=0x00001a30 len=0
+[TRACE_C4K] 2185000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 2190000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 2215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x686019d8 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 2215000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=2 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 2250000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2250000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: RD id=9 addr=0x00001598 len=0 size=2 burst=0 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 2260000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AR start addr=0x00001598 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 2265000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 2270000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 0/0
+[TRACE] 2275000 AR pre-FIFO vld m=3 vld=1 rdy=1
+[TRACE] 2275000 AR pre-FIFO out m=3 addr=0x00001598
+[TRACE] 2275000 XBAR S_ARVALID s=0 addr=0x00001598
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 2285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=201 addr=0x00001598 len=0
+[TRACE] 2285000 AR at slave s=0 addr=0x00001598
+[TRACE] 2285000 AR pre-FIFO vld m=3 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 2285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=9 len=0
+[TRACE] 2315000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 2315000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 2315000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 2315000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2320000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=4 addr=0x000019f8 len=0 size=2 burst=1 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 2330000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x000019f8 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 2335000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 2350000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 2355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=196 addr=0x000019f8 len=0
+[TRACE_C4K] 2355000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 2360000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 2385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xfcc69d4a last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 2385000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=4 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 2420000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2420000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=12 addr=0x00001cd4 len=0 size=2 burst=0 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 2430000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x00001cd4 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 2435000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 2450000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 2455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=204 addr=0x00001cd4 len=0
+[TRACE_C4K] 2455000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 2460000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 2485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x835fe402 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 2485000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=12 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 2520000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2520000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=1 addr=0x000019a8 len=0 size=2 burst=1 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 2530000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x000019a8 len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 2535000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
+UVM_INFO ./uvm/axi_driver.sv(57) @ 2550000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 2555000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=193 addr=0x000019a8 len=0
+[TRACE_C4K] 2555000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 2560000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 2585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0x106e9f64 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 2585000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=1 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 2620000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2620000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: RD id=13 addr=0x00000174 len=0 size=2 burst=1 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(88) @ 2630000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AR start addr=0x00000174 len=0
+UVM_INFO ./uvm/axi_driver.sv(91) @ 2635000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AR handshake done
+UVM_INFO ./uvm/axi_driver.sv(97) @ 2640000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV R wait beat 0/0
+[TRACE] 2645000 AR pre-FIFO vld m=3 vld=1 rdy=1
+[TRACE] 2645000 AR pre-FIFO out m=3 addr=0x00000174
+[TRACE] 2645000 XBAR S_ARVALID s=0 addr=0x00000174
+UVM_INFO ./uvm/axi_slave_agent.sv(115) @ 2655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=205 addr=0x00000174 len=0
+[TRACE] 2655000 AR at slave s=0 addr=0x00000174
+[TRACE] 2655000 AR pre-FIFO vld m=3 vld=0 rdy=0
+UVM_INFO ./uvm/axi_slave_agent.sv(132) @ 2655000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV R start id=13 len=0
+[TRACE] 2685000 S_ARREADY s=0 fifo=1 sid=0 final=0
+[TRACE] 2685000 S_ARREADY s=1 fifo=1 sid=0 final=0
+[TRACE] 2685000 S_ARREADY s=2 fifo=1 sid=0 final=0
+[TRACE] 2685000 S_ARREADY s=3 fifo=1 sid=0 final=0
+UVM_INFO ./uvm/axi_driver.sv(22) @ 2690000: uvm_test_top.env.mst_ag3.drv_m3 [DRIVER] M[3] driving: WR id=4 addr=0x00001dfc len=0 size=2 burst=1 mst=3 slv=0
+UVM_INFO ./uvm/axi_driver.sv(43) @ 2700000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW start addr=0x00001dfc len=0
+UVM_INFO ./uvm/axi_driver.sv(46) @ 2705000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV AW handshake done
+UVM_ERROR ./uvm/axi_scoreboard.sv(204) @ 2705000: uvm_test_top.env.sb [RESP] DUPLICATE AW M[3] id=4
+UVM_INFO ./uvm/axi_driver.sv(57) @ 2720000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/0 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(49) @ 2725000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=196 addr=0x00001dfc len=0
+[TRACE_C4K] 2725000 W m_vld=1 m_rdy=1 s_vld=1 s_rdy=1 slast=1
+UVM_INFO ./uvm/axi_driver.sv(65) @ 2730000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B wait
+UVM_INFO ./uvm/axi_slave_agent.sv(69) @ 2755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat data=0xf6254742 last=1
+UVM_INFO ./uvm/axi_slave_agent.sv(94) @ 2755000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV B start id=4 exp=1 act=1
+UVM_INFO ./uvm/axi_driver.sv(72) @ 2790000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0
+UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_objection.svh(1276) @ 3790000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
 COVERAGE REPORT:
   Outstanding: AW peak=1 AR peak=1
-  Arbitration: 8 total grants
+  Arbitration: 32 total grants
   4KB Splits: 0 total
     by_len: 1-3=0 4-7=0 8-15=0
     by_slv: S0=0 S1=0 S2=0 S3=0
     by_pos: early=0 mid=0 late=0
   Reorder: 0 events, max depth=0
   Default Slave: 0 hits
-PROTOCOL CHECKER: 4 writes, 4 reads, 0 protocol errors
-REF MODEL: 4 writes, 4 reads, 0 4KB splits predicted
+PROTOCOL CHECKER: 12 writes, 20 reads, 0 protocol errors
+REF MODEL: 12 writes, 20 reads, 0 4KB splits predicted
 AXI SCOREBOARD:
-  Routing : 8 checks, 0 errors
-  Data    : 39 checks, 0 errors
-  Response: 4 writes, 4 reads, 0 errors, 0 reorder events
-UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_catcher.svh(705) @ 3150000: reporter [UVM/REPORT/CATCHER] 
+  Routing : 32 checks, 0 errors
+  Data    : 20 checks, 0 errors
+  Response: 12 writes, 20 reads, 1 errors, 0 reorder events
+UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_catcher.svh(705) @ 3790000: reporter [UVM/REPORT/CATCHER] 
 --- UVM Report catcher Summary ---
 
 
@@ -616,24 +908,25 @@ Number of caught UVM_FATAL reports   :    0
 Number of caught UVM_ERROR reports   :    0
 Number of caught UVM_WARNING reports :    0
 
-UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_server.svh(894) @ 3150000: reporter [UVM/REPORT/SERVER] 
+UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_server.svh(894) @ 3790000: reporter [UVM/REPORT/SERVER] 
 --- UVM Report Summary ---
 
 ** Report counts by severity
-UVM_INFO :  160
+UVM_INFO :  235
 UVM_WARNING :    0
-UVM_ERROR :    0
+UVM_ERROR :    1
 UVM_FATAL :    0
 ** Report counts by id
-[DRIVER]     8
+[DRIVER]    32
 [NO_DPI_TSTNAME]     1
+[RESP]     1
 [RNTST]     1
 [TEST_DONE]     1
-[TRACE]   145
+[TRACE]   196
 [UVM/COMP/NAMECHECK]     1
 [UVM/RELNOTES]     1
 [UVM/REPORT/CATCHER]     1
 [UVMTOP]     1
 
 $finish called from file "/home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh", line 527.
-$finish at simulation time              3150000
+$finish at simulation time              3790000

@@ -12,6 +12,9 @@ class axi_env extends uvm_env;
     axi_master_agent master_agents[4];
     axi_slave_agent  slave_agents[4];
 
+    // Virtual Sequencer
+    axi_virtual_sequencer vsqr;
+
     // Scoreboard + Reference Model
     axi_scoreboard      sb;
     reference_model     refm;
@@ -33,6 +36,9 @@ class axi_env extends uvm_env;
             slave_agents[i].slv_id=i;
         end
 
+        // Virtual Sequencer
+        vsqr = axi_virtual_sequencer::type_id::create("vsqr", this);
+
         // Scoreboard + Reference Model
         sb    =axi_scoreboard::type_id::create("sb",this);
         refm  =reference_model::type_id::create("refm",this);
@@ -42,6 +48,11 @@ class axi_env extends uvm_env;
 
     function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
+
+        // Connect master sequencers to virtual sequencer
+        for(int i=0; i<4; i++) begin
+            vsqr.sqr[i] = master_agents[i].sqr;
+        end
 
         // Distribute vif to all agents and their monitors
         for(int i=0; i<4; i++) begin

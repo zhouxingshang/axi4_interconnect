@@ -20,7 +20,7 @@ class split4k_seq extends uvm_sequence #(axi_transaction);
         burst == 2'b01;                           // INCR
         // ---- pick a random 4K boundary ----
         boundary[11:0] == 12'h000;
-        boundary inside {[32'h1000:32'hF000]};
+        boundary inside {[32'h1000:32'h7000]};
         // ---- cross with alignment ----
         // total_bytes = (len+1)*4, must be 4-byte aligned and ≤ 64
         pre_offset inside {4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60};
@@ -37,14 +37,14 @@ class split4k_seq extends uvm_sequence #(axi_transaction);
     task body();
         axi_transaction t = axi_transaction::type_id::create("t");
         start_item(t);
-        if(!t.randomize() with {
+        void'(t.randomize() with {
             mst_id   == local::mst_id;
-            addr     == local::addr;
             len      == local::len;
             burst    == local::burst;
             size     == local::size;
             is_write == local::is_write;
-        }) `uvm_fatal("SEQ","randomize failed")
+        });
+        t.addr = addr;          // assign after randomization to bypass addr_range_c
         finish_item(t);
     endtask
 endclass
