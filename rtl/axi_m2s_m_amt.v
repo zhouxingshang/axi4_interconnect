@@ -79,8 +79,11 @@ module axi_m2s_m_amt
     input   wire  [MST_AMT-1:0]    AWSELECT_IN,
     input   wire  [MST_AMT-1:0]    ARSELECT_IN,
     input   wire                   arbiter_type,
-    input   wire                   slv_en
-    // ⚠️ channel_en REMOVED - not needed
+    input   wire                   slv_en,
+
+    // W channel routing control (crossbar-level gating)
+    output  wire  [MST_AMT-1:0]    W_ACCEPT,     // per-master: this M2S is receiving W beats
+    output  wire  [MST_AMT-1:0]    W_BUSY        // per-master: this M2S has pending W
 );
 
 //=============================================================================
@@ -331,6 +334,19 @@ always @(posedge AXI_CLK) begin
 end
 
 //=============================================================================
+// W Channel Routing Control: per-master accept / busy outputs for crossbar
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : GEN_W_CTRL
+        // W_ACCEPT: this M2S is actively receiving W beats from this master
+        assign W_ACCEPT[m] = ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active)
+                           || AWGRANT[m];
+        // W_BUSY: this M2S has a pending AW from this master
+        assign W_BUSY[m]   = (pending_aw_cnt[m] > 0);
+    end
+endgenerate
+
+//=============================================================================
 // W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
 //=============================================================================
 wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
@@ -349,7 +365,7 @@ generate
 
             // Write side: from master
             .wr_rdy (m_wready_fifo[m]),
-            .wr_vld (m_wvalid[m] && ((pending_aw_cnt[m] > 0) || (AWSELECT[m] && m_awvalid[m]))),
+             .wr_vld (m_wvalid[m] && (AWGRANT[m] || (pending_aw_cnt[m] > 0))),
             .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
 
             // Read side: to slave (gated by W-follows-AW logic)
@@ -366,7 +382,7 @@ endgenerate
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : GATE_WREADY
         assign m_wready[m] = m_wready_fifo[m]
-                           && ((pending_aw_cnt[m] > 0) || (AWSELECT[m] && m_awvalid[m]));
+                           && (AWGRANT[m] || (pending_aw_cnt[m] > 0));
     end
 endgenerate
 
@@ -437,6 +453,26 @@ always @(*) begin
             `S_ARBUS = bus_ar[i];
         end
     end
+end
+
+//=========================================================================
+// Debug: AW/AR handshake trace
+//=========================================================================
+wire [MST_ID_W-1:0] ar_grant_mst;
+assign ar_grant_mst = ARGRANT[3] ? 3'd3 : ARGRANT[2] ? 3'd2 : ARGRANT[1] ? 3'd1 : 3'd0;
+
+always @(posedge AXI_CLK) begin
+    if (|aw_handshake)
+        $display("[%0t] M2S[%0d] AW: handshake mst=%0d AWID=0x%0h ADDR=0x%0h LEN=%0d",
+                 $time, aw_grant_idx, aw_grant_idx, m_awid[aw_grant_idx],
+                 S_AWADDR, S_AWLEN);
+end
+
+always @(posedge AXI_CLK) begin
+    if (|(ARGRANT & {MST_AMT{S_ARREADY}} & m_arvalid))
+        $display("[%0t] M2S[%0d] AR: handshake ARGRANT=%b mst=%0d ARID=0x%0h ADDR=0x%0h LEN=%0d",
+                 $time, ar_grant_mst, ARGRANT, ar_grant_mst,
+                 S_ARID[W_ID-1:0], S_ARADDR, S_ARLEN);
 end
 
 endmodule

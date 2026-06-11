@@ -68,27 +68,27 @@ class axi_env extends uvm_env;
             master_agents[i].mon.ap_aw.connect(sb.aw_imp);
             master_agents[i].mon.ap_aw.connect(refm.aw_ap);
             master_agents[i].mon.ap_aw.connect(cov.aw_ap);
-            master_agents[i].mon.ap_aw.connect(proto_chk.aw_ap);
+            master_agents[i].mon.ap_aw.connect(proto_chk.aw_imp);
 
             // W -> scoreboard + proto_chk
             master_agents[i].mon.ap_w.connect(sb.w_imp);
-            master_agents[i].mon.ap_w.connect(proto_chk.w_ap);
+            master_agents[i].mon.ap_w.connect(proto_chk.w_imp);
 
             // B -> scoreboard + cov + proto_chk
             master_agents[i].mon.ap_b.connect(sb.b_imp);
             master_agents[i].mon.ap_b.connect(cov.b_ap);
-            master_agents[i].mon.ap_b.connect(proto_chk.b_ap);
+            master_agents[i].mon.ap_b.connect(proto_chk.b_imp);
 
             // AR -> scoreboard + refm + cov + proto_chk
             master_agents[i].mon.ap_ar.connect(sb.ar_imp);
             master_agents[i].mon.ap_ar.connect(refm.ar_ap);
             master_agents[i].mon.ap_ar.connect(cov.ar_ap);
-            master_agents[i].mon.ap_ar.connect(proto_chk.ar_ap);
+            master_agents[i].mon.ap_ar.connect(proto_chk.ar_imp);
 
             // R -> scoreboard + cov + proto_chk
             master_agents[i].mon.ap_r.connect(sb.r_imp);
             master_agents[i].mon.ap_r.connect(cov.r_ap);
-            master_agents[i].mon.ap_r.connect(proto_chk.r_ap);
+            master_agents[i].mon.ap_r.connect(proto_chk.r_imp);
         end
 
         //==== Slave-side connections (per agent) ====

@@ -28,6 +28,8 @@ class axi_transaction extends uvm_sequence_item;
     rand int                mst_id;         // which master sent this
     int                     slv_id;         // which slave it was routed to
     bit                     is_split;       // was this split across 4KB?
+    int                     actual_wbeats;  // W beat counter (protocol checker)
+    int                     actual_rbeats;  // R beat counter (protocol checker)
 
     //---- Constraints ----
     constraint addr_range_c {

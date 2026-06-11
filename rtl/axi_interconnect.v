@@ -759,10 +759,6 @@ endgenerate
 
 // ----- Clear port packing (one port per master) -----
 // Each master's R completion drives one clear port; priority_sel_clr picks winner
-wire [MST_AMT-1:0]       clr_last_packed;
-wire [W_SID*MST_AMT-1:0] clr_sid_packed;
-wire [MST_AMT-1:0]       clr_sid_vld_packed;
-wire [MST_AMT-1:0]       sid_buf_s_clr_rdy;
 
 genvar si_clr;
 generate
@@ -1086,7 +1082,7 @@ axi_crossbar #(
 //===================================================================
 // TRACE: 5-channel handshake monitoring for ALL masters and slaves
 //===================================================================
-/*
+
 genvar tm, ts;
 // ---- Master side: pre-FIFO output + response per master ----
 generate
@@ -1186,6 +1182,6 @@ always @(posedge AXI_CLK) begin
             $display("[TRACE] %0t B post-FIFO out m=0 id=0x%02h", $time, M_BID[0]);
     end
 end
-*/
+
 
 endmodule

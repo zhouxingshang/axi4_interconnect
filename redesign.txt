@@ -1,0 +1,60 @@
+一、 Protocol Checker（协议检查器）重构方案
+1. 数据结构重构：引入“Master 域隔离”
+痛点：原设计将所有 Master 的挂起事务混在同一个 wr_tbl 扁平表里，导致 W Beat 无法辨别其真正归属的 AW 事务。
+
+重构方案：在 Checker 内部，废除一维扁平表，改用SystemVerilog 关联数组（Key 为 mst_id）嵌套队列（Queue）的复合数据结构（例如：axi_transaction wr_tbl[int][$]）。
+
+逻辑意义：这相当于在 Checker 内部为 M0、M1、M2、M3 各自开辟了一条专属的、互不干扰的“AW-W 轨道”。
+
+2. AW 通道采样与记录逻辑（精确入队）
+当 Master 侧 Monitor 捕获到一个合法的 AW 握手事件（AWVALID & AWREADY）时，Checker 的 write_aw 接口被触发。
+
+Checker 提取该事务的 mst_id，并精准地将该 AW 信息（包含 id、addr、len 等）推入该 Master 专属队列的尾部（push_back）。
+
+此步确保了在单个 Master 内部，AW 请求的到达顺序被严格、保序地记录下来。
+
+3. W 通道匹配与计数逻辑（一加一严格对齐）
+根据 AXI4 协议的核心规定：在同一个 Master 物理接口上，W Channel 数据突发的发送顺序必须与 AW Channel 地址发送的顺序严格一致。也就是说，Master 内部绝不允许 W 突发乱序（注意：这与多 Master 之间的数据交织是两个维度的概念）。
+
+当 Monitor 捕获到一个 W Beat（WVALID & WREADY）时，Checker 提取其 w_item.mst_id。
+
+严禁跨域盲搜：Checker 直接以该 mst_id 为索引锁定其专属队列。根据 AXI4 保序规则，当前到达的 W Beat 必定属于该队列中最老的那个 AW 事务（即队头元素 queue[0]）。
+
+直接让队头 AW 事务的已接收 Beat 计数器（actual_wbeats）加 1，从而彻底避免了 M0 的 W Beat 错误累加到 M1 事务上的计数错位问题。
+
+4. 协议断言与边界移出逻辑
+WLAST 强一致性校验：当检测到某拍 W Beat 的 WLAST 标志为高时，Checker 检查该 Master 队头事务的 actual_wbeats 是否正好等于 AWLEN + 1。如果不相等，立刻上报 uvm_error。
+
+溢出校验：若 WLAST 未拉高，但计数器已达到或超过 AWLEN + 1，同样立即报出协议违例。
+
+事务退出：当一笔 W 突发数据随着 WLAST 正常结束并校验通过后，调用 pop_front() 将该 Master 队列首部的事务移除，使得下一笔写事务自动提至队头，等待属于它的 W Beat。
+
+二、 Scoreboard（记分板）重构方案
+在多 Master Outstanding 场景下，由于总线互联矩阵（Interconnect Crossbar）的存在，M0~M3 的写数据和 Slave 端的写响应在宏观上是交织、无序且并发的。Scoreboard 如果只拿零散的通道 Item 去比对，根本无法对齐。
+
+1. 策略重构：事务级重组（Transaction Reassembly）
+Scoreboard 不直接对单一的、不完整的 axi_w_item 进行数据比对。
+
+Scoreboard 内部针对 Master 侧和 Slave 侧，分别建立“动态重组暂存区”。只有当某个通道收到了完整的地址、整包数据（所有 Beat）以及最后的响应（B Channel）之后，才在重组区将其封装为一笔完整态的、全属性的 axi_transaction 对象。
+
+2. 比对池（Expect Pool & Actual Pool）的设计解耦
+期望池（Expect Pool）：连接 Master 侧重组完成的 analysis 端口。当 Master 端某笔写事务彻底完结时，将其送入期望池。
+
+实际池（Actual Pool）：连接 Slave 侧（DUT 输出端）重组完成的 analysis 端口。当 Slave 实际完成写入并给出 B 响应时，送入实际池。
+
+3. 跨 Master 乱序比对算法（键值查表匹配）
+由于 Interconnect 内部可能存在复杂的仲裁和路由（例如 M0 和 M1 同时写同一个 Slave，谁先落盘取决于仲裁逻辑），实际池和期望池的事务顺序可能发生颠倒。
+
+重构比对机制：摒弃传统的“期望池队头拉出来直接比对实际池队头”的简单 FIFO 机制。
+
+键值查表搜索（Key-based Search）：当实际池收到一笔来自 Slave 的完整事务时，比对引擎提取其 mst_id 以及原始 AXI id。
+
+多维检索：在期望池（Expect Pool）中遍历搜索同时满足 mst_id 和 id 完全匹配的最老事务。
+
+数据大底比对：
+
+搜寻到匹配项后，再将两者的 addr、data[] 数组、strb[] 等进行逐 byte 的深度比对。
+
+比对成功后，将两个池中对应的完整事务条目同步移除。
+
+如果在期望池中搜寻不到、或者超过一定时钟周期（Timeout）未匹配到，则报出丢包或响应错乱的致命错误。

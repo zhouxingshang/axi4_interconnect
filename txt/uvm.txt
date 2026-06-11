@@ -1,534 +1,4 @@
-==============================================================================
-  AXI4 UVM Testbench - Full Source Code
-  Generated: Wed Jun  3 15:10:54     2026
-==============================================================================
-
-==============================================================================
-  FILE: uvm/tb/axi_if.sv
-==============================================================================
-//=============================================================================
-// AXI Interface: parameterized 4-Master x 4-Slave interconnect ports
-//=============================================================================
-`ifndef AXI_IF_SV
-`define AXI_IF_SV
-
-interface axi_if #(
-    parameter MST_AMT       = 4,
-    parameter SLV_AMT       = 4,
-    parameter W_ID          = 4,
-    parameter W_CID         = 2,
-    parameter W_SID         = $clog2(MST_AMT) + W_CID + W_ID,
-    parameter ADDR_WIDTH    = 32,
-    parameter DATA_WIDTH    = 32,
-    parameter LEN_W         = 8,
-    parameter SIZE_W        = 3,
-    parameter BURST_W       = 2,
-    parameter RESP_W        = 2,
-    parameter W_STRB        = DATA_WIDTH / 8
-)(
-    input wire ACLK,
-    input wire ARSTn
-);
-
-    //---- Master-side (interconnect M_AXI ports) ----
-    wire [W_ID*MST_AMT-1:0]            M_AWID;
-    wire [ADDR_WIDTH*MST_AMT-1:0]      M_AWADDR;
-    wire [LEN_W*MST_AMT-1:0]           M_AWLEN;
-    wire [SIZE_W*MST_AMT-1:0]          M_AWSIZE;
-    wire [BURST_W*MST_AMT-1:0]         M_AWBURST;
-    wire [MST_AMT-1:0]                 M_AWVALID;
-    wire [MST_AMT-1:0]                 M_AWREADY;
-
-    wire [DATA_WIDTH*MST_AMT-1:0]      M_WDATA;
-    wire [W_STRB*MST_AMT-1:0]          M_WSTRB;
-    wire [MST_AMT-1:0]                 M_WLAST;
-    wire [MST_AMT-1:0]                 M_WVALID;
-    wire [MST_AMT-1:0]                 M_WREADY;
-
-    wire [W_ID*MST_AMT-1:0]            M_BID;
-    wire [RESP_W*MST_AMT-1:0]          M_BRESP;
-    wire [MST_AMT-1:0]                 M_BVALID;
-    wire [MST_AMT-1:0]                 M_BREADY;
-
-    wire [W_ID*MST_AMT-1:0]            M_ARID;
-    wire [ADDR_WIDTH*MST_AMT-1:0]      M_ARADDR;
-    wire [LEN_W*MST_AMT-1:0]           M_ARLEN;
-    wire [SIZE_W*MST_AMT-1:0]          M_ARSIZE;
-    wire [BURST_W*MST_AMT-1:0]         M_ARBURST;
-    wire [MST_AMT-1:0]                 M_ARVALID;
-    wire [MST_AMT-1:0]                 M_ARREADY;
-
-    wire [W_ID*MST_AMT-1:0]            M_RID;
-    wire [DATA_WIDTH*MST_AMT-1:0]      M_RDATA;
-    wire [RESP_W*MST_AMT-1:0]          M_RRESP;
-    wire [MST_AMT-1:0]                 M_RLAST;
-    wire [MST_AMT-1:0]                 M_RVALID;
-    wire [MST_AMT-1:0]                 M_RREADY;
-
-    //---- Slave-side (interconnect S_AXI ports) ----
-    wire [W_SID*SLV_AMT-1:0]           S_AWID;
-    wire [ADDR_WIDTH*SLV_AMT-1:0]      S_AWADDR;
-    wire [LEN_W*SLV_AMT-1:0]           S_AWLEN;
-    wire [SIZE_W*SLV_AMT-1:0]          S_AWSIZE;
-    wire [BURST_W*SLV_AMT-1:0]         S_AWBURST;
-    wire [SLV_AMT-1:0]                 S_AWVALID;
-    wire [SLV_AMT-1:0]                 S_AWREADY;
-
-    wire [DATA_WIDTH*SLV_AMT-1:0]      S_WDATA;
-    wire [W_STRB*SLV_AMT-1:0]          S_WSTRB;
-    wire [SLV_AMT-1:0]                 S_WLAST;
-    wire [SLV_AMT-1:0]                 S_WVALID;
-    wire [SLV_AMT-1:0]                 S_WREADY;
-
-    wire [W_SID*SLV_AMT-1:0]           S_BID;
-    wire [RESP_W*SLV_AMT-1:0]          S_BRESP;
-    wire [SLV_AMT-1:0]                 S_BVALID;
-    wire [SLV_AMT-1:0]                 S_BREADY;
-
-    wire [W_SID*SLV_AMT-1:0]           S_ARID;
-    wire [ADDR_WIDTH*SLV_AMT-1:0]      S_ARADDR;
-    wire [LEN_W*SLV_AMT-1:0]           S_ARLEN;
-    wire [SIZE_W*SLV_AMT-1:0]          S_ARSIZE;
-    wire [BURST_W*SLV_AMT-1:0]         S_ARBURST;
-    wire [SLV_AMT-1:0]                 S_ARVALID;
-    wire [SLV_AMT-1:0]                 S_ARREADY;
-
-    wire [W_SID*SLV_AMT-1:0]           S_RID;
-    wire [DATA_WIDTH*SLV_AMT-1:0]      S_RDATA;
-    wire [RESP_W*SLV_AMT-1:0]          S_RRESP;
-    wire [SLV_AMT-1:0]                 S_RLAST;
-    wire [SLV_AMT-1:0]                 S_RVALID;
-    wire [SLV_AMT-1:0]                 S_RREADY;
-
-    //---- Modports ----
-    modport master_mp (
-        input ACLK, ARSTn,
-        output M_AWID, M_AWADDR, M_AWLEN, M_AWSIZE, M_AWBURST, M_AWVALID,
-        input  M_AWREADY,
-        output M_WDATA, M_WSTRB, M_WLAST, M_WVALID,
-        input  M_WREADY,
-        input  M_BID, M_BRESP, M_BVALID,
-        output M_BREADY,
-        output M_ARID, M_ARADDR, M_ARLEN, M_ARSIZE, M_ARBURST, M_ARVALID,
-        input  M_ARREADY,
-        input  M_RID, M_RDATA, M_RRESP, M_RLAST, M_RVALID,
-        output M_RREADY
-    );
-
-    modport slave_mp (
-        input ACLK, ARSTn,
-        input  S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID,
-        output S_AWREADY,
-        input  S_WDATA, S_WSTRB, S_WLAST, S_WVALID,
-        output S_WREADY,
-        output S_BID, S_BRESP, S_BVALID,
-        input  S_BREADY,
-        input  S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID,
-        output S_ARREADY,
-        output S_RID, S_RDATA, S_RRESP, S_RLAST, S_RVALID,
-        input  S_RREADY
-    );
-
-    modport monitor_mp (
-        input ACLK, ARSTn,
-        input M_AWID, M_AWADDR, M_AWLEN, M_AWSIZE, M_AWBURST, M_AWVALID, M_AWREADY,
-        input M_WDATA, M_WSTRB, M_WLAST, M_WVALID, M_WREADY,
-        input M_BID, M_BRESP, M_BVALID, M_BREADY,
-        input M_ARID, M_ARADDR, M_ARLEN, M_ARSIZE, M_ARBURST, M_ARVALID, M_ARREADY,
-        input M_RID, M_RDATA, M_RRESP, M_RLAST, M_RVALID, M_RREADY,
-        input S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID, S_AWREADY,
-        input S_WDATA, S_WSTRB, S_WLAST, S_WVALID, S_WREADY,
-        input S_BID, S_BRESP, S_BVALID, S_BREADY,
-        input S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID, S_ARREADY,
-        input S_RID, S_RDATA, S_RRESP, S_RLAST, S_RVALID, S_RREADY
-    );
-
-endinterface
-
-`endif
-
-==============================================================================
-  FILE: uvm/tb/axi_transaction.sv
-==============================================================================
-//=============================================================================
-// Unified AXI Transaction Item
-//=============================================================================
-`ifndef AXI_TRANSACTION_SV
-`define AXI_TRANSACTION_SV
-
-class axi_transaction extends uvm_sequence_item;
-
-    //---- Control ----
-    rand bit                is_write;       // 1=write, 0=read
-
-    //---- Address phase ----
-    rand bit [3:0]          id;             // transaction ID
-    rand bit [31:0]         addr;           // start address
-    rand bit [7:0]          len;            // burst length (beats = len + 1)
-    rand bit [2:0]          size;           // bytes per beat = 2^size
-    rand bit [1:0]          burst;          // burst type: FIXED=00, INCR=01, WRAP=10
-    rand bit [3:0]          strb [];        // W strobes per beat (writes only)
-
-    //---- Data (write data or expected read data) ----
-    rand bit [31:0]         data [];        // data payload per beat
-
-    //---- Response (filled by monitor) ----
-    bit [1:0]               resp;           // BRESP or RRESP
-    bit                     rlast;          // RLAST (reads only)
-
-    //---- Meta (filled by monitor / reference model) ----
-    int                     mst_id;         // which master sent this
-    int                     slv_id;         // which slave it was routed to
-    bit                     is_split;       // was this split across 4KB?
-
-    //---- Constraints ----
-    constraint addr_range_c {
-        addr inside {[0:32'h7FFF]};              // within slave address map
-    }
-
-    constraint addr_align_c {
-        (size == 0) -> (addr[1:0] == 2'b00);   // byte access: no alignment needed
-        (size == 1) -> (addr[0]   == 1'b0);    // halfword: even address
-        (size >= 2) -> (addr[1:0] == 2'b00);   // word+: word aligned
-    }
-
-    constraint burst_len_c {
-        len inside {[0:15]};                    // up to 16 beats
-    }
-
-    constraint burst_type_c {
-        burst inside {0, 1};                // FIXED, INCR, WRAP
-    }
-
-    constraint id_c {
-        id inside {[0:15]};                     // 4-bit ID range
-    }
-
-    constraint data_size_c {
-        data.size() < 128;
-        strb.size() < 128;
-        if (is_write) {
-            data.size() == len + 1;
-            strb.size() == len + 1;
-        }
-    }
-
-    `uvm_object_utils_begin(axi_transaction)
-        `uvm_field_int (is_write, UVM_DEFAULT)
-        `uvm_field_int (id,       UVM_DEFAULT)
-        `uvm_field_int (addr,     UVM_DEFAULT)
-        `uvm_field_int (len,      UVM_DEFAULT)
-        `uvm_field_int (size,     UVM_DEFAULT)
-        `uvm_field_int (burst,    UVM_DEFAULT)
-        `uvm_field_int (resp,     UVM_DEFAULT)
-        `uvm_field_int (mst_id,   UVM_DEFAULT)
-        `uvm_field_int (slv_id,   UVM_DEFAULT)
-    `uvm_object_utils_end
-
-    function new(string name = "axi_transaction");
-        super.new(name);
-        data = new[16];
-        strb = new[16];
-    endfunction
-
-    function void post_randomize();
-        if (is_write) begin
-            foreach (strb[i]) strb[i] = 4'hF;
-        end
-    endfunction
-
-    function string convert2string();
-        return $sformatf("%s id=%0d addr=0x%08h len=%0d size=%0d burst=%0d mst=%0d slv=%0d",
-                         is_write ? "WR" : "RD", id, addr, len, size, burst, mst_id, slv_id);
-    endfunction
-
-endclass
-
-`endif
-
-==============================================================================
-  FILE: uvm/tb/axi_pkg.sv
-==============================================================================
-//=============================================================================
-// AXI UVM Package: includes all UVM components
-//=============================================================================
-`ifndef AXI_PKG_SV
-`define AXI_PKG_SV
-
-package axi_pkg;
-
-    import uvm_pkg::*;
-    `include "uvm_macros.svh"
-
-    //---- Parameters ----
-    localparam MST_AMT    = 4;
-    localparam SLV_AMT    = 4;
-    localparam W_ID       = 4;
-    localparam W_CID      = 2;
-    localparam W_SID      = $clog2(MST_AMT) + W_CID + W_ID;
-    localparam ADDR_WIDTH = 32;
-    localparam DATA_WIDTH = 32;
-    localparam LEN_W      = 8;
-    localparam SIZE_W     = 3;
-    localparam BURST_W    = 2;
-    localparam RESP_W     = 2;
-    localparam W_STRB     = DATA_WIDTH / 8;
-
-    // Address map: bits [31:13] select slave, 8KB per slave
-    localparam bit [ADDR_WIDTH-1:0] SLV_ADDR_BASE [0:SLV_AMT-1] = '{
-        32'h0000_0000,   // slave 0
-        32'h0000_2000,   // slave 1
-        32'h0000_4000,   // slave 2
-        32'h0000_6000    // slave 3
-    };
-    localparam bit [7:0] SLV_ADDR_LEN = 8'd13;
-
-    //---- Transaction ----
-    `include "axi_transaction.sv"
-
-    //---- Channel transaction items ----
-    `include "../agent/axi_channel_items.sv"
-
-    //---- Interface ----
-
-    //---- Agent components ----
-    `include "../agent/axi_sequencer.sv"
-    `include "../agent/axi_driver.sv"
-    `include "../agent/axi_monitor.sv"
-    `include "../agent/axi_master_agent.sv"
-    `include "../agent/axi_slave_agent.sv"
-
-    //---- Sequences ----
-    `include "../sequence/axi_base_seq.sv"
-    `include "../sequence/burst_seq.sv"
-    `include "../sequence/outstanding_seq.sv"
-    `include "../sequence/split4k_seq.sv"
-    `include "../sequence/stress_seq.sv"
-
-    //---- Model ----
-    `include "../model/addr_decoder.sv"
-    `include "../model/memory_model.sv"
-    `include "../model/reference_model.sv"
-
-    //---- Scoreboard ----
-    `include "../scoreboard/axi_scoreboard.sv"
-
-    //---- Coverage ----
-    `include "../coverage/axi_cov.sv"
-    `include "../coverage/axi_protocol_checker.sv"
-
-    //---- Environment ----
-    `include "axi_env.sv"
-
-    //---- Tests ----
-    `include "axi_test_base.sv"
-    `include "../tests/smoke_test.sv"
-    `include "../tests/burst_test.sv"
-    `include "../tests/arb_test.sv"
-    `include "../tests/split4k_test.sv"
-    `include "../tests/stress_test.sv"
-
-endpackage
-
-`endif
-
-==============================================================================
-  FILE: uvm/tb/axi_test_base.sv
-==============================================================================
-// Base Test: sets up env, provides virtual sequence infrastructure
-class axi_test_base extends uvm_test;
-    `uvm_component_utils(axi_test_base)
-    axi_env env;
-
-    function new(string n="axi_test_base", uvm_component p); 
-        super.new(n,p); 
-    endfunction
-
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        env = axi_env::type_id::create("env", this);
-    endfunction
-
-    function void end_of_elaboration_phase(uvm_phase phase);
-        uvm_top.print_topology();
-    endfunction
-endclass
-
-==============================================================================
-  FILE: uvm/tb/axi_env.sv
-==============================================================================
-//=============================================================================
-// AXI Environment: 4 master agents + 4 slave agents
-// Each agent contains a unified 5-channel monitor (AW/W/B/AR/R)
-// Unified scoreboard + reference model + coverage
-//=============================================================================
-class axi_env extends uvm_env;
-    `uvm_component_utils(axi_env)
-
-    virtual axi_if vif;
-
-    // Agents
-    axi_master_agent master_agents[4];
-    axi_slave_agent  slave_agents[4];
-
-    // Scoreboard + Reference Model
-    axi_scoreboard      sb;
-    reference_model     refm;
-    axi_cov             cov;
-    axi_protocol_checker proto_chk;
-
-    function new(string n="axi_env", uvm_component p); super.new(n,p); endfunction
-
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        if(!uvm_config_db #(virtual axi_if)::get(this,"","vif",vif))
-            `uvm_fatal("NOVIF","vif not found")
-
-        // Agents (each contains driver + sequencer + unified monitor)
-        for(int i=0; i<4; i++) begin
-            master_agents[i]=axi_master_agent::type_id::create($sformatf("mst_ag%0d",i),this);
-            master_agents[i].mst_id=i;
-            slave_agents[i] =axi_slave_agent::type_id::create($sformatf("slv_ag%0d",i),this);
-            slave_agents[i].slv_id=i;
-        end
-
-        // Scoreboard + Reference Model
-        sb    =axi_scoreboard::type_id::create("sb",this);
-        refm  =reference_model::type_id::create("refm",this);
-        cov      =axi_cov::type_id::create("cov",this);
-        proto_chk=axi_protocol_checker::type_id::create("proto_chk",this);
-    endfunction
-
-    function void connect_phase(uvm_phase phase);
-        super.connect_phase(phase);
-
-        // Distribute vif to all agents and their monitors
-        for(int i=0; i<4; i++) begin
-            master_agents[i].drv.vif = vif;
-            master_agents[i].mon.vif = vif;
-            slave_agents[i].vif = vif;
-            slave_agents[i].mon.vif = vif;
-        end
-
-        //==== Master-side connections (per agent) ====
-        for(int i=0; i<4; i++) begin
-            // AW -> scoreboard + refm + cov + proto_chk
-            master_agents[i].mon.ap_aw.connect(sb.aw_imp);
-            master_agents[i].mon.ap_aw.connect(refm.aw_ap);
-            master_agents[i].mon.ap_aw.connect(cov.aw_ap);
-            master_agents[i].mon.ap_aw.connect(proto_chk.aw_ap);
-
-            // W -> scoreboard + proto_chk
-            master_agents[i].mon.ap_w.connect(sb.w_imp);
-            master_agents[i].mon.ap_w.connect(proto_chk.w_ap);
-
-            // B -> scoreboard + cov + proto_chk
-            master_agents[i].mon.ap_b.connect(sb.b_imp);
-            master_agents[i].mon.ap_b.connect(cov.b_ap);
-            master_agents[i].mon.ap_b.connect(proto_chk.b_ap);
-
-            // AR -> scoreboard + refm + cov + proto_chk
-            master_agents[i].mon.ap_ar.connect(sb.ar_imp);
-            master_agents[i].mon.ap_ar.connect(refm.ar_ap);
-            master_agents[i].mon.ap_ar.connect(cov.ar_ap);
-            master_agents[i].mon.ap_ar.connect(proto_chk.ar_ap);
-
-            // R -> scoreboard + cov + proto_chk
-            master_agents[i].mon.ap_r.connect(sb.r_imp);
-            master_agents[i].mon.ap_r.connect(cov.r_ap);
-            master_agents[i].mon.ap_r.connect(proto_chk.r_ap);
-        end
-
-        //==== Slave-side connections (per agent) ====
-        for(int i=0; i<4; i++) begin
-            slave_agents[i].mon.ap_aw.connect(sb.slv_aw_imp);
-            slave_agents[i].mon.ap_ar.connect(sb.slv_ar_imp);
-            slave_agents[i].mon.ap_w.connect(sb.w_imp);
-            slave_agents[i].mon.ap_b.connect(sb.b_imp);
-            slave_agents[i].mon.ap_r.connect(sb.r_imp);
-        end
-    endfunction
-
-endclass
-
-==============================================================================
-  FILE: uvm/tb/tb_top.sv
-==============================================================================
-// Top-level testbench: instantiates DUT + interface + runs test
-module tb_top;
-
-    import uvm_pkg::*;
-    import axi_pkg::*;
-
-    // Clock & Reset
-    reg ACLK = 0;
-    reg ARSTn = 0;
-    always #5 ACLK = ~ACLK;
-    initial begin
-        repeat(10) @(posedge ACLK);
-        ARSTn = 1;
-    end
-
-    // Interface
-    axi_if vif(.ACLK(ACLK), .ARSTn(ARSTn));
-
-    // DUT: AXI Interconnect
-    axi_interconnect #(
-        .MST_AMT(4), .SLV_AMT(4), .OUTSTANDING_AMT(8),
-        .W_ID(4), .DATA_WIDTH(32), .ADDR_WIDTH(32),
-        .LEN_W(8), .SIZE_W(3), .BURST_W(2), .RESP_W(2),
-        .SLV_ADDR_BASE({32'h0000_6000,32'h0000_4000,32'h0000_2000,32'h0000_0000}),
-        .SLV_ADDR_LEN({8'd13,8'd13,8'd13,8'd13}),
-        .DEFAULT_SLV_EN(1'b0)
-    ) dut (
-        .AXI_CLK(ACLK), .AXI_RSTn(ARSTn),
-        .M_AXI_AWID_i(vif.M_AWID), .M_AXI_AWADDR_i(vif.M_AWADDR),
-        .M_AXI_AWLEN_i(vif.M_AWLEN), .M_AXI_AWSIZE_i(vif.M_AWSIZE),
-        .M_AXI_AWBURST_i(vif.M_AWBURST), .M_AXI_AWVALID_i(vif.M_AWVALID), .M_AXI_AWREADY_o(vif.M_AWREADY),
-        .M_AXI_WDATA_i(vif.M_WDATA), .M_AXI_WSTRB_i(vif.M_WSTRB),
-        .M_AXI_WLAST_i(vif.M_WLAST), .M_AXI_WVALID_i(vif.M_WVALID), .M_AXI_WREADY_o(vif.M_WREADY),
-        .M_AXI_BID_o(vif.M_BID), .M_AXI_BRESP_o(vif.M_BRESP),
-        .M_AXI_BVALID_o(vif.M_BVALID), .M_AXI_BREADY_i(vif.M_BREADY),
-        .M_AXI_ARID_i(vif.M_ARID), .M_AXI_ARADDR_i(vif.M_ARADDR),
-        .M_AXI_ARLEN_i(vif.M_ARLEN), .M_AXI_ARSIZE_i(vif.M_ARSIZE),
-        .M_AXI_ARBURST_i(vif.M_ARBURST), .M_AXI_ARVALID_i(vif.M_ARVALID), .M_AXI_ARREADY_o(vif.M_ARREADY),
-        .M_AXI_RID_o(vif.M_RID), .M_AXI_RDATA_o(vif.M_RDATA), .M_AXI_RRESP_o(vif.M_RRESP),
-        .M_AXI_RLAST_o(vif.M_RLAST), .M_AXI_RVALID_o(vif.M_RVALID), .M_AXI_RREADY_i(vif.M_RREADY),
-        .S_AXI_AWID_o(vif.S_AWID), .S_AXI_AWADDR_o(vif.S_AWADDR),
-        .S_AXI_AWLEN_o(vif.S_AWLEN), .S_AXI_AWSIZE_o(vif.S_AWSIZE),
-        .S_AXI_AWBURST_o(vif.S_AWBURST), .S_AXI_AWVALID_o(vif.S_AWVALID), .S_AXI_AWREADY_i(vif.S_AWREADY),
-        .S_AXI_WDATA_o(vif.S_WDATA), .S_AXI_WSTRB_o(vif.S_WSTRB),
-        .S_AXI_WLAST_o(vif.S_WLAST), .S_AXI_WVALID_o(vif.S_WVALID), .S_AXI_WREADY_i(vif.S_WREADY),
-        .S_AXI_BID_i(vif.S_BID), .S_AXI_BRESP_i(vif.S_BRESP),
-        .S_AXI_BVALID_i(vif.S_BVALID), .S_AXI_BREADY_o(vif.S_BREADY),
-        .S_AXI_ARID_o(vif.S_ARID), .S_AXI_ARADDR_o(vif.S_ARADDR),
-        .S_AXI_ARLEN_o(vif.S_ARLEN), .S_AXI_ARSIZE_o(vif.S_ARSIZE),
-        .S_AXI_ARBURST_o(vif.S_ARBURST), .S_AXI_ARVALID_o(vif.S_ARVALID), .S_AXI_ARREADY_i(vif.S_ARREADY),
-        .S_AXI_RID_i(vif.S_RID), .S_AXI_RDATA_i(vif.S_RDATA), .S_AXI_RRESP_i(vif.S_RRESP),
-        .S_AXI_RLAST_i(vif.S_RLAST), .S_AXI_RVALID_i(vif.S_RVALID), .S_AXI_RREADY_o(vif.S_RREADY),
-        .arbiter_type(1'b0)
-    );
-
-    // FSDB waveform dumping
-    `ifdef FSDB
-    initial begin
-        $fsdbDumpfile("tb_top.fsdb");
-        $fsdbDumpvars(0, tb_top);
-        $fsdbDumpMDA();  // dump memory / multi-dimensional arrays
-    end
-    `endif
-
-    // Connect interface to UVM config DB
-    initial begin
-        uvm_config_db #(virtual axi_if)::set(null, "*", "vif", vif);
-        run_test();
-    end
-
-endmodule
-
-==============================================================================
-  FILE: uvm/agent/axi_channel_items.sv
-==============================================================================
+// ========== c:/Users/22612/Desktop/AXI4/uvm/agent/axi_channel_items.sv ==========
 //=============================================================================
 // AXI Channel Transaction Items: per-channel monitor capture types
 //=============================================================================
@@ -640,35 +110,11 @@ class axi_r_item extends uvm_sequence_item;
     endfunction
 endclass
 
-==============================================================================
-  FILE: uvm/agent/axi_sequencer.sv
-==============================================================================
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/agent/axi_driver.sv ==========
 //=============================================================================
-// AXI Sequencer: parameterized per master
-//=============================================================================
-`ifndef AXI_SEQUENCER_SV
-`define AXI_SEQUENCER_SV
-
-class axi_sequencer extends uvm_sequencer #(axi_transaction);
-
-    int mst_id;
-
-    `uvm_component_utils(axi_sequencer)
-
-    function new(string name = "axi_sequencer", uvm_component parent);
-        super.new(name, parent);
-    endfunction
-
-endclass
-
-`endif
-
-==============================================================================
-  FILE: uvm/agent/axi_driver.sv
-==============================================================================
-//=============================================================================
-// AXI Master Driver: drives AXI bus from sequencer transactions
-// Supports back-pressure injection via configurable ready delays
+// AXI Master Driver: Decoupled Multi-Thread Architecture for Full Outstanding
+// Uses negedge-set / posedge-handshake pattern to avoid class-RTL race
 //=============================================================================
 `ifndef AXI_DRIVER_SV
 `define AXI_DRIVER_SV
@@ -678,10 +124,14 @@ class axi_driver extends uvm_driver #(axi_transaction);
     virtual axi_if vif;
     int mst_id;
 
-    // Back-pressure control: min/max random wait cycles before asserting VALID
-    int aw_valid_delay_min = 0, aw_valid_delay_max = 3;
-    int  w_valid_delay_min = 0,  w_valid_delay_max = 3;
-    int ar_valid_delay_min = 0, ar_valid_delay_max = 3;
+    // 内部通道中转 FIFO，用于解除主循环与各物理总线通道的耦合
+    uvm_tlm_fifo #(axi_transaction) aw_fifo;
+    uvm_tlm_fifo #(axi_transaction) w_fifo;
+    uvm_tlm_fifo #(axi_transaction) ar_fifo;
+
+    // 追踪已发出地址、正在等待总线响应的活跃事务列表（用于支持 Out-of-Order 响应匹配）
+    axi_transaction b_trans_list[$];
+    axi_transaction r_trans_list[$];
 
     `uvm_component_utils(axi_driver)
 
@@ -689,89 +139,245 @@ class axi_driver extends uvm_driver #(axi_transaction);
         super.new(name, parent);
     endfunction
 
-    //---- Main run phase ----
+    virtual function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        aw_fifo = new("aw_fifo", this);
+        w_fifo  = new("w_fifo", this);
+        ar_fifo = new("ar_fifo", this);
+    endfunction
+
+    //===================================================================
+    // Run Phase: 启动全并发的总线通道处理线程
+    //===================================================================
     task run_phase(uvm_phase phase);
+        // 初始化总线默认输出（低电平），防止悬空
+        reset_signals();
+
+        fork
+            get_and_route_items(); // 线程0: 快速抓取并分发 Sequence 项
+            drive_aw_channel();    // 线程1: 独立控制 AW 地址通道
+            drive_w_channel();     // 线程2: 独立控制 W 数据通道
+            receive_b_channel();   // 线程3: 独立接收 B 响应通道
+            drive_ar_channel();    // 线程4: 独立控制 AR 地址通道
+            receive_r_channel();   // 线程5: 独立接收 R 数据通道
+        join
+    endtask
+
+    //===================================================================
+    // Signal Reset
+    //===================================================================
+    task reset_signals();
+        @(negedge vif.ACLK);
+        vif.M_AWVALID[mst_id] = 1'b0;
+        vif.M_WVALID[mst_id]  = 1'b0;
+        vif.M_WLAST[mst_id]   = 1'b0;
+        vif.M_BREADY[mst_id]  = 1'b0;
+        vif.M_ARVALID[mst_id] = 1'b0;
+        vif.M_RREADY[mst_id]  = 1'b0;
+    endtask
+
+    //===================================================================
+    // 主控分发: 抓取事务并立刻解除 Sequencer 阻塞以实现流水线
+    //===================================================================
+    task get_and_route_items();
         forever begin
             seq_item_port.get_next_item(req);
-            `uvm_info("DRIVER", $sformatf("M[%0d] driving: %s", mst_id, req.convert2string()), UVM_MEDIUM)
-            if (req.is_write)
-                drive_write(req);
-            else
-                drive_read(req);
+            `uvm_info("DRIVER", $sformatf("M[%0d] dispatching transaction: ID=%0d", mst_id, req.id), UVM_HIGH)
+            
+            // 克隆或直接复制句柄到各独立通道中转站
+            if (req.is_write) begin
+                void'(aw_fifo.try_put(req));
+                void'(w_fifo.try_put(req));
+            end else begin
+                void'(ar_fifo.try_put(req));
+            end
+
+            // 工业界核心：立刻执行 item_done。此时 Sequence 能够立刻下发下一笔数据，
+            // 从而在物理总线上形成真实的 Outstanding 堆叠。
             seq_item_port.item_done();
         end
     endtask
 
-    //---- Write: AW + W, wait for B ----
-    task drive_write(axi_transaction t);
-        // AW channel
-        random_delay(aw_valid_delay_min, aw_valid_delay_max);
-        vif.M_AWVALID[mst_id]   <= 1'b1;
-        vif.M_AWID[mst_id*4+:4] <= t.id;
-        vif.M_AWADDR[mst_id*32+:32] <= t.addr;
-        vif.M_AWLEN[mst_id*8+:8]    <= t.len;
-        vif.M_AWSIZE[mst_id*3+:3]   <= t.size;
-        vif.M_AWBURST[mst_id*2+:2]  <= t.burst;
-        @(posedge vif.ACLK);
-        while (!vif.M_AWREADY[mst_id]) @(posedge vif.ACLK);
-        vif.M_AWVALID[mst_id] <= 1'b0;
-
-        // W channel: send each beat
-        for (int b = 0; b <= t.len; b++) begin
-            random_delay(w_valid_delay_min, w_valid_delay_max);
-            vif.M_WVALID[mst_id]   <= 1'b1;
-            vif.M_WDATA[mst_id*32+:32]  <= t.data[b];
-            vif.M_WSTRB[mst_id*4+:4]    <= t.strb[b];
-            vif.M_WLAST[mst_id]   <= (b == t.len);
+    //===================================================================
+    // 1. AW Channel: 仅负责将写地址发送至总线
+    //===================================================================
+    task drive_aw_channel();
+        axi_transaction t;
+        forever begin
+            aw_fifo.get(t);
+            
+            @(negedge vif.ACLK);
+            vif.M_AWVALID[mst_id]         = 1'b1;
+            vif.M_AWID[mst_id*4+:4]       = t.id;
+            vif.M_AWADDR[mst_id*32+:32]   = t.addr;
+            vif.M_AWLEN[mst_id*8+:8]      = t.len;
+            vif.M_AWSIZE[mst_id*3+:3]     = t.size;
+            vif.M_AWBURST[mst_id*2+:2]    = t.burst;
+            `uvm_info("TRACE_AW", $sformatf("M[%0d] DRV AW start addr=0x%08h id=%0d", mst_id, t.addr, t.id), UVM_MEDIUM)
+            
             @(posedge vif.ACLK);
-            while (!vif.M_WREADY[mst_id]) @(posedge vif.ACLK);
-        end
-        vif.M_WVALID[mst_id] <= 1'b0;
-        vif.M_WLAST[mst_id]  <= 1'b0;
+            while (!vif.M_AWREADY[mst_id]) @(posedge vif.ACLK);
+            `uvm_info("TRACE_AW", $sformatf("M[%0d] DRV AW handshake done", mst_id), UVM_MEDIUM)
+            
+            @(negedge vif.ACLK);
+            vif.M_AWVALID[mst_id] = 1'b0;
 
-        // B channel: wait for response
-        vif.M_BREADY[mst_id] <= 1'b1;
-        @(posedge vif.ACLK);
-        while (!vif.M_BVALID[mst_id]) @(posedge vif.ACLK);
-        t.resp = vif.M_BRESP[mst_id*2+:2];
-        vif.M_BREADY[mst_id] <= 1'b0;
+            // 地址握手成功，将其挂载到 B 通道接收队列，通知 B 线程未来准备匹配此 ID 的响应
+            b_trans_list.push_back(t);
+        end
     endtask
 
-    //---- Read: AR, wait for R beats ----
-    task drive_read(axi_transaction t);
-        // AR channel
-        random_delay(ar_valid_delay_min, ar_valid_delay_max);
-        vif.M_ARVALID[mst_id]   <= 1'b1;
-        vif.M_ARID[mst_id*4+:4] <= t.id;
-        vif.M_ARADDR[mst_id*32+:32] <= t.addr;
-        vif.M_ARLEN[mst_id*8+:8]    <= t.len;
-        vif.M_ARSIZE[mst_id*3+:3]   <= t.size;
-        vif.M_ARBURST[mst_id*2+:2]  <= t.burst;
-        @(posedge vif.ACLK);
-        while (!vif.M_ARREADY[mst_id]) @(posedge vif.ACLK);
-        vif.M_ARVALID[mst_id] <= 1'b0;
-
-        // R channel: receive each beat (may be out-of-order via RID)
-        for (int b = 0; b <= t.len; b++) begin
-            vif.M_RREADY[mst_id] <= 1'b1;
-            @(posedge vif.ACLK);
-            while (!vif.M_RVALID[mst_id]) @(posedge vif.ACLK);
-            t.data[b] = vif.M_RDATA[mst_id*32+:32];
-            t.resp    = vif.M_RRESP[mst_id*2+:2];
-            t.rlast   = vif.M_RLAST[mst_id];
-            if (t.rlast && b != t.len) begin
-                `uvm_warning("DRIVER", $sformatf("M[%0d] early RLAST at beat %0d/%0d", mst_id, b, t.len))
+    //===================================================================
+    // 2. W Channel: 仅负责将写数据（所有 Beat）推向总线
+    //===================================================================
+    task drive_w_channel();
+        axi_transaction t;
+        forever begin
+            w_fifo.get(t);
+            
+            for (int b = 0; b <= t.len; b++) begin
+                @(negedge vif.ACLK);
+                vif.M_WVALID[mst_id]       = 1'b1;
+                vif.M_WDATA[mst_id*32+:32]  = t.data[b];
+                vif.M_WSTRB[mst_id*4+:4]    = t.strb[b];
+                vif.M_WLAST[mst_id]         = (b == t.len) ? 1'b1 : 1'b0;
+                `uvm_info("TRACE_W", $sformatf("M[%0d] DRV W beat %0d/%0d last=%b", mst_id, b, t.len, vif.M_WLAST[mst_id]), UVM_HIGH)
+                
+                @(posedge vif.ACLK);
+                while (!vif.M_WREADY[mst_id]) @(posedge vif.ACLK);
+                
+                @(negedge vif.ACLK);
+                vif.M_WVALID[mst_id] = 1'b0;
             end
+            `uvm_info("TRACE_W", $sformatf("M[%0d] DRV W Burst complete for ID=%0d", mst_id, t.id), UVM_MEDIUM)
         end
-        vif.M_RREADY[mst_id] <= 1'b0;
     endtask
 
-    //---- Random delay for back-pressure ----
-    task random_delay(int min_d, int max_d);
-        int d;
-        if (max_d > 0) begin
-            d = min_d + ($urandom % (max_d - min_d + 1));
-            repeat(d) @(posedge vif.ACLK);
+    //===================================================================
+    // 3. B Channel: 独立监听并收集响应，支持 Out-of-Order 乱序匹配
+    //===================================================================
+    task receive_b_channel();
+        // 默认将 BREADY 拉高，表示 Master 随时具备接收响应的外部能力
+        @(negedge vif.ACLK);
+        vif.M_BREADY[mst_id] = 1'b1;
+
+        forever begin
+            @(posedge vif.ACLK);
+            if (vif.M_BVALID[mst_id] && vif.M_BREADY[mst_id]) begin
+                bit [3:0] bid = vif.M_BID[mst_id*4+:4];
+                int match_idx = -1;
+                
+                // 工业界标准：通过遍历寻找最早发出的、匹配当前返回 BID 的事务句柄
+                foreach (b_trans_list[i]) begin
+                    if (b_trans_list[i].id == bid) begin
+                        match_idx = i;
+                        break;
+                    end
+                end
+                
+                if (match_idx != -1) begin
+                    axi_transaction active_t = b_trans_list[match_idx];
+                    b_trans_list.delete(match_idx); // 移出待处理队列
+                    
+                    active_t.resp = vif.M_BRESP[mst_id*2+:2];
+                    `uvm_info("TRACE_B", $sformatf("M[%0d] DRV B captured resp=%0d for ID=%0d", mst_id, active_t.resp, bid), UVM_MEDIUM)
+                    
+                    // 将填充好响应的事务，作为 Response 异步送回对应的 Sequence
+                    active_t.set_id_info(active_t); 
+                    seq_item_port.put_response(active_t);
+                end else begin
+                    `uvm_error("DRIVER_B", $sformatf("M[%0d] Protocol Violation: Received unexpected B response with BID=0x%0h", mst_id, bid))
+                end
+            end
+            
+            // 维持握手状态，以便不间断接收后续 Outstanding 事务的响应
+            @(negedge vif.ACLK);
+            vif.M_BREADY[mst_id] = 1'b1;
+        end
+    endtask
+
+    //===================================================================
+    // 4. AR Channel: 读地址通道发送
+    //===================================================================
+    task drive_ar_channel();
+        axi_transaction t;
+        forever begin
+            ar_fifo.get(t);
+            
+            @(negedge vif.ACLK);
+            vif.M_ARVALID[mst_id]         = 1'b1;
+            vif.M_ARID[mst_id*4+:4]       = t.id;
+            vif.M_ARADDR[mst_id*32+:32]   = t.addr;
+            vif.M_ARLEN[mst_id*8+:8]      = t.len;
+            vif.M_ARSIZE[mst_id*3+:3]     = t.size;
+            vif.M_ARBURST[mst_id*2+:2]    = t.burst;
+            `uvm_info("TRACE_AR", $sformatf("M[%0d] DRV AR start addr=0x%08h id=%0d", mst_id, t.addr, t.id), UVM_MEDIUM)
+            
+            @(posedge vif.ACLK);
+            while (!vif.M_ARREADY[mst_id]) @(posedge vif.ACLK);
+            
+            @(negedge vif.ACLK);
+            vif.M_ARVALID[mst_id] = 1'b0;
+
+            r_trans_list.push_back(t);
+        end
+    endtask
+
+    //===================================================================
+    // 5. R Channel: 读数据通道收集，支持读数据 Outstanding 乱序交织
+    //===================================================================
+    task receive_r_channel();
+        int beat_counters[int]; // 联想数组：按 RID 记录每个事务当前收到的 Beat 计数
+        
+        @(negedge vif.ACLK);
+        vif.M_RREADY[mst_id] = 1'b1;
+
+        forever begin
+            @(posedge vif.ACLK);
+            if (vif.M_RVALID[mst_id] && vif.M_RREADY[mst_id]) begin
+                bit [3:0] rid = vif.M_RID[mst_id*4+:4];
+                int match_idx = -1;
+                
+                foreach (r_trans_list[i]) begin
+                    if (r_trans_list[i].id == rid) begin
+                        match_idx = i;
+                        break;
+                    end
+                end
+                
+                if (match_idx != -1) begin
+                    axi_transaction active_t = r_trans_list[match_idx];
+                    int b = beat_counters[rid]; // 若不存在则缺省为 0
+                    
+                    active_t.data[b] = vif.M_RDATA[mst_id*32+:32];
+                    active_t.resp    = vif.M_RRESP[mst_id*2+:2];
+                    active_t.rlast   = vif.M_RLAST[mst_id];
+                    
+                    `uvm_info("TRACE_R", $sformatf("M[%0d] DRV R captured beat %0d/%0d for ID=%0d last=%b", 
+                              mst_id, b, active_t.len, rid, active_t.rlast), UVM_HIGH)
+                    
+                    if (active_t.rlast && b != active_t.len) begin
+                        `uvm_warning("DRIVER_R", $sformatf("M[%0d] Early RLAST received at beat %0d/%0d", mst_id, b, active_t.len))
+                    end
+                    
+                    // 判定该 ID 对应事务是否传输结束
+                    if (active_t.rlast || (b == active_t.len)) begin
+                        r_trans_list.delete(match_idx);
+                        beat_counters.delete(rid);
+                        
+                        // 读事务全部收集完毕，将完整带有 Data 的 transaction 传回 Sequence
+                        active_t.set_id_info(active_t);
+                        seq_item_port.put_response(active_t);
+                    end else begin
+                        beat_counters[rid] = b + 1;
+                    end
+                end else begin
+                    `uvm_error("DRIVER_R", $sformatf("M[%0d] Protocol Violation: Unexpected R data with RID=0x%0h", mst_id, rid))
+                end
+            end
+            
+            @(negedge vif.ACLK);
+            vif.M_RREADY[mst_id] = 1'b1;
         end
     endtask
 
@@ -779,9 +385,48 @@ endclass
 
 `endif
 
-==============================================================================
-  FILE: uvm/agent/axi_monitor.sv
-==============================================================================
+// ========== c:/Users/22612/Desktop/AXI4/uvm/agent/axi_master_agent.sv ==========
+//=============================================================================
+// AXI Master Agent: contains sequencer + driver + monitor per master
+//=============================================================================
+`ifndef AXI_MASTER_AGENT_SV
+`define AXI_MASTER_AGENT_SV
+
+class axi_master_agent extends uvm_agent;
+
+    axi_sequencer sqr;
+    axi_driver    drv;
+    axi_monitor   mon;
+
+    int mst_id;
+
+    `uvm_component_utils(axi_master_agent)
+
+    function new(string name = "axi_master_agent", uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        sqr = axi_sequencer::type_id::create($sformatf("sqr_m%0d", mst_id), this);
+        drv = axi_driver::type_id::create($sformatf("drv_m%0d", mst_id), this);
+        mon = axi_monitor::type_id::create($sformatf("mon_m%0d", mst_id), this);
+        sqr.mst_id = mst_id;
+        drv.mst_id = mst_id;
+        mon.mst_id = mst_id;
+    endfunction
+
+    function void connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
+        drv.seq_item_port.connect(sqr.seq_item_export);
+    endfunction
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/agent/axi_monitor.sv ==========
 //=============================================================================
 // Unified AXI Monitor: 5 channels (AW/W/B/AR/R), master-side or slave-side
 // Placed inside each agent, monitors its own master or slave port only
@@ -1022,51 +667,30 @@ endclass
 
 `endif
 
-==============================================================================
-  FILE: uvm/agent/axi_master_agent.sv
-==============================================================================
-//=============================================================================
-// AXI Master Agent: contains sequencer + driver + monitor per master
-//=============================================================================
-`ifndef AXI_MASTER_AGENT_SV
-`define AXI_MASTER_AGENT_SV
 
-class axi_master_agent extends uvm_agent;
+// ========== c:/Users/22612/Desktop/AXI4/uvm/agent/axi_sequencer.sv ==========
+//=============================================================================
+// AXI Sequencer: parameterized per master
+//=============================================================================
+`ifndef AXI_SEQUENCER_SV
+`define AXI_SEQUENCER_SV
 
-    axi_sequencer sqr;
-    axi_driver    drv;
-    axi_monitor   mon;
+class axi_sequencer extends uvm_sequencer #(axi_transaction);
 
     int mst_id;
 
-    `uvm_component_utils(axi_master_agent)
+    `uvm_component_utils(axi_sequencer)
 
-    function new(string name = "axi_master_agent", uvm_component parent);
+    function new(string name = "axi_sequencer", uvm_component parent);
         super.new(name, parent);
-    endfunction
-
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        sqr = axi_sequencer::type_id::create($sformatf("sqr_m%0d", mst_id), this);
-        drv = axi_driver::type_id::create($sformatf("drv_m%0d", mst_id), this);
-        mon = axi_monitor::type_id::create($sformatf("mon_m%0d", mst_id), this);
-        sqr.mst_id = mst_id;
-        drv.mst_id = mst_id;
-        mon.mst_id = mst_id;
-    endfunction
-
-    function void connect_phase(uvm_phase phase);
-        super.connect_phase(phase);
-        drv.seq_item_port.connect(sqr.seq_item_export);
     endfunction
 
 endclass
 
 `endif
 
-==============================================================================
-  FILE: uvm/agent/axi_slave_agent.sv
-==============================================================================
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/agent/axi_slave_agent.sv ==========
 //=============================================================================
 // AXI Slave Agent: memory-model slave with configurable back-pressure
 //=============================================================================
@@ -1076,15 +700,18 @@ class axi_slave_agent extends uvm_agent;
     virtual axi_if vif;
     axi_monitor   mon;
 
-    int aw_ready_delay_min = 0, aw_ready_delay_max = 3;
-    int  w_ready_delay_min = 0,  w_ready_delay_max = 3;
-    int ar_ready_delay_min = 0, ar_ready_delay_max = 3;
-    int  b_valid_delay_min = 0,  b_valid_delay_max = 3;
-    int  r_valid_delay_min = 0,  r_valid_delay_max = 3;
-
     typedef struct { bit[7:0] id; bit[31:0] addr; bit[7:0] len;
                      bit[2:0] size; bit[1:0] burst; } trans_hdr_t;
     trans_hdr_t aw_queue[$], ar_queue[$];
+
+    // W beat tracking: per-burst isolation for 4KB split support
+    typedef struct { bit[31:0] addr; bit[2:0] size; } wr_aw_t;
+    wr_aw_t      wr_aw_q    [$];    // AW info per W burst (for w_handler addressing)
+    int          w_beat_cnt;
+    int          w_done_q   [$];    // beat count per completed W burst
+
+    // Memory: stores WDATA, returns on read
+    bit[31:0]    mem [bit[31:0]];
 
     `uvm_component_utils(axi_slave_agent)
 
@@ -1102,816 +729,125 @@ class axi_slave_agent extends uvm_agent;
         fork aw_handler(); w_handler(); b_handler(); ar_handler(); r_handler(); join
     endtask
 
+    //===================================================================
+    // Handlers use always-READY pattern to avoid RTL/class race
+    //===================================================================
+
     task aw_handler();
         trans_hdr_t wt;
+        vif.S_AWREADY[slv_id] = 1;
         forever begin
-            delay(aw_ready_delay_min, aw_ready_delay_max); 
-            vif.S_AWREADY[slv_id]<=1; 
             @(posedge vif.ACLK);
-            if(vif.S_AWVALID[slv_id] && vif.S_AWREADY[slv_id]) begin
-                wt.id=vif.S_AWID[slv_id*8+:8]; 
-                wt.addr=vif.S_AWADDR[slv_id*32+:32];
-                wt.len=vif.S_AWLEN[slv_id*8+:8]; 
-                wt.size=vif.S_AWSIZE[slv_id*3+:3];
-                wt.burst=vif.S_AWBURST[slv_id*2+:2]; 
-                aw_queue.push_back(wt); 
-                vif.S_AWREADY[slv_id]<=0;
+            if (vif.S_AWVALID[slv_id]) begin
+                `uvm_info("TRACE", $sformatf("S[%0d] SLV AW handshake id=%0d addr=0x%08h len=%0d",
+                         slv_id, vif.S_AWID[slv_id*8+:8], vif.S_AWADDR[slv_id*32+:32],
+                         vif.S_AWLEN[slv_id*8+:8]), UVM_MEDIUM)
+                wt.id   = vif.S_AWID[slv_id*8+:8];
+                wt.addr = vif.S_AWADDR[slv_id*32+:32];
+                wt.len  = vif.S_AWLEN[slv_id*8+:8];
+                wt.size = vif.S_AWSIZE[slv_id*3+:3];
+                wt.burst= vif.S_AWBURST[slv_id*2+:2];
+                aw_queue.push_back(wt);
+                wr_aw_q.push_back('{addr: wt.addr, size: wt.size});
             end
         end
     endtask
 
     task w_handler();
+        bit[31:0] beat_addr; int bpb;
+        vif.S_WREADY[slv_id] = 1;
         forever begin
-            delay(w_ready_delay_min, w_ready_delay_max); 
-            vif.S_WREADY[slv_id]<=1; 
             @(posedge vif.ACLK);
-            if(vif.S_WVALID[slv_id] && vif.S_WREADY[slv_id]) begin
-                vif.S_WREADY[slv_id]<=0;
+            if (vif.S_WVALID[slv_id]) begin
+                `uvm_info("TRACE", $sformatf("S[%0d] SLV W beat data=0x%08h last=%b",
+                         slv_id, vif.S_WDATA[slv_id*32+:32], vif.S_WLAST[slv_id]), UVM_MEDIUM)
+                if (wr_aw_q.size() > 0) begin
+                    bpb = 1 << wr_aw_q[0].size;
+                    beat_addr = wr_aw_q[0].addr + (w_beat_cnt * bpb);
+                    mem[beat_addr[31:2]] = vif.S_WDATA[slv_id*32+:32];
+                end
+                w_beat_cnt++;
+                if (vif.S_WLAST[slv_id]) begin
+                    w_done_q.push_back(w_beat_cnt);
+                    w_beat_cnt = 0;
+                end
             end
         end
     endtask
 
     task b_handler();
+        int exp_beats, actual_beats;
+        vif.S_BVALID[slv_id] = 0;         // init to avoid Z
         forever begin
             wait(aw_queue.size()>0);
-            delay(b_valid_delay_min, b_valid_delay_max);
-            vif.S_BVALID[slv_id]<=1; 
-            vif.S_BID[slv_id*8+:8]<=aw_queue[0].id;
-            vif.S_BRESP[slv_id*2+:2]<=2'b00; 
+            // Wait for a W burst to complete
+            while (w_done_q.size() == 0)
+                @(posedge vif.ACLK);
+            exp_beats   = aw_queue[0].len + 1;
+            actual_beats = w_done_q.pop_front();
+            `uvm_info("TRACE", $sformatf("S[%0d] SLV B start id=%0d exp=%0d act=%0d",
+                     slv_id, aw_queue[0].id[3:0], exp_beats, actual_beats), UVM_MEDIUM)
+            @(negedge vif.ACLK);
+            vif.S_BVALID[slv_id]   = 1;
+            vif.S_BID[slv_id*8+:8] = aw_queue[0].id;
+            vif.S_BRESP[slv_id*2+:2] = 2'b00;
             @(posedge vif.ACLK);
-            while(!vif.S_BREADY[slv_id]) 
-            @(posedge vif.ACLK);
-            vif.S_BVALID[slv_id]<=0; 
+            while (!vif.S_BREADY[slv_id]) @(posedge vif.ACLK);
+            @(negedge vif.ACLK);
+            vif.S_BVALID[slv_id] = 0;
             void'(aw_queue.pop_front());
+            void'(wr_aw_q.pop_front());
         end
     endtask
 
     task ar_handler();
         trans_hdr_t rt;
+        vif.S_ARREADY[slv_id] = 1;
         forever begin
-            delay(ar_ready_delay_min, ar_ready_delay_max); 
-            vif.S_ARREADY[slv_id]<=1; 
             @(posedge vif.ACLK);
-            if(vif.S_ARVALID[slv_id] && vif.S_ARREADY[slv_id]) begin
-                rt.id=vif.S_ARID[slv_id*8+:8]; 
-                rt.addr=vif.S_ARADDR[slv_id*32+:32];
-                rt.len=vif.S_ARLEN[slv_id*8+:8]; 
-                rt.size=vif.S_ARSIZE[slv_id*3+:3];
-                rt.burst=vif.S_ARBURST[slv_id*2+:2]; 
-                ar_queue.push_back(rt); 
-                vif.S_ARREADY[slv_id]<=0;
+            if (vif.S_ARVALID[slv_id]) begin
+                `uvm_info("TRACE", $sformatf("S[%0d] SLV AR handshake id=%0d addr=0x%08h len=%0d",
+                         slv_id, vif.S_ARID[slv_id*8+:8], vif.S_ARADDR[slv_id*32+:32],
+                         vif.S_ARLEN[slv_id*8+:8]), UVM_MEDIUM)
+                rt.id   = vif.S_ARID[slv_id*8+:8];
+                rt.addr = vif.S_ARADDR[slv_id*32+:32];
+                rt.len  = vif.S_ARLEN[slv_id*8+:8];
+                rt.size = vif.S_ARSIZE[slv_id*3+:3];
+                rt.burst= vif.S_ARBURST[slv_id*2+:2];
+                ar_queue.push_back(rt);
             end
         end
     endtask
 
     task r_handler();
-        int beat;
+        int beat; bit[31:0] beat_addr; int bpb; bit[31:0] rdata;
+        vif.S_RVALID[slv_id] = 0;         // init to avoid Z
         forever begin
             wait(ar_queue.size()>0);
-            for(beat=0; beat<=ar_queue[0].len; beat++) begin
-                delay(r_valid_delay_min, r_valid_delay_max);
-                vif.S_RVALID[slv_id]<=1; 
-                vif.S_RID[slv_id*8+:8]<=ar_queue[0].id;
-                vif.S_RDATA[slv_id*32+:32]<=$urandom; 
-                vif.S_RRESP[slv_id*2+:2]<=2'b00;
-                vif.S_RLAST[slv_id]<=(beat==ar_queue[0].len); 
+            `uvm_info("TRACE", $sformatf("S[%0d] SLV R start id=%0d len=%0d", slv_id, ar_queue[0].id[3:0], ar_queue[0].len), UVM_MEDIUM)
+            bpb = 1 << ar_queue[0].size;
+            for (beat = 0; beat <= ar_queue[0].len; beat++) begin
+                beat_addr = ar_queue[0].addr + (beat * bpb);
+                rdata = mem.exists(beat_addr[31:2]) ? mem[beat_addr[31:2]] : 32'hDEAD_BEEF;
+                @(negedge vif.ACLK);
+                vif.S_RVALID[slv_id]   = 1;
+                vif.S_RID[slv_id*8+:8] = ar_queue[0].id;
+                vif.S_RDATA[slv_id*32+:32] = rdata;
+                vif.S_RRESP[slv_id*2+:2] = 2'b00;
+                vif.S_RLAST[slv_id]   = (beat == ar_queue[0].len);
                 @(posedge vif.ACLK);
-                while(!vif.S_RREADY[slv_id]) 
-                @(posedge vif.ACLK);
+                while (!vif.S_RREADY[slv_id]) @(posedge vif.ACLK);
+                @(negedge vif.ACLK);
+                vif.S_RVALID[slv_id] = 0;
             end
-            vif.S_RVALID[slv_id]<=0; void'(ar_queue.pop_front());
-        end
-    endtask
-
-    task delay(int min_d, int max_d);
-        int d;
-        if(max_d>0) begin 
-            d=min_d+($urandom%(max_d-min_d+1)); 
-            repeat(d) @(posedge vif.ACLK); 
+            void'(ar_queue.pop_front());
         end
     endtask
 
 endclass
 
-==============================================================================
-  FILE: uvm/sequence/axi_base_seq.sv
-==============================================================================
-// Base Sequence: single random write or read
-class axi_base_seq extends uvm_sequence #(axi_transaction);
-    `uvm_object_utils(axi_base_seq)
-    int mst_id = 0;
 
-    function new(string n="axi_base_seq"); 
-        super.new(n); 
-    endfunction
-
-    task body();
-        axi_transaction t = axi_transaction::type_id::create("t");
-        start_item(t);
-
-        if(!t.randomize() with { mst_id == local::mst_id; }) 
-            `uvm_fatal("SEQ","randomize failed")
-        
-        finish_item(t);
-    endtask
-endclass
-
-==============================================================================
-  FILE: uvm/sequence/burst_seq.sv
-==============================================================================
-// Burst Sequence: multi-beat INCR burst
-class burst_seq extends uvm_sequence #(axi_transaction);
-    `uvm_object_utils(burst_seq)
-    int mst_id=0; 
-    bit[31:0] base_addr=0; 
-    bit[7:0] burst_len=3;
-
-    function new(string n="burst_seq"); 
-        super.new(n); 
-    endfunction
-
-    task body();
-        axi_transaction t = axi_transaction::type_id::create("t");
-        start_item(t);
-        if(!t.randomize() with { mst_id==local::mst_id; addr==local::base_addr;
-            len==local::burst_len; burst==2'b01; size==2;
-            is_write dist {1:=1, 0:=1}; }) `uvm_fatal("SEQ","randomize failed")
-        finish_item(t);
-    endtask
-endclass
-
-==============================================================================
-  FILE: uvm/sequence/outstanding_seq.sv
-==============================================================================
-// Outstanding Sequence: sends multiple AW/AR before waiting for responses
-class outstanding_seq extends uvm_sequence #(axi_transaction);
-    `uvm_object_utils(outstanding_seq)
-    int mst_id=0; 
-    int count=4;
-
-    function new(string n="outstanding_seq"); 
-        super.new(n); 
-    endfunction
-
-    task body();
-        axi_transaction t; int i;
-        for(i=0; i<count; i++) begin
-            t = axi_transaction::type_id::create("t");
-            start_item(t);
-            if(!t.randomize() with { mst_id==local::mst_id; addr inside {[0:16'h1FFF]};
-                len==0; is_write dist {1:=1, 0:=1}; }) `uvm_fatal("SEQ","randomize failed")
-            finish_item(t);
-        end
-    endtask
-endclass
-
-==============================================================================
-  FILE: uvm/sequence/split4k_seq.sv
-==============================================================================
-// 4KB Split Sequence: crosses 4K boundary
-class split4k_seq extends uvm_sequence #(axi_transaction);
-    `uvm_object_utils(split4k_seq)
-    int mst_id=0;
-
-    function new(string n="split4k_seq"); 
-        super.new(n); 
-    endfunction
-    
-    task body();
-        axi_transaction t = axi_transaction::type_id::create("t");
-        start_item(t);
-        if(!t.randomize() with { mst_id==local::mst_id; addr==32'h0FF0;
-            len==7; burst==2'b01; size==2; is_write dist {1:=1, 0:=1};
-        }) `uvm_fatal("SEQ","randomize failed")
-        finish_item(t);
-    endtask
-endclass
-
-==============================================================================
-  FILE: uvm/sequence/stress_seq.sv
-==============================================================================
-// Stress Sequence: randomized multi-master concurrent transactions
-class stress_seq extends uvm_sequence #(axi_transaction);
-    `uvm_object_utils(stress_seq)
-    int mst_id=0; 
-    int tx_count=50;
-
-    function new(string n="stress_seq"); 
-        super.new(n); 
-    endfunction
-
-    task body();
-        axi_transaction t; int i;
-        for(i=0; i<tx_count; i++) begin
-            t = axi_transaction::type_id::create("t");
-            start_item(t);
-            if(!t.randomize() with { mst_id==local::mst_id; len inside {[0:7]};
-                burst inside {0,1,2}; size inside {0,1,2,3}; }) `uvm_fatal("SEQ","randomize failed")
-            finish_item(t);
-        end
-    endtask
-endclass
-
-==============================================================================
-  FILE: uvm/model/addr_decoder.sv
-==============================================================================
-//=============================================================================
-// Address Decoder + 4KB Split Predictor
-// Models: routing decode, split detection, split parameters, ID extension
-//=============================================================================
-class addr_decoder;
-
-    //---- Split prediction result ----
-    typedef struct {
-        bit        will_split;         // burst crosses 4KB boundary
-        bit[31:0]  sub1_addr;          // first sub-transaction start address
-        bit[7:0]   sub1_len;           // first sub-transaction AWLEN (beats-1)
-        bit[31:0]  sub2_addr;          // second sub-transaction start (next 4K page)
-        bit[7:0]   sub2_len;           // second sub-transaction AWLEN (beats-1)
-    } split_info_t;
-
-    //---- Slave decode from address ----
-    static function int decode(bit[31:0] addr);
-        for(int i=0; i<4; i++)
-            if(addr[31:13] == axi_pkg::SLV_ADDR_BASE[i][31:13]) return i;
-        return 0;
-    endfunction
-
-    //---- 4KB boundary helpers ----
-    static function bit[31:0] next_4k_page(bit[31:0] addr);
-        return {addr[31:12] + 1'b1, 12'h0};
-    endfunction
-
-    static function bit crosses_4k(bit[31:0] addr, bit[7:0] len, bit[2:0] size);
-        bit[31:0] end_addr;
-        end_addr = addr + ((len + 1) << size) - 1;
-        return addr[12] ^ end_addr[12];
-    endfunction
-
-    //---- Full split prediction ----
-    // Returns: split_info_t with sub1/sub2 addr and len
-    // If !will_split, sub2 fields are zero
-    static function split_info_t predict_split(bit[31:0] addr, bit[7:0] len, bit[2:0] size);
-        bit[12:0] bytes_to_bnd;     // bytes from addr to next 4K boundary
-        bit[12:0] bytes_per_beat;
-        bit[7:0]  beats_page1;      // beats that fit in first 4K page
-        bit[7:0]  total_beats;
-
-        predict_split.will_split = crosses_4k(addr, len, size);
-
-        if(predict_split.will_split) begin
-            total_beats    = len + 1;
-            bytes_per_beat = 13'(1) << size;
-            // bytes from addr to next 4K boundary (0x1000 aligned)
-            bytes_to_bnd = 13'h1000 - {1'b0, addr[11:0]};
-            // beats in first page = ceil(bytes_to_bnd / bytes_per_beat)
-            beats_page1 = (bytes_to_bnd + bytes_per_beat - 13'd1) >> size;
-
-            predict_split.sub1_addr = addr;
-            predict_split.sub1_len  = beats_page1 - 1;           // len = beats - 1
-            predict_split.sub2_addr = next_4k_page(addr);
-            predict_split.sub2_len  = total_beats - beats_page1 - 1;
-        end else begin
-            predict_split.sub1_addr = addr;
-            predict_split.sub1_len  = len;
-            predict_split.sub2_addr = 0;
-            predict_split.sub2_len  = 0;
-        end
-    endfunction
-
-    //---- ID extension model ----
-    // cross_4k_if adds 2-bit prefix: 2'b00=no-split, 2'b01=sub1, 2'b10=sub2
-    // M2S prepends master index (2 bits) → S-side ID = {mst_idx, c4k_prefix, orig_id}
-    static function bit[7:0] predict_sid(bit[1:0] mst_idx, bit[1:0] c4k_prefix, bit[3:0] orig_id);
-        return {mst_idx, c4k_prefix, orig_id};
-    endfunction
-
-    // Given S-side ID, extract master index
-    static function bit[1:0] get_mst_from_sid(bit[7:0] sid);
-        return sid[7:6];
-    endfunction
-
-    // Given S-side ID, extract original ID
-    static function bit[3:0] get_orig_from_sid(bit[7:0] sid);
-        return sid[3:0];
-    endfunction
-
-endclass
-
-==============================================================================
-  FILE: uvm/model/memory_model.sv
-==============================================================================
-// Simple memory model with read/write interface
-class memory_model;
-    bit[31:0] mem[bit[31:0]];
-    function void write(bit[31:0] addr, bit[31:0] data);
-        mem[addr[31:2]] = data;
-    endfunction
-    function bit[31:0] read(bit[31:0] addr);
-        if(mem.exists(addr[31:2])) return mem[addr[31:2]];
-        return 32'hDEAD_BEEF;
-    endfunction
-endclass
-
-==============================================================================
-  FILE: uvm/model/reference_model.sv
-==============================================================================
-//=============================================================================
-// Reference Model: models interconnect behavior
-// - Address decode (routing prediction)
-// - 4KB Split prediction (cross_4k_if behavior)
-// - ID extension (c4k prefix + mst index concatenation)
-// - Outstanding transaction tracking
-// - Write: updates shadow memory
-// - Read:  reads from shadow memory, predicts RID
-//=============================================================================
-class reference_model extends uvm_component;
-    `uvm_component_utils(reference_model)
-
-    // Input: master-side AW/AR from channel monitors
-    uvm_analysis_export #(axi_aw_item) aw_ap;
-    uvm_analysis_export #(axi_ar_item) ar_ap;
-    uvm_tlm_analysis_fifo #(axi_aw_item) aw_fifo;
-    uvm_tlm_analysis_fifo #(axi_ar_item) ar_fifo;
-
-    // Output: predicted slave-side AW/AR + expected B/R info
-    uvm_analysis_port #(axi_aw_item) pred_aw_ap;   // predicted slave-side AWs
-    uvm_analysis_port #(axi_ar_item) pred_ar_ap;   // predicted slave-side ARs
-
-    // Shadow memory
-    bit[31:0] shadow[bit[31:0]];
-
-    // Outstanding transaction tables
-    typedef struct {
-        bit[1:0] mst_idx; bit[3:0] orig_id;
-        bit[31:0] addr; bit[7:0] len; bit[2:0] size;
-        bit will_split; int beats_done; bit[3:0] data_q[$];  // W data queue
-    } wr_entry_t;
-    typedef struct {
-        bit[1:0] mst_idx; bit[3:0] orig_id;
-        bit[31:0] addr; bit[7:0] len; bit[2:0] size;
-        bit will_split; int beats_done;
-    } rd_entry_t;
-
-    wr_entry_t wr_tbl[int];  // key={mst_idx, orig_id}
-    rd_entry_t rd_tbl[int];  // key={mst_idx, orig_id}
-
-    int wr_cnt=0, rd_cnt=0, split_cnt=0;
-
-    function new(string name="reference_model", uvm_component parent);
-        super.new(name,parent);
-    endfunction
-
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        aw_ap=new("aw_ap",this); ar_ap=new("ar_ap",this);
-        aw_fifo=new("aw_fifo",this); ar_fifo=new("ar_fifo",this);
-        pred_aw_ap=new("pred_aw_ap",this); pred_ar_ap=new("pred_ar_ap",this);
-        aw_ap.connect(aw_fifo.analysis_export);
-        ar_ap.connect(ar_fifo.analysis_export);
-    endfunction
-
-    task run_phase(uvm_phase phase);
-        fork process_aw(); process_ar(); join
-    endtask
-
-    //---- Process AW: predict split, compute expected S-side AW ----
-    task process_aw();
-        axi_aw_item t;
-        addr_decoder::split_info_t split;
-        axi_aw_item pred;
-        int key;
-        bit[31:0] beat_addr; int b;
-
-        forever begin
-            aw_fifo.get(t);
-            if(!t.is_master_side) continue;
-
-            wr_cnt++;
-            key = {t.mst_id[1:0], t.id[3:0]};
-
-            // Predict 4KB split
-            split = addr_decoder::predict_split(t.addr, t.len, t.size);
-            if(split.will_split) split_cnt++;
-
-            // Store outstanding entry
-            wr_tbl[key].mst_idx = t.mst_id[1:0];
-            wr_tbl[key].orig_id = t.id[3:0];
-            wr_tbl[key].addr    = t.addr;
-            wr_tbl[key].len     = t.len;
-            wr_tbl[key].size    = t.size;
-            wr_tbl[key].will_split = split.will_split;
-            wr_tbl[key].beats_done = 0;
-
-            // Predict slave-side AW for sub-transaction 1
-            pred = axi_aw_item::type_id::create("pred_aw1");
-            pred.is_master_side = 0;
-            pred.slv_id = addr_decoder::decode(split.sub1_addr);
-            pred.mst_id = t.mst_id[1:0];
-            pred.id     = t.id;   // original ID
-            pred.addr   = split.sub1_addr;
-            pred.len    = split.sub1_len;
-            pred.size   = t.size;
-            pred.burst  = t.burst;
-            pred_aw_ap.write(pred);
-            `uvm_info("REFM",$sformatf("AW split1: M[%0d] id=%0d -> S[%0d] addr=0x%08h len=%0d",
-                      t.mst_id,t.id,pred.slv_id,split.sub1_addr,split.sub1_len),UVM_HIGH)
-
-            // If split: predict slave-side AW for sub-transaction 2
-            if(split.will_split) begin
-                pred = axi_aw_item::type_id::create("pred_aw2");
-                pred.is_master_side = 0;
-                pred.slv_id = addr_decoder::decode(split.sub2_addr);
-                pred.mst_id = t.mst_id[1:0];
-                pred.id     = t.id;
-                pred.addr   = split.sub2_addr;
-                pred.len    = split.sub2_len;
-                pred.size   = t.size;
-                pred.burst  = t.burst;
-                pred_aw_ap.write(pred);
-                `uvm_info("REFM",$sformatf("AW split2: M[%0d] id=%0d -> S[%0d] addr=0x%08h len=%0d",
-                          t.mst_id,t.id,pred.slv_id,split.sub2_addr,split.sub2_len),UVM_HIGH)
-            end
-
-            // Update shadow memory (predict write data effect)
-            // sub-transaction 1
-            for(b=0; b<=split.sub1_len; b++) begin
-                beat_addr = split.sub1_addr + (b << t.size);
-                shadow[beat_addr[31:2]] = 32'h0000_0000;  // placeholder
-            end
-            // sub-transaction 2 (if split)
-            if(split.will_split) begin
-                for(b=0; b<=split.sub2_len; b++) begin
-                    beat_addr = split.sub2_addr + (b << t.size);
-                    shadow[beat_addr[31:2]] = 32'h0000_0000;
-                end
-            end
-        end
-    endtask
-
-    //---- Process AR: predict expected R path ----
-    task process_ar();
-        axi_ar_item t;
-        addr_decoder::split_info_t split;
-        axi_ar_item pred;
-        int key;
-
-        forever begin
-            ar_fifo.get(t);
-            if(!t.is_master_side) continue;
-
-            rd_cnt++;
-            key = {t.mst_id[1:0], t.id[3:0]};
-
-            split = addr_decoder::predict_split(t.addr, t.len, t.size);
-
-            rd_tbl[key].mst_idx = t.mst_id[1:0];
-            rd_tbl[key].orig_id = t.id[3:0];
-            rd_tbl[key].addr    = t.addr;
-            rd_tbl[key].len     = t.len;
-            rd_tbl[key].size    = t.size;
-            rd_tbl[key].will_split = split.will_split;
-            rd_tbl[key].beats_done = 0;
-
-            // Predict slave-side AR
-            pred = axi_ar_item::type_id::create("pred_ar");
-            pred.is_master_side = 0;
-            pred.slv_id = addr_decoder::decode(split.sub1_addr);
-            pred.mst_id = t.mst_id[1:0];
-            pred.id     = t.id;
-            pred.addr   = t.addr;
-            pred.len    = t.len;
-            pred.size   = t.size;
-            pred.burst  = t.burst;
-            pred_ar_ap.write(pred);
-        end
-    endtask
-
-    //---- Public API: predict expected RID from outstanding read table ----
-    function bit[7:0] predict_rid(bit[1:0] mst_idx, bit[3:0] orig_id);
-        return addr_decoder::predict_sid(mst_idx, 2'b00, orig_id);
-    endfunction
-
-    //---- Public API: look up shadow memory for expected read data ----
-    function bit[31:0] read_shadow(bit[31:0] addr);
-        if(shadow.exists(addr[31:2])) return shadow[addr[31:2]];
-        return 32'hDEAD_BEEF;
-    endfunction
-
-    function void report_phase(uvm_phase phase);
-        $display("REF MODEL: %0d writes, %0d reads, %0d 4KB splits predicted", wr_cnt, rd_cnt, split_cnt);
-    endfunction
-
-endclass
-
-==============================================================================
-  FILE: uvm/scoreboard/axi_scoreboard.sv
-==============================================================================
-//=============================================================================
-// Unified AXI Scoreboard: routing + data integrity + response tracking
-// Uses analysis_imp per port to fan out to per-consumer FIFOs internally
-//=============================================================================
-class axi_scoreboard extends uvm_scoreboard;
-    `uvm_component_utils(axi_scoreboard)
-
-    //---- External analysis imports (fan out to internal FIFOs in write()) ----
-    `uvm_analysis_imp_decl(_aw)
-    `uvm_analysis_imp_decl(_w)
-    `uvm_analysis_imp_decl(_b)
-    `uvm_analysis_imp_decl(_ar)
-    `uvm_analysis_imp_decl(_r)
-    `uvm_analysis_imp_decl(_slv_aw)
-    `uvm_analysis_imp_decl(_slv_ar)
-
-    uvm_analysis_imp_aw     #(axi_aw_item, axi_scoreboard) aw_imp;
-    uvm_analysis_imp_w      #(axi_w_item,  axi_scoreboard) w_imp;
-    uvm_analysis_imp_b      #(axi_b_item,  axi_scoreboard) b_imp;
-    uvm_analysis_imp_ar     #(axi_ar_item, axi_scoreboard) ar_imp;
-    uvm_analysis_imp_r      #(axi_r_item,  axi_scoreboard) r_imp;
-    uvm_analysis_imp_slv_aw #(axi_aw_item, axi_scoreboard) slv_aw_imp;
-    uvm_analysis_imp_slv_ar #(axi_ar_item, axi_scoreboard) slv_ar_imp;
-
-    //---- Internal per-consumer FIFOs ----
-    // AW: routing (mst-side) + data + response
-    uvm_tlm_analysis_fifo #(axi_aw_item) aw_r_fifo, aw_d_fifo, aw_p_fifo;
-    // W: data + response
-    uvm_tlm_analysis_fifo #(axi_w_item)  w_d_fifo,  w_p_fifo;
-    // B: response
-    uvm_tlm_analysis_fifo #(axi_b_item)  b_p_fifo;
-    // AR: routing + data + response
-    uvm_tlm_analysis_fifo #(axi_ar_item) ar_r_fifo, ar_d_fifo, ar_p_fifo;
-    // R: data + response
-    uvm_tlm_analysis_fifo #(axi_r_item)  r_d_fifo,  r_p_fifo;
-    // Slave-side: routing
-    uvm_tlm_analysis_fifo #(axi_aw_item) slv_aw_fifo;
-    uvm_tlm_analysis_fifo #(axi_ar_item) slv_ar_fifo;
-
-    //===== Routing check state =====
-    int route_err=0, route_cnt=0;
-
-    //===== Data check state =====
-    bit[31:0] shadow[bit[31:0]];
-    int data_err=0, data_cnt=0;
-    int wr_beat[int];
-
-    //===== Response check state =====
-    typedef struct {
-        bit[7:0] mst_id; bit[3:0] id; bit[31:0] addr;
-        bit[7:0] len; int w_beat_cnt; int b_received;
-    } wr_out_t;
-    typedef struct {
-        bit[7:0] mst_id; bit[3:0] id; bit[31:0] addr;
-        bit[7:0] len; int r_beat_cnt;
-    } rd_out_t;
-    wr_out_t wr_out[int];
-    rd_out_t rd_out[int];
-    int wr_order[$], rd_order[$], b_order[$];
-    int resp_err=0, wr_cnt=0, rd_cnt=0, reorder_cnt=0;
-
-    function new(string n="axi_sb", uvm_component p); super.new(n,p); endfunction
-
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        // imports
-        aw_imp=new("aw_imp",this); w_imp=new("w_imp",this); b_imp=new("b_imp",this);
-        ar_imp=new("ar_imp",this); r_imp=new("r_imp",this);
-        slv_aw_imp=new("slv_aw_imp",this); slv_ar_imp=new("slv_ar_imp",this);
-        // AW FIFOs
-        aw_r_fifo=new("aw_r_fifo",this); aw_d_fifo=new("aw_d_fifo",this); aw_p_fifo=new("aw_p_fifo",this);
-        // W FIFOs
-        w_d_fifo=new("w_d_fifo",this); w_p_fifo=new("w_p_fifo",this);
-        // B FIFO
-        b_p_fifo=new("b_p_fifo",this);
-        // AR FIFOs
-        ar_r_fifo=new("ar_r_fifo",this); ar_d_fifo=new("ar_d_fifo",this); ar_p_fifo=new("ar_p_fifo",this);
-        // R FIFOs
-        r_d_fifo=new("r_d_fifo",this); r_p_fifo=new("r_p_fifo",this);
-        // Slave-side FIFOs
-        slv_aw_fifo=new("slv_aw_fifo",this); slv_ar_fifo=new("slv_ar_fifo",this);
-    endfunction
-
-    //---- write() fan-out implementations ----
-    function void write_aw(axi_aw_item t);
-        aw_r_fifo.write(t); aw_d_fifo.write(t); aw_p_fifo.write(t);
-    endfunction
-
-    function void write_w(axi_w_item t);
-        w_d_fifo.write(t); w_p_fifo.write(t);
-    endfunction
-
-    function void write_b(axi_b_item t);
-        b_p_fifo.write(t);
-    endfunction
-
-    function void write_ar(axi_ar_item t);
-        ar_r_fifo.write(t); ar_d_fifo.write(t); ar_p_fifo.write(t);
-    endfunction
-
-    function void write_r(axi_r_item t);
-        r_d_fifo.write(t); r_p_fifo.write(t);
-    endfunction
-
-    function void write_slv_aw(axi_aw_item t);
-        slv_aw_fifo.write(t);
-    endfunction
-
-    function void write_slv_ar(axi_ar_item t);
-        slv_ar_fifo.write(t);
-    endfunction
-
-    task run_phase(uvm_phase phase);
-        fork
-            check_wr_routing(); 
-            check_rd_routing();
-            process_wr_data();  
-            process_rd_data();
-            process_aw_resp();  
-            process_w_resp();  
-            process_b_resp();
-            process_ar_resp();  
-            process_r_resp();
-        join
-    endtask
-
-    //=======================================================================
-    // 1) Routing: M-side AW/AR vs S-side AW/AR
-    //=======================================================================
-    task check_wr_routing();
-        axi_aw_item m_t, s_t; int exp;
-        forever begin
-            fork aw_r_fifo.get(m_t); slv_aw_fifo.get(s_t); join
-            exp = addr_decoder::decode(m_t.addr); route_cnt++;
-            if(exp != s_t.slv_id) begin route_err++;
-                `uvm_error("ROUTE",$sformatf("WR M[%0d] addr=0x%08h exp S%0d got S%0d",
-                          m_t.mst_id,m_t.addr,exp,s_t.slv_id))
-            end
-        end
-    endtask
-
-    task check_rd_routing();
-        axi_ar_item m_t, s_t; int exp;
-        forever begin
-            fork ar_r_fifo.get(m_t); slv_ar_fifo.get(s_t); join
-            exp = addr_decoder::decode(m_t.addr); route_cnt++;
-            if(exp != s_t.slv_id) begin route_err++;
-                `uvm_error("ROUTE",$sformatf("RD M[%0d] addr=0x%08h exp S%0d got S%0d",
-                          m_t.mst_id,m_t.addr,exp,s_t.slv_id))
-            end
-        end
-    endtask
-
-    //=======================================================================
-    // 2) Data: shadow memory – W beats write, R beats compare
-    //=======================================================================
-    task process_wr_data();
-        axi_aw_item at; axi_w_item wt; int key; bit[31:0] addr;
-        forever begin
-            fork aw_d_fifo.get(at); w_d_fifo.get(wt); join
-            key = {8'(at.mst_id), at.id};
-            addr = at.addr + (wr_beat[key] << at.size);
-            shadow[addr[31:2]] = wt.data;
-            wr_beat[key]++;
-            if(wt.last && wr_beat[key] != at.len+1) begin data_err++;
-                `uvm_error("DATA",$sformatf("WR beat cnt M[%0d] id=%0d",at.mst_id,at.id))
-            end
-            if(wt.last) wr_beat.delete(key);
-        end
-    endtask
-
-    task process_rd_data();
-        axi_ar_item at; axi_r_item rt; int key; bit[31:0] addr, exp; int r_beat[int];
-        forever begin
-            fork ar_d_fifo.get(at); r_d_fifo.get(rt); join
-            key = {8'(at.mst_id), at.id};
-            if(!r_beat.exists(key)) r_beat[key]=0;
-            addr = at.addr + (r_beat[key] << at.size); data_cnt++;
-            exp = shadow.exists(addr[31:2]) ? shadow[addr[31:2]] : 32'hDEAD_BEEF;
-            if(rt.data !== exp) begin data_err++;
-                `uvm_error("DATA",$sformatf("M[%0d] addr=0x%08h exp=0x%08h act=0x%08h",
-                          at.mst_id,addr,exp,rt.data))
-            end
-            r_beat[key]++;
-            if(rt.last && r_beat[key] != at.len+1) begin data_err++;
-                `uvm_error("DATA",$sformatf("RD beat cnt M[%0d] id=%0d",at.mst_id,at.id))
-            end
-            if(rt.last) r_beat.delete(key);
-        end
-    endtask
-
-    //=======================================================================
-    // 3) Response: outstanding tracking, BID/RID, reorder detection
-    //=======================================================================
-    task process_aw_resp();
-        axi_aw_item t; int key;
-        forever begin
-            aw_p_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {8'(t.mst_id), t.id};
-            if(wr_out.exists(key)) begin resp_err++;
-                `uvm_error("RESP",$sformatf("DUPLICATE AW M[%0d] id=%0d",t.mst_id,t.id))
-            end
-            wr_out[key].mst_id=t.mst_id; wr_out[key].id=t.id;
-            wr_out[key].addr=t.addr; wr_out[key].len=t.len;
-            wr_out[key].w_beat_cnt=0; wr_out[key].b_received=0;
-            wr_order.push_back(key); wr_cnt++;
-        end
-    endtask
-
-    task process_w_resp();
-        axi_w_item t; int key; bit found;
-        forever begin
-            w_p_fifo.get(t);
-            if(!t.is_master_side) continue;
-            found=0;
-            foreach(wr_order[i]) begin
-                key=wr_order[i];
-                if(wr_out[key].w_beat_cnt <= wr_out[key].len) begin
-                    wr_out[key].w_beat_cnt++;
-                    if(t.last && wr_out[key].w_beat_cnt != wr_out[key].len+1) begin resp_err++;
-                        `uvm_error("RESP",$sformatf("WLAST mismatch M[%0d] id=%0d",
-                                  wr_out[key].mst_id,wr_out[key].id))
-                    end
-                    found=1; break;
-                end
-            end
-            if(!found) begin resp_err++;
-                `uvm_error("RESP","W beat with no matching outstanding AW")
-            end
-        end
-    endtask
-
-    task process_b_resp();
-        axi_b_item t; int key;
-        forever begin
-            b_p_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {8'(t.mst_id), t.id};
-            if(!wr_out.exists(key)) begin resp_err++;
-                `uvm_error("RESP",$sformatf("BID mismatch M[%0d] id=%0d",t.mst_id,t.id))
-                continue;
-            end
-            wr_out[key].b_received=1;
-            if(t.resp!=2'b00) begin resp_err++;
-                `uvm_error("RESP",$sformatf("BRESP error M[%0d] id=%0d resp=%b",t.mst_id,t.id,t.resp))
-            end
-            b_order.push_back(key);
-            if(wr_out[key].w_beat_cnt < wr_out[key].len+1) begin resp_err++;
-                `uvm_error("RESP",$sformatf("B before WLAST M[%0d] id=%0d",t.mst_id,t.id))
-            end
-        end
-    endtask
-
-    task process_ar_resp();
-        axi_ar_item t; int key;
-        forever begin
-            ar_p_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {8'(t.mst_id), t.id};
-            rd_out[key].mst_id=t.mst_id; rd_out[key].id=t.id;
-            rd_out[key].addr=t.addr; rd_out[key].len=t.len;
-            rd_out[key].r_beat_cnt=0;
-            rd_order.push_back(key); rd_cnt++;
-        end
-    endtask
-
-    task process_r_resp();
-        axi_r_item t; int key;
-        forever begin
-            r_p_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {8'(t.mst_id), t.id};
-            if(!rd_out.exists(key)) begin resp_err++;
-                `uvm_error("RESP",$sformatf("RID mismatch M[%0d] id=%0d",t.mst_id,t.id))
-                continue;
-            end
-            rd_out[key].r_beat_cnt++;
-            if(t.resp!=2'b00) begin resp_err++;
-                `uvm_error("RESP",$sformatf("RRESP error M[%0d] id=%0d resp=%b",t.mst_id,t.id,t.resp))
-            end
-            if(t.last && rd_out[key].r_beat_cnt != rd_out[key].len+1) begin resp_err++;
-                `uvm_error("RESP",$sformatf("RLAST mismatch M[%0d] id=%0d",t.mst_id,t.id))
-            end
-            if(rd_order.size()>0 && rd_order[0]!=key) reorder_cnt++;
-            if(t.last) begin
-                for(int i=0; i<rd_order.size(); i++)
-                    if(rd_order[i]==key) begin rd_order.delete(i); break; end
-            end
-        end
-    endtask
-
-    function void report_phase(uvm_phase phase);
-        $display("AXI SCOREBOARD:");
-        $display("  Routing : %0d checks, %0d errors", route_cnt, route_err);
-        $display("  Data    : %0d checks, %0d errors", data_cnt, data_err);
-        $display("  Response: %0d writes, %0d reads, %0d errors, %0d reorder events",
-                 wr_cnt, rd_cnt, resp_err, reorder_cnt);
-    endfunction
-
-endclass
-
-==============================================================================
-  FILE: uvm/coverage/axi_cov.sv
-==============================================================================
+// ========== c:/Users/22612/Desktop/AXI4/uvm/coverage/axi_cov.sv ==========
 //=============================================================================
 // AXI Comprehensive Functional Coverage
 // 1. Master-Slave + Burst        5. Reorder Depth & Distribution
@@ -2190,300 +1126,2095 @@ class axi_cov extends uvm_component;
 
 endclass
 
-==============================================================================
-  FILE: uvm/coverage/axi_protocol_checker.sv
-==============================================================================
-//=============================================================================
-// AXI Protocol Checker: immediate assertions on AXI bus protocol rules
-// Checks: VALID stability, WLAST/RLAST, ID matching, B uniqueness
-//=============================================================================
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/coverage/axi_protocol_checker.sv ==========
+// =============================================================================
+// FILE: uvm/env/axi_protocol_checker.sv (重构优化版)
+// =============================================================================
+
+// 声明多通道独立的 Analysis Imp 后缀
+`uvm_analysis_imp_decl(_aw)
+`uvm_analysis_imp_decl(_w)
+`uvm_analysis_imp_decl(_b)
+`uvm_analysis_imp_decl(_ar)
+`uvm_analysis_imp_decl(_r)
+
 class axi_protocol_checker extends uvm_component;
     `uvm_component_utils(axi_protocol_checker)
 
-    // Inputs from channel monitors
-    uvm_analysis_export #(axi_aw_item) aw_ap; uvm_analysis_export #(axi_w_item) w_ap;
-    uvm_analysis_export #(axi_b_item)  b_ap;
-    uvm_analysis_export #(axi_ar_item) ar_ap; uvm_analysis_export #(axi_r_item) r_ap;
-    uvm_tlm_analysis_fifo #(axi_aw_item) aw_fifo; uvm_tlm_analysis_fifo #(axi_w_item) w_fifo;
-    uvm_tlm_analysis_fifo #(axi_b_item)  b_fifo;
-    uvm_tlm_analysis_fifo #(axi_ar_item) ar_fifo; uvm_tlm_analysis_fifo #(axi_r_item) r_fifo;
+    // 通道传输订阅端口
+    uvm_analysis_imp_aw#(axi_aw_item, axi_protocol_checker) aw_imp;
+    uvm_analysis_imp_w#(axi_w_item,   axi_protocol_checker) w_imp;
+    uvm_analysis_imp_b#(axi_b_item,   axi_protocol_checker) b_imp;
+    uvm_analysis_imp_ar#(axi_ar_item, axi_protocol_checker) ar_imp;
+    uvm_analysis_imp_r#(axi_r_item,   axi_protocol_checker) r_imp;
 
-    // Outstanding tables for ID matching
-    typedef struct { int beats_done; int beats_exp; bit done; } wr_entry_t;
-    typedef struct { int beats_done; int beats_exp; bit done; } rd_entry_t;
-    wr_entry_t wr_tbl[int];   // key = {mst, id}
-    rd_entry_t rd_tbl[int];   // key = {mst, id}
-    int wr_total=0, rd_total=0;
+    // -------------------------------------------------------------------------
+    // 核心重构数据结构：Master 域隔离表
+    // Key (int): mst_id -> 每个 Master 拥有完全独立的专属 FIFO 追踪队列
+    // -------------------------------------------------------------------------
+    axi_transaction wr_tbl[int][$]; // 写通道挂起事务表
+    axi_transaction rd_tbl[int][$]; // 读通道挂起事务表
 
-    int error_cnt=0;
+    // 性能与错误统计计数器
+    int total_aw_count = 0;
+    int total_w_count  = 0;
+    int total_b_count  = 0;
+    int total_ar_count = 0;
+    int total_r_count  = 0;
+    int error_count    = 0;
 
-    function new(string name="axi_protocol_checker", uvm_component parent);
+    function new(string name="axi_protocol_checker", uvm_component parent=null);
+        super.new(name, parent);
+        aw_imp = new("aw_imp", this);
+        w_imp  = new("w_imp",  this);
+        b_imp  = new("b_imp",  this);
+        ar_imp = new("ar_imp", this);
+        r_imp  = new("r_imp",  this);
+    endfunction
+
+    // =========================================================================
+    // 1. WRITE ADDRESS CHANNEL (AW)
+    // =========================================================================
+    virtual function void write_aw(axi_aw_item item);
+        axi_transaction tx;
+        if (!item.is_master_side) return;   // only track master-side
+        total_aw_count++;
+        
+        tx = axi_transaction::type_id::create("tx");
+        tx.mst_id        = item.mst_id;
+        tx.id            = item.id;
+        tx.addr          = item.addr;
+        tx.len           = item.len;
+        tx.size          = item.size;
+        tx.burst         = item.burst;
+        tx.is_write      = 1;
+        tx.actual_wbeats = 0;
+
+        // 【关键修复】：依据当前事务的 mst_id，精准推入该 Master 专属队列的末尾
+        wr_tbl[item.mst_id].push_back(tx);
+        
+        `uvm_info("PROT_AW", $sformatf("AW Recorded: M[%0d] ID=0x%0x, ADDR=0x%0x, LEN=%0d. Current Master Pending Depth=%0d", 
+                  item.mst_id, item.id, item.addr, item.len, wr_tbl[item.mst_id].size()), UVM_HIGH)
+    endfunction
+
+    // =========================================================================
+    // 2. WRITE DATA CHANNEL (W)
+    // =========================================================================
+    virtual function void write_w(axi_w_item item);
+        int m_id; axi_transaction tx;
+        if (!item.is_master_side) return;   // only track master-side
+        m_id = item.mst_id;
+        total_w_count++;
+
+        // 核心校验：检查当前发数据的 Master 旗下是否登记过对应 AW 请求
+        if (!wr_tbl.exists(m_id) || wr_tbl[m_id].size() == 0) begin
+            `uvm_error("PROT_ERR_ORPHAN_W", $sformatf("Protocol Violation: W Beat detected on M[%0d] but no matching AW request exists!", m_id))
+            error_count++;
+            return;
+        end
+
+        // 【关键修复】：根据 AXI4 规范，单个 Master 内部的 W Burst 顺序必须与 AW 严格一致。
+        // 直接锁定该 Master 队列的首元素(最老的 AW)，杜绝跨 Master 串包混淆。
+        tx = wr_tbl[m_id][0];
+        tx.actual_wbeats++;
+
+        // 边界与 WLAST 强一致性校验
+        if (item.last) begin
+            if (tx.actual_wbeats != (tx.len + 1)) begin
+                `uvm_error("PROT_ERR_WLEN", $sformatf("Protocol Error: M[%0d] WLAST Mismatch! AWLEN expects %0d beats, but got WLAST at beat %0d. (ADDR=0x%0x)", 
+                           m_id, tx.len + 1, tx.actual_wbeats, tx.addr))
+                error_count++;
+            end
+            
+            // 该笔写事务数据传输彻底结束，安全弹出
+            void'(wr_tbl[m_id].pop_front());
+            `uvm_info("PROT_W_DONE", $sformatf("W Burst completed successfully for M[%0d]. Remaining pending AW=%0d", m_id, wr_tbl[m_id].size()), UVM_HIGH)
+        end 
+        else begin
+            // 异常校验：未拉高 WLAST 但计数已超额
+            if (tx.actual_wbeats >= (tx.len + 1)) begin
+                `uvm_error("PROT_ERR_WLEN_OVER", $sformatf("Protocol Error: M[%0d] Missing WLAST! Received %0d beats, which already reaches/exceeds AWLEN=%0d. (ADDR=0x%0x)", 
+                           m_id, tx.actual_wbeats, tx.len, tx.addr))
+                error_count++;
+            end
+        end
+    endfunction
+
+    // =========================================================================
+    // 3. WRITE RESPONSE CHANNEL (B)
+    // =========================================================================
+    virtual function void write_b(axi_b_item item);
+        total_b_count++;
+        // 可根据实际需要添加 BRESP 逻辑校验
+    endfunction
+
+    // =========================================================================
+    // 4. READ ADDRESS CHANNEL (AR)
+    // =========================================================================
+    virtual function void write_ar(axi_ar_item item);
+        axi_transaction tx;
+        if (!item.is_master_side) return;   // only track master-side
+        total_ar_count++;
+        
+        tx = axi_transaction::type_id::create("tx");
+        tx.mst_id        = item.mst_id;
+        tx.id            = item.id;
+        tx.addr          = item.addr;
+        tx.len           = item.len;
+        tx.size          = item.size;
+        tx.burst         = item.burst;
+        tx.is_write      = 0;
+        tx.actual_rbeats = 0;
+
+        // 同步实施读通道的 Master 域隔离
+        rd_tbl[item.mst_id].push_back(tx);
+    endfunction
+
+    // =========================================================================
+    // 5. READ DATA CHANNEL (R)
+    // =========================================================================
+    virtual function void write_r(axi_r_item item);
+        int m_id; bit id_found;
+        if (!item.is_master_side) return;   // only track master-side
+        m_id = item.mst_id;
+        id_found = 0;
+        total_r_count++;
+
+        if (!rd_tbl.exists(m_id) || rd_tbl[m_id].size() == 0) begin
+            `uvm_error("PROT_ERR_ORPHAN_R", $sformatf("Protocol Violation: R Beat detected on M[%0d] but no matching AR request exists!", m_id))
+            error_count++;
+            return;
+        end
+
+        // 【拓展修复】：AXI 标准允许单个 Master 内部不同 ARID 的读数据发生交叉交织（Interleaving）。
+        // 因此，在当前 Master 的局部专属队列中检索匹配 ID 的事务。
+        foreach (rd_tbl[m_id][i]) begin
+            if (rd_tbl[m_id][i].id == item.id) begin
+                axi_transaction tx = rd_tbl[m_id][i];
+                tx.actual_rbeats++;
+                id_found = 1;
+
+                if (item.last) begin
+                    if (tx.actual_rbeats != (tx.len + 1)) begin
+                        `uvm_error("PROT_ERR_RLEN", $sformatf("Protocol Error: M[%0d] RLAST Mismatch for ID=0x%0x! ARLEN expects %0d beats, but got RLAST at beat %0d.", 
+                                   m_id, tx.id, tx.len + 1, tx.actual_rbeats))
+                        error_count++;
+                    end
+                    // 读事务全包收齐，将该事务从局部队列中注销
+                    rd_tbl[m_id].delete(i);
+                end 
+                else begin
+                    if (tx.actual_rbeats >= (tx.len + 1)) begin
+                        `uvm_error("PROT_ERR_RLEN_OVER", $sformatf("Protocol Error: M[%0d] Missing RLAST for ID=0x%0x! Received %0d beats, which already reaches/exceeds ARLEN=%0d.", 
+                                   m_id, tx.id, tx.actual_rbeats, tx.len))
+                        error_count++;
+                    end
+                end
+                break; // 找到目标，跳出局部循环
+            end
+        end
+
+        if (!id_found) begin
+            `uvm_error("PROT_ERR_RID_MISMATCH", $sformatf("Protocol Error: M[%0d] Received R Beat with ID=0x%0x, but no matching pending AR ID found in this Master's tracker!", m_id, item.id))
+            error_count++;
+        end
+    endfunction
+
+    // =========================================================================
+    // 报告阶段：打印仿真最终的协议检测统计
+    // =========================================================================
+    virtual function void report_phase(uvm_phase phase);
+        `uvm_info("PROT_CHKER_SUMMARY", $sformatf("\n==================================================\n  AXI PROTOCOL CHECKER仿真报告:\n  AW次数: %0d | W次数: %0d | B次数: %0d\n  AR次数: %0d | R次数: %0d\n  总计发现协议违例错误(Error): %0d\n==================================================", 
+                  total_aw_count, total_w_count, total_b_count, total_ar_count, total_r_count, error_count), UVM_LOW)
+    endfunction
+
+endclass
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/model/addr_decoder.sv ==========
+//=============================================================================
+// Address Decoder + 4KB Split Predictor
+// Models: routing decode, split detection, split parameters, ID extension
+//=============================================================================
+class addr_decoder;
+
+    //---- Split prediction result ----
+    typedef struct {
+        bit        will_split;         // burst crosses 4KB boundary
+        bit[31:0]  sub1_addr;          // first sub-transaction start address
+        bit[7:0]   sub1_len;           // first sub-transaction AWLEN (beats-1)
+        bit[31:0]  sub2_addr;          // second sub-transaction start (next 4K page)
+        bit[7:0]   sub2_len;           // second sub-transaction AWLEN (beats-1)
+    } split_info_t;
+
+    //---- Slave decode from address ----
+    static function int decode(bit[31:0] addr);
+        for(int i=0; i<4; i++)
+            if(addr[31:13] == axi_pkg::SLV_ADDR_BASE[i][31:13]) return i;
+        return 0;
+    endfunction
+
+    //---- 4KB boundary helpers ----
+    static function bit[31:0] next_4k_page(bit[31:0] addr);
+        return {addr[31:12] + 1'b1, 12'h0};
+    endfunction
+
+    static function bit crosses_4k(bit[31:0] addr, bit[7:0] len, bit[2:0] size);
+        bit[31:0] end_addr;
+        end_addr = addr + ((len + 1) << size) - 1;
+        return addr[12] ^ end_addr[12];
+    endfunction
+
+    //---- Full split prediction ----
+    // Returns: split_info_t with sub1/sub2 addr and len
+    // If !will_split, sub2 fields are zero
+    static function split_info_t predict_split(bit[31:0] addr, bit[7:0] len, bit[2:0] size);
+        bit[12:0] bytes_to_bnd;     // bytes from addr to next 4K boundary
+        bit[12:0] bytes_per_beat;
+        bit[7:0]  beats_page1;      // beats that fit in first 4K page
+        bit[7:0]  total_beats;
+
+        predict_split.will_split = crosses_4k(addr, len, size);
+
+        if(predict_split.will_split) begin
+            total_beats    = len + 1;
+            bytes_per_beat = 13'(1) << size;
+            // bytes from addr to next 4K boundary (0x1000 aligned)
+            bytes_to_bnd = 13'h1000 - {1'b0, addr[11:0]};
+            // beats in first page = ceil(bytes_to_bnd / bytes_per_beat)
+            beats_page1 = (bytes_to_bnd + bytes_per_beat - 13'd1) >> size;
+
+            predict_split.sub1_addr = addr;
+            predict_split.sub1_len  = beats_page1 - 1;           // len = beats - 1
+            predict_split.sub2_addr = next_4k_page(addr);
+            predict_split.sub2_len  = total_beats - beats_page1 - 1;
+        end else begin
+            predict_split.sub1_addr = addr;
+            predict_split.sub1_len  = len;
+            predict_split.sub2_addr = 0;
+            predict_split.sub2_len  = 0;
+        end
+    endfunction
+
+    //---- ID extension model ----
+    // cross_4k_if adds 2-bit prefix: 2'b00=no-split, 2'b01=sub1, 2'b10=sub2
+    // M2S prepends master index (2 bits) → S-side ID = {mst_idx, c4k_prefix, orig_id}
+    static function bit[7:0] predict_sid(bit[1:0] mst_idx, bit[1:0] c4k_prefix, bit[3:0] orig_id);
+        return {mst_idx, c4k_prefix, orig_id};
+    endfunction
+
+    // Given S-side ID, extract master index
+    static function bit[1:0] get_mst_from_sid(bit[7:0] sid);
+        return sid[7:6];
+    endfunction
+
+    // Given S-side ID, extract original ID
+    static function bit[3:0] get_orig_from_sid(bit[7:0] sid);
+        return sid[3:0];
+    endfunction
+
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/model/memory_model.sv ==========
+// Simple memory model with read/write interface
+class memory_model;
+    bit[31:0] mem[bit[31:0]];
+    function void write(bit[31:0] addr, bit[31:0] data);
+        mem[addr[31:2]] = data;
+    endfunction
+    function bit[31:0] read(bit[31:0] addr);
+        if(mem.exists(addr[31:2])) return mem[addr[31:2]];
+        return 32'hDEAD_BEEF;
+    endfunction
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/model/reference_model.sv ==========
+//=============================================================================
+// Reference Model: models interconnect behavior
+// - Address decode (routing prediction)
+// - 4KB Split prediction (cross_4k_if behavior)
+// - ID extension (c4k prefix + mst index concatenation)
+// - Outstanding transaction tracking
+// - Write: updates shadow memory
+// - Read:  reads from shadow memory, predicts RID
+//=============================================================================
+class reference_model extends uvm_component;
+    `uvm_component_utils(reference_model)
+
+    // Input: master-side AW/AR from channel monitors
+    uvm_analysis_export #(axi_aw_item) aw_ap;
+    uvm_analysis_export #(axi_ar_item) ar_ap;
+    uvm_tlm_analysis_fifo #(axi_aw_item) aw_fifo;
+    uvm_tlm_analysis_fifo #(axi_ar_item) ar_fifo;
+
+    // Output: predicted slave-side AW/AR + expected B/R info
+    uvm_analysis_port #(axi_aw_item) pred_aw_ap;   // predicted slave-side AWs
+    uvm_analysis_port #(axi_ar_item) pred_ar_ap;   // predicted slave-side ARs
+
+    // Shadow memory
+    bit[31:0] shadow[bit[31:0]];
+
+    // Outstanding transaction tables
+    typedef struct {
+        bit[1:0] mst_idx; bit[3:0] orig_id;
+        bit[31:0] addr; bit[7:0] len; bit[2:0] size;
+        bit will_split; int beats_done; bit[3:0] data_q[$];  // W data queue
+    } wr_entry_t;
+    
+    typedef struct {
+        bit[1:0] mst_idx; bit[3:0] orig_id;
+        bit[31:0] addr; bit[7:0] len; bit[2:0] size;
+        bit will_split; int beats_done;
+    } rd_entry_t;
+
+    wr_entry_t wr_tbl[int];  // key={mst_idx, orig_id}
+    rd_entry_t rd_tbl[int];  // key={mst_idx, orig_id}
+
+    int wr_cnt=0, rd_cnt=0, split_cnt=0;
+
+    function new(string name="reference_model", uvm_component parent);
         super.new(name,parent);
     endfunction
 
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-        aw_ap=new("aw_ap",this); w_ap=new("w_ap",this); b_ap=new("b_ap",this);
-        ar_ap=new("ar_ap",this); r_ap=new("r_ap",this);
-        aw_fifo=new("aw_fifo",this); w_fifo=new("w_fifo",this); b_fifo=new("b_fifo",this);
-        ar_fifo=new("ar_fifo",this); r_fifo=new("r_fifo",this);
-        aw_ap.connect(aw_fifo.analysis_export); w_ap.connect(w_fifo.analysis_export);
-        b_ap.connect(b_fifo.analysis_export); ar_ap.connect(ar_fifo.analysis_export);
-        r_ap.connect(r_fifo.analysis_export);
+        aw_ap=new("aw_ap",this); ar_ap=new("ar_ap",this);
+        aw_fifo=new("aw_fifo",this); ar_fifo=new("ar_fifo",this);
+        pred_aw_ap=new("pred_aw_ap",this); pred_ar_ap=new("pred_ar_ap",this);
+        aw_ap.connect(aw_fifo.analysis_export);
+        ar_ap.connect(ar_fifo.analysis_export);
     endfunction
 
     task run_phase(uvm_phase phase);
-        fork
-            check_aw(); check_w(); check_b();
-            check_ar(); check_r();
-        join
+        fork process_aw(); process_ar(); join
     endtask
 
-    //=====================================================================
-    // AW Channel: track outstanding, check for duplicate AWID
-    //=====================================================================
-    task check_aw();
-        axi_aw_item t; int key;
+    //---- Process AW: predict split, compute expected S-side AW ----
+    task process_aw();
+        axi_aw_item t;
+        addr_decoder::split_info_t split;
+        axi_aw_item pred;
+        int key;
+        bit[31:0] beat_addr; int b;
+
         forever begin
             aw_fifo.get(t);
             if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            // VALID must not be re-asserted until B completes
-            if(wr_tbl.exists(key) && !wr_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("DUPLICATE AWID: M[%0d] id=%0d before B", t.mst_id, t.id))
-            end
-            wr_tbl[key].beats_exp = t.len + 1;
-            wr_tbl[key].beats_done = 0;
-            wr_tbl[key].done = 0;
-            wr_total++;
-        end
-    endtask
 
-    //=====================================================================
-    // W Channel: check WLAST, beat count, per-beat data presence
-    //=====================================================================
-    task check_w();
-        axi_w_item t; int key; bit found;
-        forever begin
-            w_fifo.get(t);
-            if(!t.is_master_side) continue;
-            // Find matching outstanding write by searching all entries
-            found = 0;
-            foreach(wr_tbl[k]) begin
-                if(!wr_tbl[k].done && wr_tbl[k].beats_done < wr_tbl[k].beats_exp) begin
-                    // WLAST must match beat position
-                    if(t.last && wr_tbl[k].beats_done != wr_tbl[k].beats_exp-1) begin
-                        error_cnt++;
-                        `uvm_error("PROTO", $sformatf("WLAST early: beat %0d/%0d exp_last=%0d",
-                                  wr_tbl[k].beats_done, wr_tbl[k].beats_exp, wr_tbl[k].beats_exp-1))
-                    end
-                    if(!t.last && wr_tbl[k].beats_done == wr_tbl[k].beats_exp-1) begin
-                        error_cnt++;
-                        `uvm_error("PROTO", $sformatf("WLAST missing: beat %0d/%0d should be last",
-                                  wr_tbl[k].beats_done, wr_tbl[k].beats_exp))
-                    end
-                    wr_tbl[k].beats_done++;
-                    found=1; break;
+            wr_cnt++;
+            key = {t.mst_id[1:0], t.id[3:0]};
+
+            // Predict 4KB split
+            split = addr_decoder::predict_split(t.addr, t.len, t.size);
+            if(split.will_split) split_cnt++;
+
+            // Store outstanding entry
+            wr_tbl[key].mst_idx = t.mst_id[1:0];
+            wr_tbl[key].orig_id = t.id[3:0];
+            wr_tbl[key].addr    = t.addr;
+            wr_tbl[key].len     = t.len;
+            wr_tbl[key].size    = t.size;
+            wr_tbl[key].will_split = split.will_split;
+            wr_tbl[key].beats_done = 0;
+
+            // Predict slave-side AW for sub-transaction 1
+            pred = axi_aw_item::type_id::create("pred_aw1");
+            pred.is_master_side = 0;
+            pred.slv_id = addr_decoder::decode(split.sub1_addr);
+            pred.mst_id = t.mst_id[1:0];
+            pred.id     = t.id;   // original ID
+            pred.addr   = split.sub1_addr;
+            pred.len    = split.sub1_len;
+            pred.size   = t.size;
+            pred.burst  = t.burst;
+            pred_aw_ap.write(pred);
+            `uvm_info("REFM",$sformatf("AW split1: M[%0d] id=%0d -> S[%0d] addr=0x%08h len=%0d",
+                      t.mst_id,t.id,pred.slv_id,split.sub1_addr,split.sub1_len),UVM_HIGH)
+
+            // If split: predict slave-side AW for sub-transaction 2
+            if(split.will_split) begin
+                pred = axi_aw_item::type_id::create("pred_aw2");
+                pred.is_master_side = 0;
+                pred.slv_id = addr_decoder::decode(split.sub2_addr);
+                pred.mst_id = t.mst_id[1:0];
+                pred.id     = t.id;
+                pred.addr   = split.sub2_addr;
+                pred.len    = split.sub2_len;
+                pred.size   = t.size;
+                pred.burst  = t.burst;
+                pred_aw_ap.write(pred);
+                `uvm_info("REFM",$sformatf("AW split2: M[%0d] id=%0d -> S[%0d] addr=0x%08h len=%0d",
+                          t.mst_id,t.id,pred.slv_id,split.sub2_addr,split.sub2_len),UVM_HIGH)
+            end
+
+            // Update shadow memory (predict write data effect)
+            // sub-transaction 1
+            for(b=0; b<=split.sub1_len; b++) begin
+                beat_addr = split.sub1_addr + (b << t.size);
+                shadow[beat_addr[31:2]] = 32'h0000_0000;  // placeholder
+            end
+            // sub-transaction 2 (if split)
+            if(split.will_split) begin
+                for(b=0; b<=split.sub2_len; b++) begin
+                    beat_addr = split.sub2_addr + (b << t.size);
+                    shadow[beat_addr[31:2]] = 32'h0000_0000;
                 end
             end
-            if(!found) begin
-                error_cnt++;
-                `uvm_error("PROTO", "W beat without matching outstanding AW")
-            end
         end
     endtask
 
-    //=====================================================================
-    // B Channel: check BID matches AWID, B uniqueness (one B per AW)
-    //=====================================================================
-    task check_b();
-        axi_b_item t; int key;
-        forever begin
-            b_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            if(!wr_tbl.exists(key)) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("BID mismatch: M[%0d] id=%0d no matching AW", t.mst_id, t.id))
-                continue;
-            end
-            if(wr_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("DUPLICATE B: M[%0d] id=%0d already completed", t.mst_id, t.id))
-            end
-            // Check W beats completed
-            if(wr_tbl[key].beats_done < wr_tbl[key].beats_exp) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("B before WLAST: M[%0d] id=%0d w=%0d/%0d",
-                          t.mst_id, t.id, wr_tbl[key].beats_done, wr_tbl[key].beats_exp))
-            end
-            wr_tbl[key].done = 1;
-        end
-    endtask
+    //---- Process AR: predict expected R path ----
+    task process_ar();
+        axi_ar_item t;
+        addr_decoder::split_info_t split;
+        axi_ar_item pred;
+        int key;
 
-    //=====================================================================
-    // AR Channel: track outstanding, check duplicate ARID
-    //=====================================================================
-    task check_ar();
-        axi_ar_item t; int key;
         forever begin
             ar_fifo.get(t);
             if(!t.is_master_side) continue;
+
+            rd_cnt++;
             key = {t.mst_id[1:0], t.id[3:0]};
-            if(rd_tbl.exists(key) && !rd_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("DUPLICATE ARID: M[%0d] id=%0d before RLAST", t.mst_id, t.id))
-            end
-            rd_tbl[key].beats_exp = t.len + 1;
+
+            split = addr_decoder::predict_split(t.addr, t.len, t.size);
+
+            rd_tbl[key].mst_idx = t.mst_id[1:0];
+            rd_tbl[key].orig_id = t.id[3:0];
+            rd_tbl[key].addr    = t.addr;
+            rd_tbl[key].len     = t.len;
+            rd_tbl[key].size    = t.size;
+            rd_tbl[key].will_split = split.will_split;
             rd_tbl[key].beats_done = 0;
-            rd_tbl[key].done = 0;
-            rd_total++;
+
+            // Predict slave-side AR
+            pred = axi_ar_item::type_id::create("pred_ar");
+            pred.is_master_side = 0;
+            pred.slv_id = addr_decoder::decode(split.sub1_addr);
+            pred.mst_id = t.mst_id[1:0];
+            pred.id     = t.id;
+            pred.addr   = t.addr;
+            pred.len    = t.len;
+            pred.size   = t.size;
+            pred.burst  = t.burst;
+            pred_ar_ap.write(pred);
         end
     endtask
 
-    //=====================================================================
-    // R Channel: check RID matches ARID, RLAST correctness
-    //=====================================================================
-    task check_r();
-        axi_r_item t; int key; bit found;
+    //---- Public API: predict expected RID from outstanding read table ----
+    function bit[7:0] predict_rid(bit[1:0] mst_idx, bit[3:0] orig_id);
+        return addr_decoder::predict_sid(mst_idx, 2'b00, orig_id);
+    endfunction
+
+    //---- Public API: look up shadow memory for expected read data ----
+    function bit[31:0] read_shadow(bit[31:0] addr);
+        if(shadow.exists(addr[31:2])) return shadow[addr[31:2]];
+        return 32'hDEAD_BEEF;
+    endfunction
+
+    function void report_phase(uvm_phase phase);
+        $display("REF MODEL: %0d writes, %0d reads, %0d 4KB splits predicted", wr_cnt, rd_cnt, split_cnt);
+    endfunction
+
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/scoreboard/axi_scoreboard.sv ==========
+//=============================================================================
+// Unified AXI Scoreboard: ID-based routing + per-ID data/response tracking
+//=============================================================================
+class axi_scoreboard extends uvm_scoreboard;
+    `uvm_component_utils(axi_scoreboard)
+
+    `uvm_analysis_imp_decl(_aw)
+    `uvm_analysis_imp_decl(_w)
+    `uvm_analysis_imp_decl(_b)
+    `uvm_analysis_imp_decl(_ar)
+    `uvm_analysis_imp_decl(_r)
+    `uvm_analysis_imp_decl(_slv_aw)
+    `uvm_analysis_imp_decl(_slv_ar)
+
+    uvm_analysis_imp_aw     #(axi_aw_item, axi_scoreboard) aw_imp;
+    uvm_analysis_imp_w      #(axi_w_item,  axi_scoreboard) w_imp;
+    uvm_analysis_imp_b      #(axi_b_item,  axi_scoreboard) b_imp;
+    uvm_analysis_imp_ar     #(axi_ar_item, axi_scoreboard) ar_imp;
+    uvm_analysis_imp_r      #(axi_r_item,  axi_scoreboard) r_imp;
+    uvm_analysis_imp_slv_aw #(axi_aw_item, axi_scoreboard) slv_aw_imp;
+    uvm_analysis_imp_slv_ar #(axi_ar_item, axi_scoreboard) slv_ar_imp;
+
+    uvm_tlm_analysis_fifo #(axi_aw_item) aw_r_fifo, aw_d_fifo, aw_p_fifo;
+    uvm_tlm_analysis_fifo #(axi_w_item)  w_d_fifo,  w_p_fifo;
+    uvm_tlm_analysis_fifo #(axi_b_item)  b_p_fifo;
+    uvm_tlm_analysis_fifo #(axi_ar_item) ar_r_fifo, ar_d_fifo, ar_p_fifo;
+    uvm_tlm_analysis_fifo #(axi_r_item)  r_d_fifo,  r_p_fifo;
+    uvm_tlm_analysis_fifo #(axi_aw_item) slv_aw_fifo;
+    uvm_tlm_analysis_fifo #(axi_ar_item) slv_ar_fifo;
+
+    //===== Routing: bidirectional ID-based matching =====
+    int route_err=0, route_cnt=0;
+    axi_aw_item aw_m_pending[int];   // key={mst_id,id} → master-side AW
+    axi_aw_item aw_s_pending[int];   // key={mst_id,id} → slave-side AW
+    axi_ar_item ar_m_pending[int];   // key={mst_id,id} → master-side AR
+    axi_ar_item ar_s_pending[int];   // key={mst_id,id} → slave-side AR
+
+    //===== Data =====
+    bit[31:0] shadow[bit[31:0]];
+    int data_err=0, data_cnt=0;
+
+    // Per-ID AW tracking for W data (ordered per-master via aw_key_order)
+    typedef struct { bit[3:0] id; bit[31:0] addr; bit[7:0] len; bit[2:0] size; } aw_info_t;
+    aw_info_t aw_info_pool[int];     // key={mst_id,id} → single entry
+    int       aw_key_order[4][$];    // per-master ordered ID list
+    int       aw_beat_cnt[int];      // key={mst_id,id} → beat index per AW
+
+    // Per-slave AW tracking for slave-side W → shadow writes (avoids fork race)
+    typedef aw_info_t slv_aw_q[$];
+    slv_aw_q  slv_aw_info[int];      // key=slv_id → ordered AW queue
+    int       slv_w_beat_cnt[int];   // key=slv_id → beat index
+
+    // Per-ID AR tracking for R data (supports interleaved reads)
+    typedef struct { bit[31:0] addr; bit[7:0] len; bit[2:0] size; } ar_info_t;
+    typedef ar_info_t ar_info_q[$];
+    ar_info_q ar_info_pool[int];     // key={mst_id,id} → queue
+    int       r_beat_cnt[int];       // key={mst_id,id} → beat index
+
+    //===== Response =====
+    typedef struct {
+        bit[7:0] mst_id; bit[3:0] id; bit[7:0] len; int w_beat_cnt; int b_received;
+    } wr_out_t;
+    typedef struct {
+        bit[7:0] mst_id; bit[3:0] id; bit[7:0] len; int r_beat_cnt;
+    } rd_out_t;
+    typedef wr_out_t wr_out_q[$];
+    typedef rd_out_t rd_out_q[$];
+    wr_out_q  wr_out[int];   // key={mst_id,id} → queue
+    rd_out_q  rd_out[int];
+    int wr_order[$], rd_order[$], b_order[$];
+    int resp_err=0, wr_cnt=0, rd_cnt=0, reorder_cnt=0;
+
+    function new(string n="axi_sb", uvm_component p); super.new(n,p); endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        aw_imp=new("aw_imp",this); w_imp=new("w_imp",this); b_imp=new("b_imp",this);
+        ar_imp=new("ar_imp",this); r_imp=new("r_imp",this);
+        slv_aw_imp=new("slv_aw_imp",this); slv_ar_imp=new("slv_ar_imp",this);
+        aw_r_fifo=new("aw_r_fifo",this); aw_d_fifo=new("aw_d_fifo",this); aw_p_fifo=new("aw_p_fifo",this);
+        w_d_fifo=new("w_d_fifo",this); w_p_fifo=new("w_p_fifo",this);
+        b_p_fifo=new("b_p_fifo",this);
+        ar_r_fifo=new("ar_r_fifo",this); ar_d_fifo=new("ar_d_fifo",this); ar_p_fifo=new("ar_p_fifo",this);
+        r_d_fifo=new("r_d_fifo",this); r_p_fifo=new("r_p_fifo",this);
+        slv_aw_fifo=new("slv_aw_fifo",this); slv_ar_fifo=new("slv_ar_fifo",this);
+    endfunction
+
+    function void write_aw(axi_aw_item t); aw_r_fifo.write(t); aw_d_fifo.write(t); aw_p_fifo.write(t); endfunction
+    function void write_w(axi_w_item t);  w_d_fifo.write(t);  w_p_fifo.write(t);  endfunction
+    function void write_b(axi_b_item t);  b_p_fifo.write(t);  endfunction
+    function void write_ar(axi_ar_item t); ar_r_fifo.write(t); ar_d_fifo.write(t); ar_p_fifo.write(t); endfunction
+    function void write_r(axi_r_item t);  r_d_fifo.write(t);  r_p_fifo.write(t);  endfunction
+    function void write_slv_aw(axi_aw_item t); slv_aw_fifo.write(t); endfunction
+    function void write_slv_ar(axi_ar_item t); slv_ar_fifo.write(t); endfunction
+
+    task run_phase(uvm_phase phase);
+        fork
+            collect_master_aw();  collect_slave_aw();
+            collect_master_ar();  collect_slave_ar();
+            process_aw_data();  process_slv_aw_data(); process_w_data();
+            process_ar_data();  process_r_data();
+            process_aw_resp();  process_w_resp();  process_b_resp();
+            process_ar_resp();  process_r_resp();
+        join
+    endtask
+
+    //=======================================================================
+    // 1) Routing: bidirectional ID matching (handles out-of-order arrival)
+    //=======================================================================
+
+    // ---- Write routing (AW) ----
+    task collect_master_aw();
+        axi_aw_item t; int key;
         forever begin
-            r_fifo.get(t);
+            aw_r_fifo.get(t);
             if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            if(!rd_tbl.exists(key)) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("RID mismatch: M[%0d] id=%0d no matching AR", t.mst_id, t.id))
+            key = {8'(t.mst_id), t.id};
+            if(aw_s_pending.exists(key)) begin
+                do_aw_route_check(t, aw_s_pending[key]);
+                aw_s_pending.delete(key);
+            end else begin
+                aw_m_pending[key] = t;
+            end
+        end
+    endtask
+
+    task collect_slave_aw();
+        axi_aw_item t; int key;
+        forever begin
+            slv_aw_fifo.get(t);
+            if(t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            if(aw_m_pending.exists(key)) begin
+                do_aw_route_check(aw_m_pending[key], t);
+                aw_m_pending.delete(key);
+            end else begin
+                aw_s_pending[key] = t;
+            end
+        end
+    endtask
+
+    function void do_aw_route_check(axi_aw_item m_t, axi_aw_item s_t);
+        int exp = addr_decoder::decode(m_t.addr); route_cnt++;
+        if(exp != s_t.slv_id) begin route_err++;
+            `uvm_error("ROUTE",$sformatf("WR M[%0d] addr=0x%08h exp S%0d got S%0d",
+                      m_t.mst_id, m_t.addr, exp, s_t.slv_id))
+        end
+    endfunction
+
+    // ---- Read routing (AR) ----
+    task collect_master_ar();
+        axi_ar_item t; int key;
+        forever begin
+            ar_r_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            if(ar_s_pending.exists(key)) begin
+                do_ar_route_check(t, ar_s_pending[key]);
+                ar_s_pending.delete(key);
+            end else begin
+                ar_m_pending[key] = t;
+            end
+        end
+    endtask
+
+    task collect_slave_ar();
+        axi_ar_item t; int key;
+        forever begin
+            slv_ar_fifo.get(t);
+            if(t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            if(ar_m_pending.exists(key)) begin
+                do_ar_route_check(ar_m_pending[key], t);
+                ar_m_pending.delete(key);
+            end else begin
+                ar_s_pending[key] = t;
+            end
+        end
+    endtask
+
+    function void do_ar_route_check(axi_ar_item m_t, axi_ar_item s_t);
+        int exp = addr_decoder::decode(m_t.addr); route_cnt++;
+        if(exp != s_t.slv_id) begin route_err++;
+            `uvm_error("ROUTE",$sformatf("RD M[%0d] addr=0x%08h exp S%0d got S%0d",
+                      m_t.mst_id, m_t.addr, exp, s_t.slv_id))
+        end
+    endfunction
+
+    //=======================================================================
+    // 2) Data: per-master ordered AW for W, per-ID AR for R
+    //=======================================================================
+    task process_aw_data();
+        axi_aw_item t; int key; aw_info_t info;
+        forever begin
+            aw_d_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            info.id=t.id; info.addr=t.addr; info.len=t.len; info.size=t.size;
+            aw_info_pool[key] = info;
+            aw_key_order[t.mst_id].push_back(key);
+        end
+    endtask
+
+    // Slave-side AW: populate per-slave AW queue for W beat address look-up
+    task process_slv_aw_data();
+        axi_aw_item t; aw_info_t info;
+        forever begin
+            slv_aw_fifo.get(t);
+            info.id=t.id; info.addr=t.addr; info.len=t.len; info.size=t.size;
+            slv_aw_info[t.slv_id].push_back(info);
+            if(!slv_w_beat_cnt.exists(t.slv_id)) slv_w_beat_cnt[t.slv_id] = 0;
+        end
+    endtask
+
+    task process_w_data();
+        axi_w_item t; int key; aw_info_t info; bit[31:0] addr; int bpb;
+        forever begin
+            w_d_fifo.get(t);
+            if(t.is_master_side) begin
+                // Master-side: beat counting, no shadow write (done on slave side)
+                if(aw_key_order[t.mst_id].size() == 0) begin data_err++;
+                    `uvm_error("DATA","W beat with no matching AW"); continue;
+                end
+                key = aw_key_order[t.mst_id][0];
+                info = aw_info_pool[key];
+                if(!aw_beat_cnt.exists(key)) aw_beat_cnt[key] = 0;
+                aw_beat_cnt[key]++;
+                if(t.last) begin
+                    if(aw_beat_cnt[key] != info.len+1) begin data_err++;
+                        `uvm_error("DATA",$sformatf("WR beat cnt M[%0d] id=%0d exp=%0d got=%0d",
+                                  t.mst_id, info.id, info.len+1, aw_beat_cnt[key]))
+                    end
+                    aw_info_pool.delete(key);
+                    void'(aw_key_order[t.mst_id].pop_front());
+                    aw_beat_cnt.delete(key);
+                end
+            end else begin
+                // Slave-side: write to shadow (data already committed to slave memory)
+                int s = t.slv_id;
+                if(slv_aw_info[s].size() == 0) begin
+                    // slave W with no AW — ignore (beat counting done on master side)
+                    continue;
+                end
+                info = slv_aw_info[s][0];
+                if(!slv_w_beat_cnt.exists(s)) slv_w_beat_cnt[s] = 0;
+                bpb = 1 << info.size;
+                addr = info.addr + (slv_w_beat_cnt[s] * bpb);
+                shadow[addr[31:2]] = t.data;
+                slv_w_beat_cnt[s]++;
+                if(t.last) begin
+                    void'(slv_aw_info[s].pop_front());
+                    slv_w_beat_cnt.delete(s);
+                end
+            end
+        end
+    endtask
+
+    task process_ar_data();
+        axi_ar_item t; int key; ar_info_t info;
+        forever begin
+            ar_d_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            info.addr=t.addr; info.len=t.len; info.size=t.size;
+            ar_info_pool[key].push_back(info);
+            if(!r_beat_cnt.exists(key)) r_beat_cnt[key]=0;
+        end
+    endtask
+
+    task process_r_data();
+        axi_r_item t; int key; ar_info_t info; bit[31:0] addr, exp_val; int bpb;
+        forever begin
+            r_d_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            if(ar_info_pool[key].size() == 0) begin data_err++;
+                `uvm_error("DATA","R beat with no matching AR"); continue;
+            end
+            info = ar_info_pool[key][0];   // oldest AR with this ID
+            bpb = 1 << info.size;
+            addr = info.addr + (r_beat_cnt[key] * bpb); data_cnt++;
+            exp_val = shadow.exists(addr[31:2]) ? shadow[addr[31:2]] : 32'hDEAD_BEEF;
+            if(t.data !== exp_val) begin data_err++;
+                `uvm_error("DATA",$sformatf("M[%0d] addr=0x%08h exp=0x%08h act=0x%08h",
+                          t.mst_id, addr, exp_val, t.data))
+            end
+            r_beat_cnt[key]++;
+            if(t.last) begin
+                if(r_beat_cnt[key] != info.len+1) begin data_err++;
+                    `uvm_error("DATA",$sformatf("RD beat cnt M[%0d] id=%0d exp=%0d got=%0d",
+                              t.mst_id, t.id, info.len+1, r_beat_cnt[key]))
+                end
+                void'(ar_info_pool[key].pop_front());
+                r_beat_cnt.delete(key);
+            end
+        end
+    endtask
+
+    //=======================================================================
+    // 3) Response: per-ID outstanding tracking (queue-based, same-ID ok)
+    //=======================================================================
+    task process_aw_resp();
+        axi_aw_item t; int key; wr_out_t entry;
+        forever begin
+            aw_p_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            entry.mst_id=t.mst_id; entry.id=t.id;
+            entry.len=t.len; entry.w_beat_cnt=0; entry.b_received=0;
+            wr_out[key].push_back(entry);
+            wr_order.push_back(key); wr_cnt++;
+        end
+    endtask
+
+    task process_w_resp();
+        axi_w_item t; int key; bit found;
+        forever begin
+            w_p_fifo.get(t);
+            if(!t.is_master_side) continue;
+            found=0;
+            foreach(wr_order[i]) begin
+                key=wr_order[i];
+                foreach(wr_out[key][j]) begin
+                    if(wr_out[key][j].mst_id == t.mst_id && wr_out[key][j].w_beat_cnt <= wr_out[key][j].len) begin
+                        wr_out[key][j].w_beat_cnt++;
+                        if(t.last && wr_out[key][j].w_beat_cnt != wr_out[key][j].len+1) begin resp_err++;
+                            `uvm_error("RESP",$sformatf("WLAST mismatch M[%0d] id=%0d",
+                                      wr_out[key][j].mst_id,wr_out[key][j].id))
+                        end
+                        found=1; break;
+                    end
+                end
+                if(found) break;
+            end
+            if(!found) begin resp_err++;
+                `uvm_error("RESP","W beat with no matching outstanding AW")
+            end
+        end
+    endtask
+
+    task process_b_resp();
+        axi_b_item t; int key;
+        forever begin
+            b_p_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            if(wr_out[key].size() == 0) begin resp_err++;
+                `uvm_error("RESP",$sformatf("BID mismatch M[%0d] id=%0d",t.mst_id,t.id))
                 continue;
             end
-            if(rd_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("R after RLAST: M[%0d] id=%0d", t.mst_id, t.id))
+            wr_out[key][0].b_received=1;
+            if(t.resp!=2'b00) begin resp_err++;
+                `uvm_error("RESP",$sformatf("BRESP error M[%0d] id=%0d resp=%b",t.mst_id,t.id,t.resp))
             end
-            // RLAST position check
-            if(t.last && rd_tbl[key].beats_done != rd_tbl[key].beats_exp-1) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("RLAST early: M[%0d] id=%0d beat %0d/%0d exp_last=%0d",
-                          t.mst_id, t.id, rd_tbl[key].beats_done, rd_tbl[key].beats_exp, rd_tbl[key].beats_exp-1))
+            if(wr_out[key][0].w_beat_cnt < wr_out[key][0].len+1) begin resp_err++;
+                `uvm_error("RESP",$sformatf("B before WLAST M[%0d] id=%0d",t.mst_id,t.id))
             end
-            if(!t.last && rd_tbl[key].beats_done == rd_tbl[key].beats_exp-1) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("RLAST missing: M[%0d] id=%0d beat %0d/%0d",
-                          t.mst_id, t.id, rd_tbl[key].beats_done, rd_tbl[key].beats_exp))
+            b_order.push_back(key);
+            void'(wr_out[key].pop_front());
+            if(wr_out[key].size() == 0) begin
+                for(int i=0; i<wr_order.size(); i++)
+                    if(wr_order[i]==key) begin wr_order.delete(i); break; end
             end
-            rd_tbl[key].beats_done++;
-            if(t.last) rd_tbl[key].done = 1;
+        end
+    endtask
+
+    task process_ar_resp();
+        axi_ar_item t; int key; rd_out_t entry;
+        forever begin
+            ar_p_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            entry.mst_id=t.mst_id; entry.id=t.id;
+            entry.len=t.len; entry.r_beat_cnt=0;
+            rd_out[key].push_back(entry);
+            rd_order.push_back(key); rd_cnt++;
+        end
+    endtask
+
+    task process_r_resp();
+        axi_r_item t; int key;
+        forever begin
+            r_p_fifo.get(t);
+            if(!t.is_master_side) continue;
+            key = {8'(t.mst_id), t.id};
+            if(rd_out[key].size() == 0) begin resp_err++;
+                `uvm_error("RESP",$sformatf("RID mismatch M[%0d] id=%0d",t.mst_id,t.id))
+                continue;
+            end
+            rd_out[key][0].r_beat_cnt++;
+            if(t.resp!=2'b00) begin resp_err++;
+                `uvm_error("RESP",$sformatf("RRESP error M[%0d] id=%0d resp=%b",t.mst_id,t.id,t.resp))
+            end
+            if(t.last && rd_out[key][0].r_beat_cnt != rd_out[key][0].len+1) begin resp_err++;
+                `uvm_error("RESP",$sformatf("RLAST mismatch M[%0d] id=%0d",t.mst_id,t.id))
+            end
+            if(rd_order.size()>0 && rd_order[0]!=key) reorder_cnt++;
+            if(t.last) begin
+                void'(rd_out[key].pop_front());
+                if(rd_out[key].size() == 0) begin
+                    for(int i=0; i<rd_order.size(); i++)
+                        if(rd_order[i]==key) begin rd_order.delete(i); break; end
+                end
+            end
         end
     endtask
 
     function void report_phase(uvm_phase phase);
-        $display("PROTOCOL CHECKER: %0d writes, %0d reads, %0d protocol errors",
-                 wr_total, rd_total, error_cnt);
+        $display("AXI SCOREBOARD:");
+        $display("  Routing : %0d checks, %0d errors", route_cnt, route_err);
+        $display("  Data    : %0d checks, %0d errors", data_cnt, data_err);
+        $display("  Response: %0d writes, %0d reads, %0d errors, %0d reorder events",
+                 wr_cnt, rd_cnt, resp_err, reorder_cnt);
     endfunction
 
 endclass
 
-==============================================================================
-  FILE: uvm/tests/smoke_test.sv
-==============================================================================
-// Smoke Test: single write+read per master, basic connectivity
-class smoke_test extends axi_test_base;
-    `uvm_component_utils(smoke_test)
-    
-    function new(string n="smoke_test", uvm_component p); 
-        super.new(n,p); 
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/arb_vseq.sv ==========
+//=============================================================================
+// Arbitration Virtual Sequence: 4 masters -> same slave concurrently, two phases
+// Phase 1: all 4 masters write to slave 0
+// Phase 2: all 4 masters read from slave 0
+//=============================================================================
+`ifndef ARB_VSEQ_SV
+`define ARB_VSEQ_SV
+
+class arb_vseq extends axi_virtual_sequence;
+
+    `uvm_object_utils(arb_vseq)
+
+    function new(string name = "arb_vseq");
+        super.new(name);
     endfunction
 
-    task run_phase(uvm_phase phase);
-        phase.raise_objection(this);
-        for(int m=0; m<4; m++) begin
-            axi_base_seq seq = axi_base_seq::type_id::create("seq");
-            seq.mst_id = m;
-            seq.start(env.master_agents[m].sqr);
+    virtual task body();
+        // Phase 1: all 4 masters write to same slave concurrently
+        fork
+            for (int m = 0; m < 4; m++) begin
+                automatic int mid = m;
+                axi_base_seq seq_wr = axi_base_seq::type_id::create($sformatf("seq_wr_m%0d", mid));
+                seq_wr.mst_id   = mid;
+                seq_wr.is_write = 1;
+                seq_wr.addr     = 32'h100;
+                start_on(mid, seq_wr);
+            end
+        join
+
+        // Phase 2: all 4 masters read back from same address
+        fork
+            for (int m = 0; m < 4; m++) begin
+                automatic int mid = m;
+                axi_base_seq seq_rd = axi_base_seq::type_id::create($sformatf("seq_rd_m%0d", mid));
+                seq_rd.mst_id   = mid;
+                seq_rd.is_write = 0;
+                seq_rd.addr     = 32'h100;
+                start_on(mid, seq_rd);
+            end
+        join
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/axi_base_seq.sv ==========
+// Base Sequence: single random write or read
+class axi_base_seq extends uvm_sequence #(axi_transaction);
+    `uvm_object_utils(axi_base_seq)
+    int          mst_id   = 0;
+    bit          is_write = 1;      // 1=write, 0=read, set by test
+    bit [31:0] addr;                // set by test to share between WR/RD
+    bit [3:0]   seq_id   = 0;      // unique per-sequence ID, set by test
+
+    function new(string n="axi_base_seq");
+        super.new(n);
+    endfunction
+
+    task body();
+        axi_transaction t = axi_transaction::type_id::create("t");
+        start_item(t);
+
+        if(!t.randomize() with { mst_id == local::mst_id;
+                                  is_write == local::is_write;
+                                  addr == local::addr;
+                                  id == local::seq_id;
+                                  // don't cross 4KB boundary
+                                  (addr[11:0] + ((len + 1) << size)) <= 13'h1000; })
+            `uvm_fatal("SEQ","randomize failed")
+
+        finish_item(t);
+    endtask
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/axi_virtual_sequence.sv ==========
+//=============================================================================
+// AXI Virtual Sequence: coordinates sequences across multiple sequencers
+//=============================================================================
+`ifndef AXI_VIRTUAL_SEQUENCE_SV
+`define AXI_VIRTUAL_SEQUENCE_SV
+
+class axi_virtual_sequence extends uvm_sequence;
+
+    axi_virtual_sequencer vsqr;
+
+    `uvm_object_utils(axi_virtual_sequence)
+
+    function new(string name = "axi_virtual_sequence");
+        super.new(name);
+    endfunction
+
+    // Grab the virtual sequencer handle from the sequencer this sequence runs on
+    virtual task pre_body();
+        if (!$cast(vsqr, get_sequencer()))
+            `uvm_fatal("VSQR", "Virtual sequence must run on axi_virtual_sequencer")
+    endtask
+
+    // Convenience: launch a child sequence on a specific master sequencer
+    virtual task start_on(int mst_id, uvm_sequence #(axi_transaction) seq);
+        if (mst_id < 0 || mst_id > 3)
+            `uvm_fatal("VSQR", $sformatf("Invalid mst_id %0d in start_on", mst_id))
+        seq.start(vsqr.sqr[mst_id]);
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/axi_virtual_sequencer.sv ==========
+//=============================================================================
+// AXI Virtual Sequencer: holds handles to all 4 master sequencers
+//=============================================================================
+`ifndef AXI_VIRTUAL_SEQUENCER_SV
+`define AXI_VIRTUAL_SEQUENCER_SV
+
+class axi_virtual_sequencer extends uvm_sequencer;
+
+    axi_sequencer sqr[4];
+
+    `uvm_component_utils(axi_virtual_sequencer)
+
+    function new(string name = "axi_virtual_sequencer", uvm_component parent);
+        super.new(name, parent);
+    endfunction
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/burst_seq.sv ==========
+// Burst Sequence: multi-beat INCR burst
+class burst_seq extends uvm_sequence #(axi_transaction);
+    `uvm_object_utils(burst_seq)
+    int mst_id=0; 
+    bit[31:0] base_addr=0; 
+    bit[7:0] burst_len=3;
+
+    function new(string n="burst_seq"); 
+        super.new(n); 
+    endfunction
+
+    task body();
+        axi_transaction t = axi_transaction::type_id::create("t");
+        start_item(t);
+        if(!t.randomize() with { mst_id==local::mst_id; addr==local::base_addr;
+            len==local::burst_len; burst==2'b01; size==2;
+            is_write dist {1:=1, 0:=1}; }) `uvm_fatal("SEQ","randomize failed")
+        finish_item(t);
+    endtask
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/burst_vseq.sv ==========
+//=============================================================================
+// Burst Virtual Sequence: one multi-beat INCR burst per master, sequential
+//=============================================================================
+`ifndef BURST_VSEQ_SV
+`define BURST_VSEQ_SV
+
+class burst_vseq extends axi_virtual_sequence;
+
+    `uvm_object_utils(burst_vseq)
+
+    function new(string name = "burst_vseq");
+        super.new(name);
+    endfunction
+
+    virtual task body();
+        for (int m = 0; m < 4; m++) begin
+            burst_seq seq = burst_seq::type_id::create($sformatf("bseq_m%0d", m));
+            seq.mst_id    = m;
+            seq.base_addr = m * 32'h2000;
+            seq.burst_len = (m + 1) * 2 - 1;
+            start_on(m, seq);
         end
-        #1000;
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/outstanding_seq.sv ==========
+// Outstanding Sequence: sends multiple AW/AR before waiting for responses
+class outstanding_seq extends uvm_sequence #(axi_transaction);
+    `uvm_object_utils(outstanding_seq)
+    int mst_id=0; 
+    int count=4;
+
+    function new(string n="outstanding_seq"); 
+        super.new(n); 
+    endfunction
+
+    task body();
+        axi_transaction t; int i;
+        for(i=0; i<count; i++) begin
+            t = axi_transaction::type_id::create("t");
+            start_item(t);
+            if(!t.randomize() with { mst_id==local::mst_id; addr inside {[0:16'h1FFF]};
+                len==0; is_write dist {1:=1, 0:=1}; }) `uvm_fatal("SEQ","randomize failed")
+            finish_item(t);
+        end
+    endtask
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/outstanding_vseq.sv ==========
+//=============================================================================
+// Outstanding Virtual Sequence: all 4 masters send outstanding transactions concurrently
+// Each master fires `count` transactions back-to-back without waiting for responses
+//=============================================================================
+`ifndef OUTSTANDING_VSEQ_SV
+`define OUTSTANDING_VSEQ_SV
+
+class outstanding_vseq extends axi_virtual_sequence;
+
+    `uvm_object_utils(outstanding_vseq)
+
+    int count = 4;      // transactions per master
+
+    function new(string name = "outstanding_vseq");
+        super.new(name);
+    endfunction
+
+    virtual task body();
+        fork
+            for (int m = 0; m < 4; m++) begin
+                automatic int mid = m;
+                outstanding_seq seq = outstanding_seq::type_id::create($sformatf("oseq_m%0d", mid));
+                seq.mst_id = mid;
+                seq.count  = count;
+                start_on(mid, seq);
+            end
+        join
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/smoke_vseq.sv ==========
+//=============================================================================
+// Smoke Virtual Sequence: 4x4 crossbar write+read per master/slave pair
+//=============================================================================
+`ifndef SMOKE_VSEQ_SV
+`define SMOKE_VSEQ_SV
+
+class smoke_vseq extends axi_virtual_sequence;
+
+    `uvm_object_utils(smoke_vseq)
+
+    function new(string name = "smoke_vseq");
+        super.new(name);
+    endfunction
+
+    virtual task body();
+        bit [31:0] shared_addr;
+        bit [3:0]  id_cnt;
+        bit [31:0] slv_base[4] = '{32'h0000, 32'h2000, 32'h4000, 32'h6000};
+
+        for (int m = 0; m < 4; m++) begin
+            for (int s = 0; s < 4; s++) begin
+                axi_base_seq seq_wr, seq_rd;
+                shared_addr = (slv_base[s] | ($urandom & 32'h1FFF)) & ~32'h3;
+
+                seq_wr = axi_base_seq::type_id::create($sformatf("seq_wr_m%0d_s%0d", m, s));
+                seq_wr.mst_id   = m;
+                seq_wr.is_write = 1;
+                seq_wr.addr     = shared_addr;
+                seq_wr.seq_id   = id_cnt++;
+                start_on(m, seq_wr);
+
+                seq_rd = axi_base_seq::type_id::create($sformatf("seq_rd_m%0d_s%0d", m, s));
+                seq_rd.mst_id   = m;
+                seq_rd.is_write = 0;
+                seq_rd.addr     = shared_addr;
+                seq_rd.seq_id   = id_cnt++;
+                start_on(m, seq_rd);
+            end
+        end
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/split4k_seq.sv ==========
+// 4KB Split Sequence: randomly picks a 4K boundary, crosses it once
+class split4k_seq extends uvm_sequence #(axi_transaction);
+    `uvm_object_utils(split4k_seq)
+    int  mst_id   = 0;
+    bit  is_write = 1;       // 1=write, 0=read
+
+    rand bit [31:0] addr;
+    rand bit [7:0]  len;
+    rand bit [2:0]  size;
+    rand bit [1:0]  burst;
+
+    rand bit [31:0] boundary;     // 4K-aligned boundary to cross
+    rand bit [11:0] pre_offset;   // bytes before the boundary
+    rand bit [11:0] post_bytes;   // bytes after the boundary
+
+    constraint c_cross_4k {
+        // ---- constraints matching axi_transaction ----
+        size  == 2;                               // 4 bytes/beat
+        len   inside {[0:15]};                    // 1~16 beats
+        burst == 2'b01;                           // INCR
+        // ---- pick a random 4K boundary ----
+        boundary[11:0] == 12'h000;
+        boundary inside {[32'h1000:32'h7000]};
+        // ---- cross with alignment ----
+        // total_bytes = (len+1)*4, must be 4-byte aligned and ≤ 64
+        pre_offset inside {4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60};
+        post_bytes inside {4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60};
+        pre_offset + post_bytes == (len + 1) * 4;
+        // derive addr (word-aligned, since boundary and pre_offset are aligned)
+        addr == boundary - pre_offset;
+    }
+
+    function new(string n="split4k_seq");
+        super.new(n);
+    endfunction
+
+    task body();
+        axi_transaction t = axi_transaction::type_id::create("t");
+        start_item(t);
+        void'(t.randomize() with {
+            mst_id   == local::mst_id;
+            len      == local::len;
+            burst    == local::burst;
+            size     == local::size;
+            is_write == local::is_write;
+        });
+        t.addr = addr;          // assign after randomization to bypass addr_range_c
+        finish_item(t);
+    endtask
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/split4k_vseq.sv ==========
+//=============================================================================
+// Split4K Virtual Sequence: write-then-read across a 4KB boundary
+//=============================================================================
+`ifndef SPLIT4K_VSEQ_SV
+`define SPLIT4K_VSEQ_SV
+
+class split4k_vseq extends axi_virtual_sequence;
+
+    `uvm_object_utils(split4k_vseq)
+
+    function new(string name = "split4k_vseq");
+        super.new(name);
+    endfunction
+
+    virtual task body();
+        split4k_seq seq_wr, seq_rd;
+
+        // Randomize write params
+        seq_wr = split4k_seq::type_id::create("seq_wr");
+        seq_wr.is_write = 1;
+        seq_wr.mst_id   = $urandom_range(0, 3);
+        if (!seq_wr.randomize())
+            `uvm_fatal("SEQ", "split4k_seq write randomize failed")
+        `uvm_info("VSEQ", $sformatf("split4k WR m=%0d: addr=0x%08h len=%0d size=%0d burst=%0d",
+                 seq_wr.mst_id, seq_wr.addr, seq_wr.len, seq_wr.size, seq_wr.burst), UVM_NONE)
+        start_on(seq_wr.mst_id, seq_wr);
+
+        // Read back with same addr/len/size/burst, independent master
+        seq_rd = split4k_seq::type_id::create("seq_rd");
+        seq_rd.is_write = 0;
+        seq_rd.mst_id   = $urandom_range(0, 3);
+        seq_rd.addr     = seq_wr.addr;
+        seq_rd.len      = seq_wr.len;
+        seq_rd.size     = seq_wr.size;
+        seq_rd.burst    = seq_wr.burst;
+        `uvm_info("VSEQ", $sformatf("split4k RD m=%0d: addr=0x%08h len=%0d size=%0d burst=%0d",
+                 seq_rd.mst_id, seq_rd.addr, seq_rd.len, seq_rd.size, seq_rd.burst), UVM_NONE)
+        start_on(seq_rd.mst_id, seq_rd);
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/stress_seq.sv ==========
+// Stress Sequence: randomized multi-master concurrent transactions
+class stress_seq extends uvm_sequence #(axi_transaction);
+    `uvm_object_utils(stress_seq)
+    int mst_id=0;
+    int tx_count=16;
+
+    function new(string n="stress_seq");
+        super.new(n);
+    endfunction
+
+    task body();
+        axi_transaction t; int i;
+        for(i=0; i<tx_count; i++) begin
+            t = axi_transaction::type_id::create("t");
+            start_item(t);
+            if (!t.randomize() with { mst_id==local::mst_id; len inside {[0:15]};
+                burst == 1; size == 2;
+                is_write dist {1:=1, 0:=1};
+            }) `uvm_fatal("SEQ","randomize failed")
+            finish_item(t);
+        end
+    endtask
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/sequence/stress_vseq.sv ==========
+//=============================================================================
+// Stress Virtual Sequence: all 4 masters send randomized transactions concurrently
+//=============================================================================
+`ifndef STRESS_VSEQ_SV
+`define STRESS_VSEQ_SV
+
+class stress_vseq extends axi_virtual_sequence;
+
+    `uvm_object_utils(stress_vseq)
+
+    int tx_count = 32;   // transactions per master
+
+    function new(string name = "stress_vseq");
+        super.new(name);
+    endfunction
+
+    virtual task body();
+        fork
+            for (int m = 0; m < 4; m++) begin
+                automatic int mid = m;
+                stress_seq seq = stress_seq::type_id::create($sformatf("sseq_m%0d", mid));
+                seq.mst_id = mid;
+                seq.tx_count = tx_count;
+                start_on(mid, seq);
+            end
+        join
+    endtask
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tb/axi_env.sv ==========
+//=============================================================================
+// AXI Environment: 4 master agents + 4 slave agents
+// Each agent contains a unified 5-channel monitor (AW/W/B/AR/R)
+// Unified scoreboard + reference model + coverage
+//=============================================================================
+class axi_env extends uvm_env;
+    `uvm_component_utils(axi_env)
+
+    virtual axi_if vif;
+
+    // Agents
+    axi_master_agent master_agents[4];
+    axi_slave_agent  slave_agents[4];
+
+    // Virtual Sequencer
+    axi_virtual_sequencer vsqr;
+
+    // Scoreboard + Reference Model
+    axi_scoreboard      sb;
+    reference_model     refm;
+    axi_cov             cov;
+    axi_protocol_checker proto_chk;
+
+    function new(string n="axi_env", uvm_component p); super.new(n,p); endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        if(!uvm_config_db #(virtual axi_if)::get(this,"","vif",vif))
+            `uvm_fatal("NOVIF","vif not found")
+
+        // Agents (each contains driver + sequencer + unified monitor)
+        for(int i=0; i<4; i++) begin
+            master_agents[i]=axi_master_agent::type_id::create($sformatf("mst_ag%0d",i),this);
+            master_agents[i].mst_id=i;
+            slave_agents[i] =axi_slave_agent::type_id::create($sformatf("slv_ag%0d",i),this);
+            slave_agents[i].slv_id=i;
+        end
+
+        // Virtual Sequencer
+        vsqr = axi_virtual_sequencer::type_id::create("vsqr", this);
+
+        // Scoreboard + Reference Model
+        sb    =axi_scoreboard::type_id::create("sb",this);
+        refm  =reference_model::type_id::create("refm",this);
+        cov      =axi_cov::type_id::create("cov",this);
+        proto_chk=axi_protocol_checker::type_id::create("proto_chk",this);
+    endfunction
+
+    function void connect_phase(uvm_phase phase);
+        super.connect_phase(phase);
+
+        // Connect master sequencers to virtual sequencer
+        for(int i=0; i<4; i++) begin
+            vsqr.sqr[i] = master_agents[i].sqr;
+        end
+
+        // Distribute vif to all agents and their monitors
+        for(int i=0; i<4; i++) begin
+            master_agents[i].drv.vif = vif;
+            master_agents[i].mon.vif = vif;
+            slave_agents[i].vif = vif;
+            slave_agents[i].mon.vif = vif;
+        end
+
+        //==== Master-side connections (per agent) ====
+        for(int i=0; i<4; i++) begin
+            // AW -> scoreboard + refm + cov + proto_chk
+            master_agents[i].mon.ap_aw.connect(sb.aw_imp);
+            master_agents[i].mon.ap_aw.connect(refm.aw_ap);
+            master_agents[i].mon.ap_aw.connect(cov.aw_ap);
+            master_agents[i].mon.ap_aw.connect(proto_chk.aw_imp);
+
+            // W -> scoreboard + proto_chk
+            master_agents[i].mon.ap_w.connect(sb.w_imp);
+            master_agents[i].mon.ap_w.connect(proto_chk.w_imp);
+
+            // B -> scoreboard + cov + proto_chk
+            master_agents[i].mon.ap_b.connect(sb.b_imp);
+            master_agents[i].mon.ap_b.connect(cov.b_ap);
+            master_agents[i].mon.ap_b.connect(proto_chk.b_imp);
+
+            // AR -> scoreboard + refm + cov + proto_chk
+            master_agents[i].mon.ap_ar.connect(sb.ar_imp);
+            master_agents[i].mon.ap_ar.connect(refm.ar_ap);
+            master_agents[i].mon.ap_ar.connect(cov.ar_ap);
+            master_agents[i].mon.ap_ar.connect(proto_chk.ar_imp);
+
+            // R -> scoreboard + cov + proto_chk
+            master_agents[i].mon.ap_r.connect(sb.r_imp);
+            master_agents[i].mon.ap_r.connect(cov.r_ap);
+            master_agents[i].mon.ap_r.connect(proto_chk.r_imp);
+        end
+
+        //==== Slave-side connections (per agent) ====
+        for(int i=0; i<4; i++) begin
+            slave_agents[i].mon.ap_aw.connect(sb.slv_aw_imp);
+            slave_agents[i].mon.ap_ar.connect(sb.slv_ar_imp);
+            slave_agents[i].mon.ap_w.connect(sb.w_imp);
+            slave_agents[i].mon.ap_b.connect(sb.b_imp);
+            slave_agents[i].mon.ap_r.connect(sb.r_imp);
+        end
+    endfunction
+
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tb/axi_if.sv ==========
+//=============================================================================
+// AXI Interface: parameterized 4-Master x 4-Slave interconnect ports
+//=============================================================================
+`ifndef AXI_IF_SV
+`define AXI_IF_SV
+
+interface axi_if #(
+    parameter MST_AMT       = 4,
+    parameter SLV_AMT       = 4,
+    parameter W_ID          = 4,
+    parameter W_CID         = 2,
+    parameter W_SID         = $clog2(MST_AMT) + W_CID + W_ID,
+    parameter ADDR_WIDTH    = 32,
+    parameter DATA_WIDTH    = 32,
+    parameter LEN_W         = 8,
+    parameter SIZE_W        = 3,
+    parameter BURST_W       = 2,
+    parameter RESP_W        = 2,
+    parameter W_STRB        = DATA_WIDTH / 8
+)(
+    input wire ACLK,
+    input wire ARSTn
+);
+
+    //---- Master-side (interconnect M_AXI ports) ----
+    wire [W_ID*MST_AMT-1:0]            M_AWID;
+    wire [ADDR_WIDTH*MST_AMT-1:0]      M_AWADDR;
+    wire [LEN_W*MST_AMT-1:0]           M_AWLEN;
+    wire [SIZE_W*MST_AMT-1:0]          M_AWSIZE;
+    wire [BURST_W*MST_AMT-1:0]         M_AWBURST;
+    wire [MST_AMT-1:0]                 M_AWVALID;
+    wire [MST_AMT-1:0]                 M_AWREADY;
+
+    wire [DATA_WIDTH*MST_AMT-1:0]      M_WDATA;
+    wire [W_STRB*MST_AMT-1:0]          M_WSTRB;
+    wire [MST_AMT-1:0]                 M_WLAST;
+    wire [MST_AMT-1:0]                 M_WVALID;
+    wire [MST_AMT-1:0]                 M_WREADY;
+
+    wire [W_ID*MST_AMT-1:0]            M_BID;
+    wire [RESP_W*MST_AMT-1:0]          M_BRESP;
+    wire [MST_AMT-1:0]                 M_BVALID;
+    wire [MST_AMT-1:0]                 M_BREADY;
+
+    wire [W_ID*MST_AMT-1:0]            M_ARID;
+    wire [ADDR_WIDTH*MST_AMT-1:0]      M_ARADDR;
+    wire [LEN_W*MST_AMT-1:0]           M_ARLEN;
+    wire [SIZE_W*MST_AMT-1:0]          M_ARSIZE;
+    wire [BURST_W*MST_AMT-1:0]         M_ARBURST;
+    wire [MST_AMT-1:0]                 M_ARVALID;
+    wire [MST_AMT-1:0]                 M_ARREADY;
+
+    wire [W_ID*MST_AMT-1:0]            M_RID;
+    wire [DATA_WIDTH*MST_AMT-1:0]      M_RDATA;
+    wire [RESP_W*MST_AMT-1:0]          M_RRESP;
+    wire [MST_AMT-1:0]                 M_RLAST;
+    wire [MST_AMT-1:0]                 M_RVALID;
+    wire [MST_AMT-1:0]                 M_RREADY;
+
+    //---- Slave-side (interconnect S_AXI ports) ----
+    wire [W_SID*SLV_AMT-1:0]           S_AWID;
+    wire [ADDR_WIDTH*SLV_AMT-1:0]      S_AWADDR;
+    wire [LEN_W*SLV_AMT-1:0]           S_AWLEN;
+    wire [SIZE_W*SLV_AMT-1:0]          S_AWSIZE;
+    wire [BURST_W*SLV_AMT-1:0]         S_AWBURST;
+    wire [SLV_AMT-1:0]                 S_AWVALID;
+    wire [SLV_AMT-1:0]                 S_AWREADY;
+
+    wire [DATA_WIDTH*SLV_AMT-1:0]      S_WDATA;
+    wire [W_STRB*SLV_AMT-1:0]          S_WSTRB;
+    wire [SLV_AMT-1:0]                 S_WLAST;
+    wire [SLV_AMT-1:0]                 S_WVALID;
+    wire [SLV_AMT-1:0]                 S_WREADY;
+
+    wire [W_SID*SLV_AMT-1:0]           S_BID;
+    wire [RESP_W*SLV_AMT-1:0]          S_BRESP;
+    wire [SLV_AMT-1:0]                 S_BVALID;
+    wire [SLV_AMT-1:0]                 S_BREADY;
+
+    wire [W_SID*SLV_AMT-1:0]           S_ARID;
+    wire [ADDR_WIDTH*SLV_AMT-1:0]      S_ARADDR;
+    wire [LEN_W*SLV_AMT-1:0]           S_ARLEN;
+    wire [SIZE_W*SLV_AMT-1:0]          S_ARSIZE;
+    wire [BURST_W*SLV_AMT-1:0]         S_ARBURST;
+    wire [SLV_AMT-1:0]                 S_ARVALID;
+    wire [SLV_AMT-1:0]                 S_ARREADY;
+
+    wire [W_SID*SLV_AMT-1:0]           S_RID;
+    wire [DATA_WIDTH*SLV_AMT-1:0]      S_RDATA;
+    wire [RESP_W*SLV_AMT-1:0]          S_RRESP;
+    wire [SLV_AMT-1:0]                 S_RLAST;
+    wire [SLV_AMT-1:0]                 S_RVALID;
+    wire [SLV_AMT-1:0]                 S_RREADY;
+
+    //---- Modports ----
+    modport master_mp (
+        input ACLK, ARSTn,
+        output M_AWID, M_AWADDR, M_AWLEN, M_AWSIZE, M_AWBURST, M_AWVALID,
+        input  M_AWREADY,
+        output M_WDATA, M_WSTRB, M_WLAST, M_WVALID,
+        input  M_WREADY,
+        input  M_BID, M_BRESP, M_BVALID,
+        output M_BREADY,
+        output M_ARID, M_ARADDR, M_ARLEN, M_ARSIZE, M_ARBURST, M_ARVALID,
+        input  M_ARREADY,
+        input  M_RID, M_RDATA, M_RRESP, M_RLAST, M_RVALID,
+        output M_RREADY
+    );
+
+    modport slave_mp (
+        input ACLK, ARSTn,
+        input  S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID,
+        output S_AWREADY,
+        input  S_WDATA, S_WSTRB, S_WLAST, S_WVALID,
+        output S_WREADY,
+        output S_BID, S_BRESP, S_BVALID,
+        input  S_BREADY,
+        input  S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID,
+        output S_ARREADY,
+        output S_RID, S_RDATA, S_RRESP, S_RLAST, S_RVALID,
+        input  S_RREADY
+    );
+
+    modport monitor_mp (
+        input ACLK, ARSTn,
+        input M_AWID, M_AWADDR, M_AWLEN, M_AWSIZE, M_AWBURST, M_AWVALID, M_AWREADY,
+        input M_WDATA, M_WSTRB, M_WLAST, M_WVALID, M_WREADY,
+        input M_BID, M_BRESP, M_BVALID, M_BREADY,
+        input M_ARID, M_ARADDR, M_ARLEN, M_ARSIZE, M_ARBURST, M_ARVALID, M_ARREADY,
+        input M_RID, M_RDATA, M_RRESP, M_RLAST, M_RVALID, M_RREADY,
+        input S_AWID, S_AWADDR, S_AWLEN, S_AWSIZE, S_AWBURST, S_AWVALID, S_AWREADY,
+        input S_WDATA, S_WSTRB, S_WLAST, S_WVALID, S_WREADY,
+        input S_BID, S_BRESP, S_BVALID, S_BREADY,
+        input S_ARID, S_ARADDR, S_ARLEN, S_ARSIZE, S_ARBURST, S_ARVALID, S_ARREADY,
+        input S_RID, S_RDATA, S_RRESP, S_RLAST, S_RVALID, S_RREADY
+    );
+
+endinterface
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tb/axi_pkg.sv ==========
+//=============================================================================
+// AXI UVM Package: includes all UVM components
+//=============================================================================
+`ifndef AXI_PKG_SV
+`define AXI_PKG_SV
+
+package axi_pkg;
+
+    import uvm_pkg::*;
+    `include "uvm_macros.svh"
+
+    //---- Parameters ----
+    localparam MST_AMT    = 4;
+    localparam SLV_AMT    = 4;
+    localparam W_ID       = 4;
+    localparam W_CID      = 2;
+    localparam W_SID      = $clog2(MST_AMT) + W_CID + W_ID;
+    localparam ADDR_WIDTH = 32;
+    localparam DATA_WIDTH = 32;
+    localparam LEN_W      = 8;
+    localparam SIZE_W     = 3;
+    localparam BURST_W    = 2;
+    localparam RESP_W     = 2;
+    localparam W_STRB     = DATA_WIDTH / 8;
+
+    // Address map: bits [31:13] select slave, 8KB per slave
+    localparam bit [ADDR_WIDTH-1:0] SLV_ADDR_BASE [0:SLV_AMT-1] = '{
+        32'h0000_0000,   // slave 0
+        32'h0000_2000,   // slave 1
+        32'h0000_4000,   // slave 2
+        32'h0000_6000    // slave 3
+    };
+    localparam bit [7:0] SLV_ADDR_LEN = 8'd13;
+
+    //---- Transaction ----
+    `include "axi_transaction.sv"
+
+    //---- Channel transaction items ----
+    `include "axi_channel_items.sv"
+
+    //---- Interface ----
+
+    //---- Agent components ----
+    `include "axi_sequencer.sv"
+    `include "axi_driver.sv"
+    `include "axi_monitor.sv"
+    `include "axi_master_agent.sv"
+    `include "axi_slave_agent.sv"
+
+    //---- Sequences ----
+    `include "axi_virtual_sequencer.sv"
+    `include "axi_virtual_sequence.sv"
+    `include "axi_base_seq.sv"
+    `include "burst_seq.sv"
+    `include "outstanding_seq.sv"
+    `include "outstanding_vseq.sv"
+    `include "split4k_seq.sv"
+    `include "stress_seq.sv"
+    `include "smoke_vseq.sv"
+    `include "burst_vseq.sv"
+    `include "split4k_vseq.sv"
+    `include "stress_vseq.sv"
+    `include "arb_vseq.sv"
+
+    //---- Model ----
+    `include "addr_decoder.sv"
+    `include "memory_model.sv"
+    `include "reference_model.sv"
+
+    //---- Scoreboard ----
+    `include "axi_scoreboard.sv"
+
+    //---- Coverage ----
+    `include "axi_cov.sv"
+    `include "axi_protocol_checker.sv"
+
+    //---- Environment ----
+    `include "axi_env.sv"
+
+    //---- Tests ----
+    `include "axi_test_base.sv"
+    `include "smoke_test.sv"
+    `include "burst_test.sv"
+    `include "arb_test.sv"
+    `include "split4k_test.sv"
+    `include "stress_test.sv"
+    `include "outstanding_test.sv"
+
+endpackage
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tb/axi_test_base.sv ==========
+// Base Test: sets up env, provides virtual sequence infrastructure
+class axi_test_base extends uvm_test;
+    `uvm_component_utils(axi_test_base)
+    axi_env env;
+
+    function new(string n="axi_test_base", uvm_component p);
+        super.new(n,p);
+    endfunction
+
+    function void build_phase(uvm_phase phase);
+        super.build_phase(phase);
+        env = axi_env::type_id::create("env", this);
+    endfunction
+
+    function void end_of_elaboration_phase(uvm_phase phase);
+        uvm_top.print_topology();
+    endfunction
+
+    // Convenience: run a virtual sequence on the virtual sequencer
+    virtual task run_vseq(axi_virtual_sequence vseq);
+        vseq.start(env.vsqr);
+    endtask
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tb/axi_transaction.sv ==========
+//=============================================================================
+// Unified AXI Transaction Item
+//=============================================================================
+`ifndef AXI_TRANSACTION_SV
+`define AXI_TRANSACTION_SV
+
+class axi_transaction extends uvm_sequence_item;
+
+    //---- Control ----
+    rand bit                is_write;       // 1=write, 0=read
+
+    //---- Address phase ----
+    rand bit [3:0]          id;             // transaction ID
+    rand bit [31:0]         addr;           // start address
+    rand bit [7:0]          len;            // burst length (beats = len + 1)
+    rand bit [2:0]          size;           // bytes per beat = 2^size
+    rand bit [1:0]          burst;          // burst type: FIXED=00, INCR=01, WRAP=10
+    rand bit [3:0]          strb [];        // W strobes per beat (writes only)
+
+    //---- Data (write data or expected read data) ----
+    rand bit [31:0]         data [];        // data payload per beat
+
+    //---- Response (filled by monitor) ----
+    bit [1:0]               resp;           // BRESP or RRESP
+    bit                     rlast;          // RLAST (reads only)
+
+    //---- Meta (filled by monitor / reference model) ----
+    rand int                mst_id;         // which master sent this
+    int                     slv_id;         // which slave it was routed to
+    bit                     is_split;       // was this split across 4KB?
+    int                     actual_wbeats;  // W beat counter (protocol checker)
+    int                     actual_rbeats;  // R beat counter (protocol checker)
+
+    //---- Constraints ----
+    constraint addr_range_c {
+        addr inside {[0:32'h7FFF]};              // within slave address map
+    }
+
+    constraint size_c {
+        //size inside {[0:2]}; 
+        size == 2;                    // 1/2/4 bytes per beat (32-bit bus)
+    }
+
+    constraint addr_align_c {
+        (size == 0) -> (addr[1:0] == 2'b00);   // byte access: no alignment needed
+        (size == 1) -> (addr[0]   == 1'b0);    // halfword: even address
+        (size >= 2) -> (addr[1:0] == 2'b00);   // word+: word aligned
+    }
+
+    constraint burst_len_c {
+        len inside {[0:15]};                    // up to 16 beats
+    }
+
+    constraint burst_type_c {
+        burst inside {0, 1};                // FIXED, INCR, WRAP
+    }
+
+    constraint id_c {
+        id inside {[0:15]};                     // 4-bit ID range
+    }
+
+    constraint data_size_c {
+        data.size() < 128;
+        strb.size() < 128;
+        if (is_write) {
+            data.size() == len + 1;
+            strb.size() == len + 1;
+        }
+    }
+
+    `uvm_object_utils_begin(axi_transaction)
+        `uvm_field_int (is_write, UVM_DEFAULT)
+        `uvm_field_int (id,       UVM_DEFAULT)
+        `uvm_field_int (addr,     UVM_DEFAULT)
+        `uvm_field_int (len,      UVM_DEFAULT)
+        `uvm_field_int (size,     UVM_DEFAULT)
+        `uvm_field_int (burst,    UVM_DEFAULT)
+        `uvm_field_int (resp,     UVM_DEFAULT)
+        `uvm_field_int (mst_id,   UVM_DEFAULT)
+        `uvm_field_int (slv_id,   UVM_DEFAULT)
+    `uvm_object_utils_end
+
+    function new(string name = "axi_transaction");
+        super.new(name);
+        data = new[16];
+        strb = new[16];
+    endfunction
+
+    function void post_randomize();
+        if (is_write) begin
+            foreach (strb[i]) strb[i] = 4'hF;
+        end
+    endfunction
+
+    function string convert2string();
+        return $sformatf("%s id=%0d addr=0x%08h len=%0d size=%0d burst=%0d mst=%0d slv=%0d",
+                         is_write ? "WR" : "RD", id, addr, len, size, burst, mst_id, slv_id);
+    endfunction
+
+endclass
+
+`endif
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tb/tb_top.sv ==========
+// Top-level testbench: instantiates DUT + interface + runs test
+module tb_top;
+
+    import uvm_pkg::*;
+    import axi_pkg::*;
+
+    // Clock & Reset
+    reg ACLK = 0;
+    reg ARSTn = 0;
+    always #5 ACLK = ~ACLK;
+    initial begin
+        repeat(10) @(posedge ACLK);
+        ARSTn = 1;
+    end
+
+    // Interface
+    axi_if vif(.ACLK(ACLK), .ARSTn(ARSTn));
+
+    // DUT: AXI Interconnect
+    axi_interconnect #(
+        .MST_AMT(4), .SLV_AMT(4), .OUTSTANDING_AMT(8),
+        .W_ID(4), .DATA_WIDTH(32), .ADDR_WIDTH(32),
+        .LEN_W(8), .SIZE_W(3), .BURST_W(2), .RESP_W(2),
+        .SLV_ADDR_BASE({32'h0000_6000,32'h0000_4000,32'h0000_2000,32'h0000_0000}),
+        .SLV_ADDR_LEN({8'd13,8'd13,8'd13,8'd13}),
+        .DEFAULT_SLV_EN(1'b0)
+    ) dut (
+        .AXI_CLK(ACLK), .AXI_RSTn(ARSTn),
+        .M_AXI_AWID_i(vif.M_AWID), .M_AXI_AWADDR_i(vif.M_AWADDR),
+        .M_AXI_AWLEN_i(vif.M_AWLEN), .M_AXI_AWSIZE_i(vif.M_AWSIZE),
+        .M_AXI_AWBURST_i(vif.M_AWBURST), .M_AXI_AWVALID_i(vif.M_AWVALID), .M_AXI_AWREADY_o(vif.M_AWREADY),
+        .M_AXI_WDATA_i(vif.M_WDATA), .M_AXI_WSTRB_i(vif.M_WSTRB),
+        .M_AXI_WLAST_i(vif.M_WLAST), .M_AXI_WVALID_i(vif.M_WVALID), .M_AXI_WREADY_o(vif.M_WREADY),
+        .M_AXI_BID_o(vif.M_BID), .M_AXI_BRESP_o(vif.M_BRESP),
+        .M_AXI_BVALID_o(vif.M_BVALID), .M_AXI_BREADY_i(vif.M_BREADY),
+        .M_AXI_ARID_i(vif.M_ARID), .M_AXI_ARADDR_i(vif.M_ARADDR),
+        .M_AXI_ARLEN_i(vif.M_ARLEN), .M_AXI_ARSIZE_i(vif.M_ARSIZE),
+        .M_AXI_ARBURST_i(vif.M_ARBURST), .M_AXI_ARVALID_i(vif.M_ARVALID), .M_AXI_ARREADY_o(vif.M_ARREADY),
+        .M_AXI_RID_o(vif.M_RID), .M_AXI_RDATA_o(vif.M_RDATA), .M_AXI_RRESP_o(vif.M_RRESP),
+        .M_AXI_RLAST_o(vif.M_RLAST), .M_AXI_RVALID_o(vif.M_RVALID), .M_AXI_RREADY_i(vif.M_RREADY),
+        .S_AXI_AWID_o(vif.S_AWID), .S_AXI_AWADDR_o(vif.S_AWADDR),
+        .S_AXI_AWLEN_o(vif.S_AWLEN), .S_AXI_AWSIZE_o(vif.S_AWSIZE),
+        .S_AXI_AWBURST_o(vif.S_AWBURST), .S_AXI_AWVALID_o(vif.S_AWVALID), .S_AXI_AWREADY_i(vif.S_AWREADY),
+        .S_AXI_WDATA_o(vif.S_WDATA), .S_AXI_WSTRB_o(vif.S_WSTRB),
+        .S_AXI_WLAST_o(vif.S_WLAST), .S_AXI_WVALID_o(vif.S_WVALID), .S_AXI_WREADY_i(vif.S_WREADY),
+        .S_AXI_BID_i(vif.S_BID), .S_AXI_BRESP_i(vif.S_BRESP),
+        .S_AXI_BVALID_i(vif.S_BVALID), .S_AXI_BREADY_o(vif.S_BREADY),
+        .S_AXI_ARID_o(vif.S_ARID), .S_AXI_ARADDR_o(vif.S_ARADDR),
+        .S_AXI_ARLEN_o(vif.S_ARLEN), .S_AXI_ARSIZE_o(vif.S_ARSIZE),
+        .S_AXI_ARBURST_o(vif.S_ARBURST), .S_AXI_ARVALID_o(vif.S_ARVALID), .S_AXI_ARREADY_i(vif.S_ARREADY),
+        .S_AXI_RID_i(vif.S_RID), .S_AXI_RDATA_i(vif.S_RDATA), .S_AXI_RRESP_i(vif.S_RRESP),
+        .S_AXI_RLAST_i(vif.S_RLAST), .S_AXI_RVALID_i(vif.S_RVALID), .S_AXI_RREADY_o(vif.S_RREADY),
+        .arbiter_type(1'b0)
+    );
+
+    // FSDB waveform dumping
+    `ifdef FSDB
+    initial begin
+        $fsdbDumpfile("tb_top.fsdb");
+        $fsdbDumpvars(0, tb_top);
+        $fsdbDumpMDA();  // dump memory / multi-dimensional arrays
+    end
+    `endif
+
+    // Connect interface to UVM config DB
+    initial begin
+        uvm_config_db #(virtual axi_if)::set(null, "*", "vif", vif);
+        run_test();
+    end
+
+endmodule
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tests/arb_test.sv ==========
+// Arbitration Test: 4 masters -> same slave concurrently, verify RR arbitration
+class arb_test extends axi_test_base;
+    `uvm_component_utils(arb_test)
+    function new(string n="arb_test", uvm_component p); super.new(n,p); endfunction
+    task run_phase(uvm_phase phase);
+        arb_vseq vseq;
+        phase.raise_objection(this);
+        phase.phase_done.set_drain_time(this, 0);
+        fork
+            begin
+                #6000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 6000000ns, stopping")
+            end
+            begin
+                repeat(20) @(posedge env.vif.ACLK);  // wait for reset
+                vseq = arb_vseq::type_id::create("vseq");
+                run_vseq(vseq);
+                #1000;
+            end
+        join_any
+        disable fork;
         phase.drop_objection(this);
     endtask
 endclass
 
-==============================================================================
-  FILE: uvm/tests/burst_test.sv
-==============================================================================
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tests/burst_test.sv ==========
 // Burst Test: multi-beat INCR burst read/write
 class burst_test extends axi_test_base;
     `uvm_component_utils(burst_test)
     function new(string n="burst_test", uvm_component p); super.new(n,p); endfunction
     task run_phase(uvm_phase phase);
-        burst_seq seq; phase.raise_objection(this);
-        for(int m=0; m<4; m++) begin
-            seq = burst_seq::type_id::create("seq");
-            seq.mst_id=m; seq.base_addr=m*32'h2000; seq.burst_len=(m+1)*2-1;
-            seq.start(env.master_agents[m].sqr);
-        end
-        #1000; phase.drop_objection(this);
+        burst_vseq vseq;
+        phase.raise_objection(this);
+        phase.phase_done.set_drain_time(this, 0);
+        fork
+            begin
+                #500000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 6000000ns, stopping")
+            end
+            begin
+                repeat(20) @(posedge env.vif.ACLK);  // wait for reset
+                vseq = burst_vseq::type_id::create("vseq");
+                run_vseq(vseq);
+                #1000;
+            end
+        join_any
+        disable fork;
+        phase.drop_objection(this);
     endtask
 endclass
 
-==============================================================================
-  FILE: uvm/tests/arb_test.sv
-==============================================================================
-// Arbitration Test: 4 masters -> same slave, verify RR arbitration
-class arb_test extends axi_test_base;
-    `uvm_component_utils(arb_test)
-    function new(string n="arb_test", uvm_component p); super.new(n,p); endfunction
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tests/outstanding_test.sv ==========
+// Outstanding Test: drives all 4 masters with outstanding transactions
+class outstanding_test extends axi_test_base;
+
+    `uvm_component_utils(outstanding_test)
+
+    function new(string n = "outstanding_test", uvm_component p);
+        super.new(n, p);
+    endfunction
+
     task run_phase(uvm_phase phase);
+        outstanding_vseq vseq;
+
+        phase.raise_objection(this);
+        phase.phase_done.set_drain_time(this, 0);
+
+        fork
+            begin
+                #6000;
+                `uvm_warning("TIMEOUT", "Simulation timeout, stopping")
+            end
+            begin
+                repeat(20) @(posedge env.vif.ACLK);  // wait for reset
+
+                vseq = outstanding_vseq::type_id::create("vseq");
+                vseq.count = 8;                        // 8 transactions per master
+                run_vseq(vseq);
+
+                #1000;
+            end
+        join_any
+        disable fork;
+
+        phase.drop_objection(this);
+    endtask
+
+endclass
+
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tests/smoke_test.sv ==========
+// Smoke Test: single write+read per master, basic connectivity
+class smoke_test extends axi_test_base;
+    `uvm_component_utils(smoke_test)
+
+    function new(string n="smoke_test", uvm_component p);
+        super.new(n,p);
+    endfunction
+
+    task run_phase(uvm_phase phase);
+        smoke_vseq vseq;
         phase.raise_objection(this);
         fork
-            for(int m=0; m<4; m++) begin
-                automatic int mid=m;
-                axi_base_seq seq = axi_base_seq::type_id::create("seq");
-                seq.mst_id=mid;
-                seq.start(env.master_agents[mid].sqr);
+            begin
+                #3000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 2000000ns, stopping")
             end
-        join
-        #1000; phase.drop_objection(this);
+            begin
+                repeat(20) @(posedge env.vif.ACLK);  // wait for reset
+                vseq = smoke_vseq::type_id::create("vseq");
+                run_vseq(vseq);
+                #1000;
+            end
+        join_any
+        disable fork;
+        phase.drop_objection(this);
     endtask
 endclass
 
-==============================================================================
-  FILE: uvm/tests/split4k_test.sv
-==============================================================================
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tests/split4k_test.sv ==========
 // 4KB Split Test: cross-4K boundary transactions
 class split4k_test extends axi_test_base;
     `uvm_component_utils(split4k_test)
     function new(string n="split4k_test", uvm_component p); super.new(n,p); endfunction
     task run_phase(uvm_phase phase);
-        split4k_seq seq; phase.raise_objection(this);
-        for(int len_idx=0; len_idx<3; len_idx++) begin
-            seq = split4k_seq::type_id::create("seq");
-            seq.mst_id=0;
-            seq.start(env.master_agents[0].sqr);
-        end
-        #1000; phase.drop_objection(this);
+        split4k_vseq vseq;
+        phase.raise_objection(this);
+        phase.phase_done.set_drain_time(this, 0);
+        fork
+            begin
+                #6000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 6000000ns, stopping")
+            end
+            begin
+                vseq = split4k_vseq::type_id::create("vseq");
+                run_vseq(vseq);
+                #1000;
+            end
+        join_any
+        disable fork;
+        phase.drop_objection(this);
     endtask
 endclass
 
-==============================================================================
-  FILE: uvm/tests/stress_test.sv
-==============================================================================
+
+// ========== c:/Users/22612/Desktop/AXI4/uvm/tests/stress_test.sv ==========
 // Stress Test: 50 random transactions per master, concurrent
 class stress_test extends axi_test_base;
     `uvm_component_utils(stress_test)
     function new(string n="stress_test", uvm_component p); super.new(n,p); endfunction
     task run_phase(uvm_phase phase);
+        stress_vseq vseq;
         phase.raise_objection(this);
+        phase.phase_done.set_drain_time(this, 0);
         fork
-            for(int m=0; m<4; m++) begin
-                automatic int mid=m;
-                stress_seq seq = stress_seq::type_id::create("seq");
-                seq.mst_id=mid;
-                seq.start(env.master_agents[mid].sqr);
+            begin
+                #100000;
+                `uvm_warning("TIMEOUT", "Simulation timeout at 6000000ns, stopping")
             end
-        join
-        #1000; phase.drop_objection(this);
+            begin
+                repeat(20) @(posedge env.vif.ACLK);  // wait for reset
+                vseq = stress_vseq::type_id::create("vseq");
+                run_vseq(vseq);
+                #1000;
+            end
+        join_any
+        disable fork;
+        phase.drop_objection(this);
     endtask
 endclass
 
-==============================================================================
-  END
-==============================================================================
+

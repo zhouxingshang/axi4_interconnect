@@ -436,6 +436,8 @@ endgenerate
 //=============================================================================
 // M2S 模块实例化: 每个从设备一个 (axi_m2s_m_amt)
 //=============================================================================
+wire [MST_AMT-1:0] m_w_busy;                          // per-master W busy (aggregated)
+wire [MST_AMT-1:0] m2s_w_busy_arr [0:SLV_AMT-1];      // per-slave W busy vectors
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_M2S
         // 构造打包的主设备数组以连接 M2S 模块
@@ -460,7 +462,11 @@ generate
         wire [TRANS_BURST_W*MST_AMT-1:0] m_arburst_packed;
         wire [MST_AMT-1:0] m_arvalid_packed;
         wire [MST_AMT-1:0] m_arready_packed;
-        
+
+        // W routing control: signals from M2S (declared before use in PACK_M2S)
+        wire [MST_AMT-1:0] m2s_w_accept;  // per-master: this M2S is receiving W beats
+        wire [MST_AMT-1:0] m2s_w_busy;    // per-master: this M2S has pending W
+
         // 将内部解包数组重新打包为扁平化向量
         for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_M2S
             assign m_awid_packed[W_MID*m +: W_MID] = m_awid[m];
@@ -468,11 +474,13 @@ generate
             assign m_awlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_awlen[m];
             assign m_awsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_awsize[m];
             assign m_awburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_awburst[m];
+            // AW: passthrough (W gate handles routing; AW-order FIFO handles same-slave pipeline)
             assign m_awvalid_packed[m] = m_awvalid[m];
             assign m_wdata_packed[DATA_WIDTH*m +: DATA_WIDTH] = m_wdata[m];
             assign m_wstrb_packed[W_STRB*m +: W_STRB] = m_wstrb[m];
             assign m_wlast_packed[m] = m_wlast[m];
-            assign m_wvalid_packed[m] = m_wvalid[m];
+            // W: only accepted by the slave currently processing this master's W
+            assign m_wvalid_packed[m] = m_wvalid[m] && m2s_w_accept[m];
             assign m_arid_packed[W_MID*m +: W_MID] = m_arid[m];
             assign m_araddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_araddr[m];
             assign m_arlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_arlen[m];
@@ -557,8 +565,14 @@ generate
             .AWSELECT_IN(awselect_or_nondefault),
             .ARSELECT_IN(arselect_or_nondefault),
             .arbiter_type(arbiter_type),
-            .slv_en(slv_en_i[s])
+            .slv_en(slv_en_i[s]),
+
+            .W_ACCEPT(m2s_w_accept),
+            .W_BUSY(m2s_w_busy)
         );
+
+        // Export per-slave W busy for crossbar-level aggregation
+        assign m2s_w_busy_arr[s] = m2s_w_busy;
 
         // 默认从设备: 例化 axi_default_slave 驱动 ready / B / R 信号
         if (SLV_DEFAULT_MASK[s]) begin : GEN_DEFAULT_SLV
@@ -611,6 +625,20 @@ generate
 
         assign awselect_out[s] = m2s_awsel;
         assign arselect_out[s] = m2s_arsel;
+    end
+endgenerate
+
+//=============================================================================
+// Per-master W busy aggregation: any slave has pending W for this master
+//=============================================================================
+genvar mb;
+generate
+    for (mb = 0; mb < MST_AMT; mb = mb + 1) begin : GEN_M_W_BUSY
+        wire [SLV_AMT-1:0] busy_or;
+        for (s = 0; s < SLV_AMT; s = s + 1) begin : BUSY_SLV
+            assign busy_or[s] = m2s_w_busy_arr[s][mb];
+        end
+        assign m_w_busy[mb] = |busy_or;
     end
 endgenerate
 

@@ -12,6 +12,7 @@ class split4k_test extends axi_test_base;
                 `uvm_warning("TIMEOUT", "Simulation timeout at 6000000ns, stopping")
             end
             begin
+                repeat(20) @(posedge env.vif.ACLK);  // wait for reset
                 vseq = split4k_vseq::type_id::create("vseq");
                 run_vseq(vseq);
                 #1000;

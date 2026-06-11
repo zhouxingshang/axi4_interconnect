@@ -1,189 +1,237 @@
-//=============================================================================
-// AXI Protocol Checker: immediate assertions on AXI bus protocol rules
-// Checks: VALID stability, WLAST/RLAST, ID matching, B uniqueness
-//=============================================================================
+// =============================================================================
+// FILE: uvm/env/axi_protocol_checker.sv (重构优化版)
+// =============================================================================
+
+// 声明多通道独立的 Analysis Imp 后缀
+`uvm_analysis_imp_decl(_aw)
+`uvm_analysis_imp_decl(_w)
+`uvm_analysis_imp_decl(_b)
+`uvm_analysis_imp_decl(_ar)
+`uvm_analysis_imp_decl(_r)
+
 class axi_protocol_checker extends uvm_component;
     `uvm_component_utils(axi_protocol_checker)
 
-    // Inputs from channel monitors
-    uvm_analysis_export #(axi_aw_item) aw_ap; uvm_analysis_export #(axi_w_item) w_ap;
-    uvm_analysis_export #(axi_b_item)  b_ap;
-    uvm_analysis_export #(axi_ar_item) ar_ap; uvm_analysis_export #(axi_r_item) r_ap;
-    uvm_tlm_analysis_fifo #(axi_aw_item) aw_fifo; uvm_tlm_analysis_fifo #(axi_w_item) w_fifo;
-    uvm_tlm_analysis_fifo #(axi_b_item)  b_fifo;
-    uvm_tlm_analysis_fifo #(axi_ar_item) ar_fifo; uvm_tlm_analysis_fifo #(axi_r_item) r_fifo;
+    // 通道传输订阅端口
+    uvm_analysis_imp_aw#(axi_aw_item, axi_protocol_checker) aw_imp;
+    uvm_analysis_imp_w#(axi_w_item,   axi_protocol_checker) w_imp;
+    uvm_analysis_imp_b#(axi_b_item,   axi_protocol_checker) b_imp;
+    uvm_analysis_imp_ar#(axi_ar_item, axi_protocol_checker) ar_imp;
+    uvm_analysis_imp_r#(axi_r_item,   axi_protocol_checker) r_imp;
 
-    // Outstanding tables for ID matching
-    typedef struct { int beats_done; int beats_exp; bit done; } wr_entry_t;
-    typedef struct { int beats_done; int beats_exp; bit done; } rd_entry_t;
-    wr_entry_t wr_tbl[int];   // key = {mst, id}
-    rd_entry_t rd_tbl[int];   // key = {mst, id}
-    int wr_total=0, rd_total=0;
+    // -------------------------------------------------------------------------
+    // 核心重构数据结构：Master 域隔离表
+    // Key (int): mst_id -> 每个 Master 拥有完全独立的专属 FIFO 追踪队列
+    // -------------------------------------------------------------------------
+    axi_transaction wr_tbl[int][$]; // 写通道挂起事务表
+    axi_transaction rd_tbl[int][$]; // 读通道挂起事务表
 
-    int error_cnt=0;
+    // W-before-AW tolerance: buffer W beats that arrive before their AW
+    axi_w_item w_pending[int][$];    // key=mst_id, queue of orphan W beats
 
-    function new(string name="axi_protocol_checker", uvm_component parent);
-        super.new(name,parent);
+    // 4KB split tracking: per-master flag for W beats between split sub-transactions
+    bit split_pending[int];
+
+    // 性能与错误统计计数器
+    int total_aw_count = 0;
+    int total_w_count  = 0;
+    int total_b_count  = 0;
+    int total_ar_count = 0;
+    int total_r_count  = 0;
+    int error_count    = 0;
+
+    function new(string name="axi_protocol_checker", uvm_component parent=null);
+        super.new(name, parent);
+        aw_imp = new("aw_imp", this);
+        w_imp  = new("w_imp",  this);
+        b_imp  = new("b_imp",  this);
+        ar_imp = new("ar_imp", this);
+        r_imp  = new("r_imp",  this);
     endfunction
 
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        aw_ap=new("aw_ap",this); w_ap=new("w_ap",this); b_ap=new("b_ap",this);
-        ar_ap=new("ar_ap",this); r_ap=new("r_ap",this);
-        aw_fifo=new("aw_fifo",this); w_fifo=new("w_fifo",this); b_fifo=new("b_fifo",this);
-        ar_fifo=new("ar_fifo",this); r_fifo=new("r_fifo",this);
-        aw_ap.connect(aw_fifo.analysis_export); w_ap.connect(w_fifo.analysis_export);
-        b_ap.connect(b_fifo.analysis_export); ar_ap.connect(ar_fifo.analysis_export);
-        r_ap.connect(r_fifo.analysis_export);
-    endfunction
+    // =========================================================================
+    // 1. WRITE ADDRESS CHANNEL (AW)
+    // =========================================================================
+    virtual function void write_aw(axi_aw_item item);
+        axi_transaction tx;
+        if (!item.is_master_side) return;   // only track master-side
+        total_aw_count++;
+        // Clear 4KB split pending when new AW arrives (second sub-transaction)
+        split_pending[item.mst_id] = 1'b0;
+        
+        tx = axi_transaction::type_id::create("tx");
+        tx.mst_id        = item.mst_id;
+        tx.id            = item.id;
+        tx.addr          = item.addr;
+        tx.len           = item.len;
+        tx.size          = item.size;
+        tx.burst         = item.burst;
+        tx.is_write      = 1;
+        tx.actual_wbeats = 0;
 
-    task run_phase(uvm_phase phase);
-        fork
-            check_aw(); check_w(); check_b();
-            check_ar(); check_r();
-        join
-    endtask
+        // 【关键修复】：依据当前事务的 mst_id，精准推入该 Master 专属队列的末尾
+        wr_tbl[item.mst_id].push_back(tx);
 
-    //=====================================================================
-    // AW Channel: track outstanding, check for duplicate AWID
-    //=====================================================================
-    task check_aw();
-        axi_aw_item t; int key;
-        forever begin
-            aw_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            // VALID must not be re-asserted until B completes
-            if(wr_tbl.exists(key) && !wr_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("DUPLICATE AWID: M[%0d] id=%0d before B", t.mst_id, t.id))
-            end
-            wr_tbl[key].beats_exp = t.len + 1;
-            wr_tbl[key].beats_done = 0;
-            wr_tbl[key].done = 0;
-            wr_total++;
+        // Replay any W beats that arrived before this AW (W-before-AW tolerance)
+        if (w_pending.exists(item.mst_id)) begin
+            foreach (w_pending[item.mst_id][i])
+                write_w(w_pending[item.mst_id][i]);
+            w_pending[item.mst_id].delete();
         end
-    endtask
 
-    //=====================================================================
-    // W Channel: check WLAST, beat count, per-beat data presence
-    //=====================================================================
-    task check_w();
-        axi_w_item t; int key; bit found;
-        forever begin
-            w_fifo.get(t);
-            if(!t.is_master_side) continue;
-            // Find matching outstanding write by searching all entries
-            found = 0;
-            foreach(wr_tbl[k]) begin
-                if(!wr_tbl[k].done && wr_tbl[k].beats_done < wr_tbl[k].beats_exp) begin
-                    // WLAST must match beat position
-                    if(t.last && wr_tbl[k].beats_done != wr_tbl[k].beats_exp-1) begin
-                        error_cnt++;
-                        `uvm_error("PROTO", $sformatf("WLAST early: beat %0d/%0d exp_last=%0d",
-                                  wr_tbl[k].beats_done, wr_tbl[k].beats_exp, wr_tbl[k].beats_exp-1))
-                    end
-                    if(!t.last && wr_tbl[k].beats_done == wr_tbl[k].beats_exp-1) begin
-                        error_cnt++;
-                        `uvm_error("PROTO", $sformatf("WLAST missing: beat %0d/%0d should be last",
-                                  wr_tbl[k].beats_done, wr_tbl[k].beats_exp))
-                    end
-                    wr_tbl[k].beats_done++;
-                    found=1; break;
+        `uvm_info("PROT_AW", $sformatf("AW Recorded: M[%0d] ID=0x%0x, ADDR=0x%0x, LEN=%0d. Current Master Pending Depth=%0d",
+                  item.mst_id, item.id, item.addr, item.len, wr_tbl[item.mst_id].size()), UVM_HIGH)
+    endfunction
+
+    // =========================================================================
+    // 2. WRITE DATA CHANNEL (W)
+    // =========================================================================
+    virtual function void write_w(axi_w_item item);
+        int m_id; axi_transaction tx;
+        if (!item.is_master_side) return;   // only track master-side
+        m_id = item.mst_id;
+        total_w_count++;
+
+        // 核心校验：检查当前发数据的 Master 旗下是否登记过对应 AW 请求
+        if (!wr_tbl.exists(m_id) || wr_tbl[m_id].size() == 0) begin
+            // 4KB split: W beats may arrive before second AW
+            if (split_pending.exists(m_id) && split_pending[m_id]) begin
+                total_w_count--;
+                return;
+            end
+            // W-before-AW: buffer the W beat, process when AW arrives
+            w_pending[m_id].push_back(item);
+            total_w_count--;
+            return;
+        end
+
+        // 【关键修复】：根据 AXI4 规范，单个 Master 内部的 W Burst 顺序必须与 AW 严格一致。
+        // 直接锁定该 Master 队列的首元素(最老的 AW)，杜绝跨 Master 串包混淆。
+        tx = wr_tbl[m_id][0];
+        tx.actual_wbeats++;
+
+        // 边界与 WLAST 强一致性校验 (4KB split aware)
+        if (item.last) begin
+            if (tx.actual_wbeats != (tx.len + 1)) begin
+                // Check for 4KB split: sent bytes + remaining would cross 4KB boundary
+                int bpb = 1 << tx.size;
+                int bytes_sent = tx.actual_wbeats * bpb;
+                bit crosses_4k = ((tx.addr[11:0] + bytes_sent) >= 13'h1000);
+                if (!crosses_4k) begin
+                    `uvm_error("PROT_ERR_WLEN", $sformatf("Protocol Error: M[%0d] WLAST Mismatch! AWLEN expects %0d beats, but got WLAST at beat %0d. (ADDR=0x%0x)",
+                               m_id, tx.len + 1, tx.actual_wbeats, tx.addr))
+                    error_count++;
+                end else begin
+                    // Valid 4KB split: mark pending for orphan W beat tolerance
+                    split_pending[m_id] = 1'b1;
                 end
             end
-            if(!found) begin
-                error_cnt++;
-                `uvm_error("PROTO", "W beat without matching outstanding AW")
+
+            // 该笔写事务数据传输彻底结束，安全弹出
+            void'(wr_tbl[m_id].pop_front());
+            `uvm_info("PROT_W_DONE", $sformatf("W Burst completed successfully for M[%0d]. Remaining pending AW=%0d", m_id, wr_tbl[m_id].size()), UVM_HIGH)
+        end
+        else begin
+            // 异常校验：未拉高 WLAST 但计数已超额 (4KB split aware)
+            if (tx.actual_wbeats >= (tx.len + 1)) begin
+                int bpb = 1 << tx.size;
+                int bytes_sent = tx.actual_wbeats * bpb;
+                bit crosses_4k = ((tx.addr[11:0] + bytes_sent) >= 13'h1000);
+                if (!crosses_4k) begin
+                    `uvm_error("PROT_ERR_WLEN_OVER", $sformatf("Protocol Error: M[%0d] Missing WLAST! Received %0d beats, which already reaches/exceeds AWLEN=%0d. (ADDR=0x%0x)",
+                               m_id, tx.actual_wbeats, tx.len, tx.addr))
+                    error_count++;
+                end
             end
         end
-    endtask
+    endfunction
 
-    //=====================================================================
-    // B Channel: check BID matches AWID, B uniqueness (one B per AW)
-    //=====================================================================
-    task check_b();
-        axi_b_item t; int key;
-        forever begin
-            b_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            if(!wr_tbl.exists(key)) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("BID mismatch: M[%0d] id=%0d no matching AW", t.mst_id, t.id))
-                continue;
-            end
-            if(wr_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("DUPLICATE B: M[%0d] id=%0d already completed", t.mst_id, t.id))
-            end
-            // Check W beats completed
-            if(wr_tbl[key].beats_done < wr_tbl[key].beats_exp) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("B before WLAST: M[%0d] id=%0d w=%0d/%0d",
-                          t.mst_id, t.id, wr_tbl[key].beats_done, wr_tbl[key].beats_exp))
-            end
-            wr_tbl[key].done = 1;
+    // =========================================================================
+    // 3. WRITE RESPONSE CHANNEL (B)
+    // =========================================================================
+    virtual function void write_b(axi_b_item item);
+        total_b_count++;
+        // 可根据实际需要添加 BRESP 逻辑校验
+    endfunction
+
+    // =========================================================================
+    // 4. READ ADDRESS CHANNEL (AR)
+    // =========================================================================
+    virtual function void write_ar(axi_ar_item item);
+        axi_transaction tx;
+        if (!item.is_master_side) return;   // only track master-side
+        total_ar_count++;
+        
+        tx = axi_transaction::type_id::create("tx");
+        tx.mst_id        = item.mst_id;
+        tx.id            = item.id;
+        tx.addr          = item.addr;
+        tx.len           = item.len;
+        tx.size          = item.size;
+        tx.burst         = item.burst;
+        tx.is_write      = 0;
+        tx.actual_rbeats = 0;
+
+        // 同步实施读通道的 Master 域隔离
+        rd_tbl[item.mst_id].push_back(tx);
+    endfunction
+
+    // =========================================================================
+    // 5. READ DATA CHANNEL (R)
+    // =========================================================================
+    virtual function void write_r(axi_r_item item);
+        int m_id; bit id_found;
+        if (!item.is_master_side) return;   // only track master-side
+        m_id = item.mst_id;
+        id_found = 0;
+        total_r_count++;
+
+        if (!rd_tbl.exists(m_id) || rd_tbl[m_id].size() == 0) begin
+            `uvm_error("PROT_ERR_ORPHAN_R", $sformatf("Protocol Violation: R Beat detected on M[%0d] but no matching AR request exists!", m_id))
+            error_count++;
+            return;
         end
-    endtask
 
-    //=====================================================================
-    // AR Channel: track outstanding, check duplicate ARID
-    //=====================================================================
-    task check_ar();
-        axi_ar_item t; int key;
-        forever begin
-            ar_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            if(rd_tbl.exists(key) && !rd_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("DUPLICATE ARID: M[%0d] id=%0d before RLAST", t.mst_id, t.id))
+        // 【拓展修复】：AXI 标准允许单个 Master 内部不同 ARID 的读数据发生交叉交织（Interleaving）。
+        // 因此，在当前 Master 的局部专属队列中检索匹配 ID 的事务。
+        foreach (rd_tbl[m_id][i]) begin
+            if (rd_tbl[m_id][i].id == item.id) begin
+                axi_transaction tx = rd_tbl[m_id][i];
+                tx.actual_rbeats++;
+                id_found = 1;
+
+                if (item.last) begin
+                    if (tx.actual_rbeats != (tx.len + 1)) begin
+                        `uvm_error("PROT_ERR_RLEN", $sformatf("Protocol Error: M[%0d] RLAST Mismatch for ID=0x%0x! ARLEN expects %0d beats, but got RLAST at beat %0d.", 
+                                   m_id, tx.id, tx.len + 1, tx.actual_rbeats))
+                        error_count++;
+                    end
+                    // 读事务全包收齐，将该事务从局部队列中注销
+                    rd_tbl[m_id].delete(i);
+                end 
+                else begin
+                    if (tx.actual_rbeats >= (tx.len + 1)) begin
+                        `uvm_error("PROT_ERR_RLEN_OVER", $sformatf("Protocol Error: M[%0d] Missing RLAST for ID=0x%0x! Received %0d beats, which already reaches/exceeds ARLEN=%0d.", 
+                                   m_id, tx.id, tx.actual_rbeats, tx.len))
+                        error_count++;
+                    end
+                end
+                break; // 找到目标，跳出局部循环
             end
-            rd_tbl[key].beats_exp = t.len + 1;
-            rd_tbl[key].beats_done = 0;
-            rd_tbl[key].done = 0;
-            rd_total++;
         end
-    endtask
 
-    //=====================================================================
-    // R Channel: check RID matches ARID, RLAST correctness
-    //=====================================================================
-    task check_r();
-        axi_r_item t; int key; bit found;
-        forever begin
-            r_fifo.get(t);
-            if(!t.is_master_side) continue;
-            key = {t.mst_id[1:0], t.id[3:0]};
-            if(!rd_tbl.exists(key)) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("RID mismatch: M[%0d] id=%0d no matching AR", t.mst_id, t.id))
-                continue;
-            end
-            if(rd_tbl[key].done) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("R after RLAST: M[%0d] id=%0d", t.mst_id, t.id))
-            end
-            // RLAST position check
-            if(t.last && rd_tbl[key].beats_done != rd_tbl[key].beats_exp-1) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("RLAST early: M[%0d] id=%0d beat %0d/%0d exp_last=%0d",
-                          t.mst_id, t.id, rd_tbl[key].beats_done, rd_tbl[key].beats_exp, rd_tbl[key].beats_exp-1))
-            end
-            if(!t.last && rd_tbl[key].beats_done == rd_tbl[key].beats_exp-1) begin
-                error_cnt++;
-                `uvm_error("PROTO", $sformatf("RLAST missing: M[%0d] id=%0d beat %0d/%0d",
-                          t.mst_id, t.id, rd_tbl[key].beats_done, rd_tbl[key].beats_exp))
-            end
-            rd_tbl[key].beats_done++;
-            if(t.last) rd_tbl[key].done = 1;
+        if (!id_found) begin
+            `uvm_error("PROT_ERR_RID_MISMATCH", $sformatf("Protocol Error: M[%0d] Received R Beat with ID=0x%0x, but no matching pending AR ID found in this Master's tracker!", m_id, item.id))
+            error_count++;
         end
-    endtask
+    endfunction
 
-    function void report_phase(uvm_phase phase);
-        $display("PROTOCOL CHECKER: %0d writes, %0d reads, %0d protocol errors",
-                 wr_total, rd_total, error_cnt);
+    // =========================================================================
+    // 报告阶段：打印仿真最终的协议检测统计
+    // =========================================================================
+    virtual function void report_phase(uvm_phase phase);
+        `uvm_info("PROT_CHKER_SUMMARY", $sformatf("\n==================================================\n  AXI PROTOCOL CHECKER仿真报告:\n  AW次数: %0d | W次数: %0d | B次数: %0d\n  AR次数: %0d | R次数: %0d\n  总计发现协议违例错误(Error): %0d\n==================================================", 
+                  total_aw_count, total_w_count, total_b_count, total_ar_count, total_r_count, error_count), UVM_LOW)
     endfunction
 
 endclass

@@ -148,32 +148,39 @@ generate
 endgenerate
 
 //=========================================================================
+// Debug: B channel monitoring
+//=========================================================================
+always @(posedge AXI_CLK) begin
+    if (M_BVALID && M_BREADY)
+        $display("[%0t] S2M[M%0d] B: ->MASTER BID=0x%0h BRESP=%0d",
+                 $time, MASTER_ID, M_BID, M_BRESP);
+end
+
+//=========================================================================
 // Debug: R channel monitoring
 //=========================================================================
-/*
 genvar di;
 generate
     for (di = 0; di < SLV_AMT; di = di + 1) begin : DBG_S_R
         always @(posedge AXI_CLK) begin
             if (s_rvalid[di] && s_rready[di])
-                $display("[%0t] S2M[M%0d] R: slave[%0d] handshake RID=0x%0h RDATA=0x%08h RLAST=%0d RRESP=%0d",
-                         $time, MASTER_ID, di, s_rid[di], s_rdata[di], s_rlast[di], s_rresp[di]);
+                $display("[%0t] S2M[M%0d] R: slv[%0d] HS RID=0x%0h DATA=0x%08h LAST=%0d mst_idx=%0d",
+                         $time, MASTER_ID, di, s_rid[di], s_rdata[di], s_rlast[di],
+                         s_rid[di][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB]);
         end
     end
 endgenerate
 
 always @(posedge AXI_CLK) begin
     if (M_RVALID && M_RREADY)
-        $display("[%0t] S2M[M%0d] R: -> MASTER RID=0x%0h RDATA=0x%08h RLAST=%0d",
+        $display("[%0t] S2M[M%0d] R: ->MASTER RID=0x%0h DATA=0x%08h LAST=%0d",
                  $time, MASTER_ID, M_RSID, M_RDATA, M_RLAST);
 end
 
-// Debug: RGRANT / rgrant_d / RSELECT state (only when RSELECT active)
 always @(posedge AXI_CLK) begin
     if (|RSELECT)
-        $display("[%0t] S2M[M%0d] R: RSELECT=0x%0h RGRANT=0x%0h rgrant_d=0x%0h S_RVALID=0x%0h M_RREADY=%0d M_RVALID=%0d",
-                 $time, MASTER_ID, RSELECT, RGRANT, rgrant_d, S_RVALID, M_RREADY, M_RVALID);
+        $display("[%0t] S2M[M%0d] R: RSELECT=%b RGRANT=%b S_RVALID=%b M_RREADY=%0d M_RVALID=%0d",
+                 $time, MASTER_ID, RSELECT, RGRANT, S_RVALID, M_RREADY, M_RVALID);
 end
-*/
 
 endmodule

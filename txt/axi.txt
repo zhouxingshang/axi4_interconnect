@@ -1,3 +1,4 @@
+// ========== c:/Users/22612/Desktop/AXI4/rtl/aw_order_fifo.v ==========
 module aw_order_fifo
 #(
     parameter DATA_WIDTH  = 11,   // {MST_ID_W, ALEN_W} width
@@ -70,6 +71,7 @@ end
 
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_arbiter_m2s_m_amt.v ==========
 module axi_arbiter_m2s_m_amt #(
     parameter W_CID = 4,
     parameter W_ID  = 4,
@@ -180,6 +182,7 @@ module axi_arbiter_m2s_m_amt #(
 
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_arbiter_param_rr.v ==========
 module axi_arbiter_param_rr #(
     parameter NUM = 4
 )(
@@ -265,6 +268,7 @@ module axi_arbiter_param_rr #(
 
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_crossbar.v ==========
 module axi_crossbar
 #(
     // ========== 互连配置 ==========
@@ -530,6 +534,11 @@ generate
         assign m_arsize[m]   = m_ARSIZE_i[TRANS_DATA_SIZE_W*(m+1)-1 -: TRANS_DATA_SIZE_W];
         assign m_arvalid[m]  = m_ARVALID_i[m];
         assign m_ARREADY_o[m] = m_arready[m];
+        // TRACE
+        always @(posedge AXI_CLK) begin
+            if (m == 0 && m_ARREADY_o[m])
+                $display("[TRACE] %0t XBAR M_ARREADY m=%0d", $time, m);
+        end
         
         // R 通道
         assign m_rid[m]    = m_rsid[m];                // pass full W_SID, no stripping
@@ -576,6 +585,11 @@ generate
 
             // AR 通道
             assign s_ARID_o[W_SID*(s+1)-1 -: W_SID]       = s_arid[s];
+        // TRACE
+        always @(posedge AXI_CLK) begin
+            if (s_ARVALID_o[s])
+                $display("[TRACE] %0t XBAR S_ARVALID s=%0d addr=0x%08h", $time, s, s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH]);
+        end
             assign s_ARADDR_o[ADDR_WIDTH*(s+1)-1 -: ADDR_WIDTH] = s_araddr[s];
             assign s_ARBURST_o[TRANS_BURST_W*(s+1)-1 -: TRANS_BURST_W] = s_arburst[s];
             assign s_ARLEN_o[TRANS_DATA_LEN_W*(s+1)-1 -: TRANS_DATA_LEN_W] = s_arlen[s];
@@ -661,6 +675,11 @@ generate
         for(s = 0; s < SLV_AMT; s = s + 1) begin : AGG_SLV
             assign aw_rdy_vec[s] = m_awready_m2s[s][m];
             assign w_rdy_vec[s]  = m_wready_m2s[s][m];
+        // TRACE
+        always @(posedge AXI_CLK) begin
+            if (m_arready[0])
+                $display("[TRACE] %0t XBAR m_arready[0]=1 ar_rdy_vec=%b", $time, ar_rdy_vec);
+        end
             assign ar_rdy_vec[s] = m_arready_m2s[s][m];
         end
         assign m_awready[m] = |aw_rdy_vec;
@@ -688,6 +707,8 @@ endgenerate
 //=============================================================================
 // M2S 模块实例化: 每个从设备一个 (axi_m2s_m_amt)
 //=============================================================================
+wire [MST_AMT-1:0] m_w_busy;                          // per-master W busy (aggregated)
+wire [MST_AMT-1:0] m2s_w_busy_arr [0:SLV_AMT-1];      // per-slave W busy vectors
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : INST_M2S
         // 构造打包的主设备数组以连接 M2S 模块
@@ -712,7 +733,11 @@ generate
         wire [TRANS_BURST_W*MST_AMT-1:0] m_arburst_packed;
         wire [MST_AMT-1:0] m_arvalid_packed;
         wire [MST_AMT-1:0] m_arready_packed;
-        
+
+        // W routing control: signals from M2S (declared before use in PACK_M2S)
+        wire [MST_AMT-1:0] m2s_w_accept;  // per-master: this M2S is receiving W beats
+        wire [MST_AMT-1:0] m2s_w_busy;    // per-master: this M2S has pending W
+
         // 将内部解包数组重新打包为扁平化向量
         for(m = 0; m < MST_AMT; m = m + 1) begin : PACK_M2S
             assign m_awid_packed[W_MID*m +: W_MID] = m_awid[m];
@@ -720,11 +745,13 @@ generate
             assign m_awlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_awlen[m];
             assign m_awsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_awsize[m];
             assign m_awburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_awburst[m];
-            assign m_awvalid_packed[m] = m_awvalid[m];
+            // AW: stalled if this master has pending W anywhere (same-slave pipeline via AW-order FIFO)
+            assign m_awvalid_packed[m] = m_awvalid[m] && !m_w_busy[m];
             assign m_wdata_packed[DATA_WIDTH*m +: DATA_WIDTH] = m_wdata[m];
             assign m_wstrb_packed[W_STRB*m +: W_STRB] = m_wstrb[m];
             assign m_wlast_packed[m] = m_wlast[m];
-            assign m_wvalid_packed[m] = m_wvalid[m];
+            // W: only accepted by the slave currently processing this master's W
+            assign m_wvalid_packed[m] = m_wvalid[m] && m2s_w_accept[m];
             assign m_arid_packed[W_MID*m +: W_MID] = m_arid[m];
             assign m_araddr_packed[ADDR_WIDTH*m +: ADDR_WIDTH] = m_araddr[m];
             assign m_arlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_arlen[m];
@@ -809,8 +836,14 @@ generate
             .AWSELECT_IN(awselect_or_nondefault),
             .ARSELECT_IN(arselect_or_nondefault),
             .arbiter_type(arbiter_type),
-            .slv_en(slv_en_i[s])
+            .slv_en(slv_en_i[s]),
+
+            .W_ACCEPT(m2s_w_accept),
+            .W_BUSY(m2s_w_busy)
         );
+
+        // Export per-slave W busy for crossbar-level aggregation
+        assign m2s_w_busy_arr[s] = m2s_w_busy;
 
         // 默认从设备: 例化 axi_default_slave 驱动 ready / B / R 信号
         if (SLV_DEFAULT_MASK[s]) begin : GEN_DEFAULT_SLV
@@ -863,6 +896,20 @@ generate
 
         assign awselect_out[s] = m2s_awsel;
         assign arselect_out[s] = m2s_arsel;
+    end
+endgenerate
+
+//=============================================================================
+// Per-master W busy aggregation: any slave has pending W for this master
+//=============================================================================
+genvar mb;
+generate
+    for (mb = 0; mb < MST_AMT; mb = mb + 1) begin : GEN_M_W_BUSY
+        wire [SLV_AMT-1:0] busy_or;
+        for (s = 0; s < SLV_AMT; s = s + 1) begin : BUSY_SLV
+            assign busy_or[s] = m2s_w_busy_arr[s][mb];
+        end
+        assign m_w_busy[mb] = |busy_or;
     end
 endgenerate
 
@@ -944,6 +991,7 @@ endgenerate
 
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_default_slave.v ==========
 module axi_default_slave
      #(parameter W_CID  = 4        // Channel ID width
                , W_ID   = 4        // ID width
@@ -1129,6 +1177,7 @@ module axi_default_slave
      end
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_fifo_sync.v ==========
 // Synchronous FIFO
 //----------------------------------------------------------------
 // MACROS and PARAMETERS
@@ -1254,8 +1303,25 @@ module axi_fifo_sync
        end
    end
 
+   // TRACE: FIFO internal state — only on handshake or backpressure
+   /*
+   always @(posedge clk) begin
+       if (rstn) begin
+           // write or read handshake completed
+           if ((wr_vld && wr_rdy) || (rd_vld && rd_rdy))
+               $display("[TRACE_FIFO] %0t %m wr_vld=%b wr_rdy=%b rd_vld=%b rd_rdy=%b cnt=%0d full=%b empty=%b",
+                        $time, wr_vld, wr_rdy, rd_vld, rd_rdy, item_cnt, full, empty);
+           // backpressure: valid asserted but not ready
+           if ((wr_vld && !wr_rdy) || (rd_vld && !rd_rdy))
+               $display("[TRACE_FIFO] %0t %m STUCK wr_vld=%b wr_rdy=%b rd_vld=%b rd_rdy=%b cnt=%0d full=%b empty=%b",
+                        $time, wr_vld, wr_rdy, rd_vld, rd_rdy, item_cnt, full, empty);
+       end
+   end
+   */
+
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_interconnect.v ==========
 //=============================================================================
 // Module: axi_interconnect
 // Desc  : Top-level AXI Interconnect Wrapper with symmetric FIFOs on both sides
@@ -1634,6 +1700,11 @@ generate
         assign S_AXI_ARBURST_o [BURST_W*(s+1)-1 -: BURST_W] = s_arburst_out[s];
         assign S_AXI_ARVALID_o [s] = s_arvalid_out[s];
         assign s_arready_out[s] = S_AXI_ARREADY_i[s];
+            // TRACE: slave AR valid
+            always @(posedge AXI_CLK) begin
+                if (s_arvalid_out[s])
+                    $display("[TRACE] %0t AR at slave s=%0d addr=0x%08h", $time, s, s_araddr_out[s]);
+            end
 
         // Inputs (from top to slave pre-FIFO)
         assign s_bid_in[s]   = S_AXI_BID_i[W_SID*(s+1)-1 -: W_SID];
@@ -1761,6 +1832,15 @@ generate
             .rd_dout ({M_ARID[m], M_ARADDR[m], M_ARLEN[m],
                        M_ARSIZE[m], M_ARBURST[m]})
         );
+            // TRACE: pre-crossbar AR FIFO output
+            reg _prev_arv;
+            always @(posedge AXI_CLK) begin
+                _prev_arv <= M_ARVALID[m];
+                if (AXI_RSTn && M_ARVALID[m] !== _prev_arv)
+                    $display("[TRACE] %0t AR pre-FIFO vld m=%0d vld=%b rdy=%b", $time, m, M_ARVALID[m], M_ARREADY[m]);
+                if (M_ARVALID[m] && M_ARREADY[m])
+                    $display("[TRACE] %0t AR pre-FIFO out m=%0d addr=0x%08h", $time, m, M_ARADDR[m]);
+            end
     end
 endgenerate
 
@@ -1824,6 +1904,17 @@ endgenerate
 generate
     for(s = 0; s < SLV_AMT; s = s + 1) begin : GEN_ARREADY_GATE
         assign S_ARREADY[s] = S_ARREADY_FIFO[s] & sid_buf_push_rdy[s];
+        // TRACE: ARREADY gate (every cycle for s=2)
+        //always @(posedge AXI_CLK) begin
+            //if (AXI_RSTn)
+                //$display("[TRACE] %0t S_ARREADY s=%0d fifo=%b sid=%b final=%b", $time, s, S_ARREADY_FIFO[s], sid_buf_push_rdy[s], S_ARREADY[s]);
+        //end
+        // TRACE: ARREADY gate
+        always @(posedge AXI_CLK) begin
+            if (S_ARREADY_FIFO[s] !== sid_buf_push_rdy[s])
+                $display("[TRACE] %0t S_ARREADY s=%0d fifo=%b sid=%b final=%b",
+                         $time, s, S_ARREADY_FIFO[s], sid_buf_push_rdy[s], S_ARREADY[s]);
+        end
     end
 endgenerate
 
@@ -1992,10 +2083,6 @@ endgenerate
 
 // ----- Clear port packing (one port per master) -----
 // Each master's R completion drives one clear port; priority_sel_clr picks winner
-wire [MST_AMT-1:0]       clr_last_packed;
-wire [W_SID*MST_AMT-1:0] clr_sid_packed;
-wire [MST_AMT-1:0]       clr_sid_vld_packed;
-wire [MST_AMT-1:0]       sid_buf_s_clr_rdy;
 
 genvar si_clr;
 generate
@@ -2316,8 +2403,115 @@ axi_crossbar #(
     .slv_en_i({SLV_AMT{1'b1}})
 );
 
+//===================================================================
+// TRACE: 5-channel handshake monitoring for ALL masters and slaves
+//===================================================================
+
+genvar tm, ts;
+// ---- Master side: pre-FIFO output + response per master ----
+generate
+    for (tm = 0; tm < MST_AMT; tm = tm + 1) begin : TRACE_MST
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                if (M_AWVALID[tm] && M_AWREADY[tm])
+                    $display("[TRACE] %0t AW pre-FIFO m=%0d addr=0x%08h len=%0d", $time, tm, M_AWADDR[tm], M_AWLEN[tm]);
+                if (M_WVALID[tm] && M_WREADY[tm])
+                    $display("[TRACE] %0t W  pre-FIFO m=%0d", $time, tm);
+                if (M_BVALID[tm] && M_BREADY[tm])
+                    $display("[TRACE] %0t B  to master m=%0d", $time, tm);
+                if (M_ARVALID[tm] && M_ARREADY[tm])
+                    $display("[TRACE] %0t AR pre-FIFO m=%0d addr=0x%08h len=%0d", $time, tm, M_ARADDR[tm], M_ARLEN[tm]);
+                if (M_RVALID[tm] && M_RREADY[tm])
+                    $display("[TRACE] %0t R  to master m=%0d", $time, tm);
+            end
+        end
+    end
+endgenerate
+
+// ---- Slave side: request arrival + response per slave ----
+generate
+    for (ts = 0; ts < SLV_AMT; ts = ts + 1) begin : TRACE_SLV
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                if (s_awvalid_out[ts])
+                    $display("[TRACE] %0t AW at slave s=%0d addr=0x%08h len=%0d", $time, ts, s_awaddr_out[ts], s_awlen_out[ts]);
+                if (s_wvalid_out[ts])
+                    $display("[TRACE] %0t W  at slave s=%0d", $time, ts);
+                if (s_bvalid_in[ts] && s_bready_in[ts])
+                    $display("[TRACE] %0t B  from slave s=%0d", $time, ts);
+                if (s_arvalid_out[ts])
+                    $display("[TRACE] %0t AR at slave s=%0d addr=0x%08h len=%0d", $time, ts, s_araddr_out[ts], s_arlen_out[ts]);
+                if (s_rvalid_in[ts] && s_rready_in[ts])
+                    $display("[TRACE] %0t R  from slave s=%0d", $time, ts);
+            end
+        end
+    end
+endgenerate
+
+// TRACE: WLAST monitoring — master write to FIFO and read from FIFO
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        // FIFO write side (master drives)
+        if (c4k_wvalid[0] && c4k_wready[0])
+            $display("[TRACE] %0t W FIFO write m=0 last=%b data=0x%08h", $time, c4k_wlast[0], c4k_wdata[0]);
+        // FIFO read side (to crossbar)
+        if (M_WVALID[0] && M_WREADY[0])
+            $display("[TRACE] %0t W FIFO read m=0 last=%b data=0x%08h", $time, M_WLAST[0], M_WDATA[0]);
+        // Slave side
+        if (s_wvalid_out[0])
+            $display("[TRACE] %0t W at slave s=0 last=%b data=0x%08h", $time, s_wlast_out[0], s_wdata_out[0]);
+    end
+end
+
+// TRACE: B merge monitor for m=0
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        if (c4k_bvalid[0] && c4k_bready[0])
+            $display("[TRACE] %0t B merge in m=0 id=0x%02h resp=%b", $time, c4k_bid[0], c4k_bresp[0]);
+        if (m_bvalid[0] && m_bready[0])
+            $display("[TRACE] %0t B merge out m=0 id=0x%02h resp=%b", $time, m_bid[0], m_bresp[0]);
+    end
+end
+
+// TRACE: Crossbar B channel interface (slave side → master side)
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        // Slave side: pre-FIFO output → crossbar input
+        if (x_s_BVALID[0] || x_s_BREADY[0])
+            $display("[TRACE_XBAR_B] %0t S side s=0 s_bvalid=%b s_bready=%b",
+                     $time, x_s_BVALID[0], x_s_BREADY[0]);
+        // Master side: crossbar output → post-FIFO input
+        if (x_m_BVALID[0] || x_m_BREADY[0])
+            $display("[TRACE_XBAR_B] %0t M side m=0 m_bvalid=%b m_bready=%b",
+                     $time, x_m_BVALID[0], x_m_BREADY[0]);
+    end
+end
+
+// TRACE: B path from slave to merge (for slave 0)
+always @(posedge AXI_CLK) begin
+    if (AXI_RSTn) begin
+        // Slave drives B (pre-FIFO write)
+        if (s_bvalid_in[0] && s_bready_in[0])
+            $display("[TRACE] %0t B slave handshake s=0 id=0x%02h", $time, s_bid_in[0]);
+        // Pre-FIFO output to crossbar (pre-FIFO read)
+        if (s_bvalid_fifo[0] && s_bready_fifo[0])
+            $display("[TRACE] %0t B pre-FIFO out s=0 id=0x%02h", $time, s_bid_fifo[0]);
+        // Pre-FIFO has data but crossbar not reading
+        if (s_bvalid_fifo[0] && !s_bready_fifo[0])
+            $display("[TRACE] %0t B pre-FIFO stuck s=0 vld=1 rdy=0", $time);
+        // Post-FIFO (master side) status: wr_rdy determines if crossbar can write
+        if (M_BVALID[0] && !M_BREADY[0])
+            $display("[TRACE] %0t B post-FIFO stuck m=0 wr_vld=1 wr_rdy=0", $time);
+        if (M_BVALID[0] && M_BREADY[0])
+            $display("[TRACE] %0t B post-FIFO out m=0 id=0x%02h", $time, M_BID[0]);
+    end
+end
+
+
 endmodule
 
+
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_m2s_m_amt.v ==========
 //=============================================================================
 module axi_m2s_m_amt
 #(
@@ -2399,8 +2593,11 @@ module axi_m2s_m_amt
     input   wire  [MST_AMT-1:0]    AWSELECT_IN,
     input   wire  [MST_AMT-1:0]    ARSELECT_IN,
     input   wire                   arbiter_type,
-    input   wire                   slv_en
-    // ⚠️ channel_en REMOVED - not needed
+    input   wire                   slv_en,
+
+    // W channel routing control (crossbar-level gating)
+    output  wire  [MST_AMT-1:0]    W_ACCEPT,     // per-master: this M2S is receiving W beats
+    output  wire  [MST_AMT-1:0]    W_BUSY        // per-master: this M2S has pending W
 );
 
 //=============================================================================
@@ -2651,6 +2848,19 @@ always @(posedge AXI_CLK) begin
 end
 
 //=============================================================================
+// W Channel Routing Control: per-master accept / busy outputs for crossbar
+//=============================================================================
+generate
+    for(m = 0; m < MST_AMT; m = m + 1) begin : GEN_W_CTRL
+        // W_ACCEPT: this M2S is actively receiving W beats from this master
+        assign W_ACCEPT[m] = ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active)
+                           || AWGRANT[m];
+        // W_BUSY: this M2S has a pending AW from this master
+        assign W_BUSY[m]   = (pending_aw_cnt[m] > 0);
+    end
+endgenerate
+
+//=============================================================================
 // W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
 //=============================================================================
 wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
@@ -2669,7 +2879,7 @@ generate
 
             // Write side: from master
             .wr_rdy (m_wready_fifo[m]),
-            .wr_vld (m_wvalid[m] && ((pending_aw_cnt[m] > 0) || (AWSELECT[m] && m_awvalid[m]))),
+             .wr_vld (m_wvalid[m] && (AWGRANT[m] || (pending_aw_cnt[m] > 0))),
             .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
 
             // Read side: to slave (gated by W-follows-AW logic)
@@ -2686,7 +2896,7 @@ endgenerate
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : GATE_WREADY
         assign m_wready[m] = m_wready_fifo[m]
-                           && ((pending_aw_cnt[m] > 0) || (AWSELECT[m] && m_awvalid[m]));
+                           && (AWGRANT[m] || (pending_aw_cnt[m] > 0));
     end
 endgenerate
 
@@ -2761,6 +2971,7 @@ end
 
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_s2m_s_amt.v ==========
 module axi_s2m_s_amt
 #(
     parameter MASTER_ID       = 0,
@@ -2913,6 +3124,7 @@ endgenerate
 //=========================================================================
 // Debug: R channel monitoring
 //=========================================================================
+/*
 genvar di;
 generate
     for (di = 0; di < SLV_AMT; di = di + 1) begin : DBG_S_R
@@ -2936,9 +3148,11 @@ always @(posedge AXI_CLK) begin
         $display("[%0t] S2M[M%0d] R: RSELECT=0x%0h RGRANT=0x%0h rgrant_d=0x%0h S_RVALID=0x%0h M_RREADY=%0d M_RVALID=%0d",
                  $time, MASTER_ID, RSELECT, RGRANT, rgrant_d, S_RVALID, M_RREADY, M_RVALID);
 end
+*/
 
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_split_b_merge.v ==========
 //=============================================================================
 // axi_split_b_merge — B-channel response merger for 4KB-split write transactions
 //=============================================================================
@@ -3065,7 +3279,7 @@ module axi_split_b_merge #(
 
     assign s_axi_bready = has_pending      ? 1'b0             // wait: merged B first
                         : can_accept       ? 1'b1             // absorb / allocate
-                        :                    m_axi_bready;    // non-split passthrough
+                        :                    (m_axi_bready === 1'b1);  // non-split passthrough (sanitize z->0)
 
     always @(*) begin
         if (has_pending) begin
@@ -3130,8 +3344,41 @@ module axi_split_b_merge #(
         end
     end
 
+    //=========================================================================
+    // TRACE: B merge internal state
+    //=========================================================================
+    /*
+    always @(posedge clk) begin
+        if (rst_n) begin
+            if (s_axi_bvalid || has_pending || |entry_valid) begin
+                $display("[TRACE_BMERGE] %0t s_bvld=%b s_brdy=%b pend=%b key=%b free=%b can=%b split=%b b_st=%b bid=0x%02h sid=0x%02h",
+                         $time, s_axi_bvalid, s_axi_bready, has_pending,
+                         |key_match, has_free, can_accept, b_is_split,
+                         b_split_st, s_axi_bid, b_strip_id);
+                for (int i = 0; i < MAX_SPLIT; i++) begin
+                    if (entry_valid[i])
+                        $display("[TRACE_BMERGE] %0t   E[%0d] id=0x%02h t1=%b t2=%b resp=%b done=%b",
+                                 $time, i, entry_orig_id[i], entry_got_t1[i],
+                                 entry_got_t2[i], entry_resp[i], entry_done[i]);
+                end
+            end
+            if (s_axi_bvalid && s_axi_bready && b_is_split)
+                $display("[TRACE_BMERGE] %0t ABSORB t1=%b t2=%b alloc=%0d",
+                         $time, b_is_trans1, b_is_trans2, alloc_idx);
+            if (has_pending)
+                $display("[TRACE_BMERGE] %0t PENDING done_idx=%0d id=0x%02h resp=%b m_bvld=%b m_brdy=%b",
+                         $time, done_idx, entry_orig_id[done_idx],
+                         entry_resp[done_idx], m_axi_bvalid, m_axi_bready);
+            if (has_pending && m_axi_bvalid && m_axi_bready)
+                $display("[TRACE_BMERGE] %0t DEALLOC idx=%0d", $time, done_idx);
+        end
+    end
+    */
+
 endmodule
 
+
+// ========== c:/Users/22612/Desktop/AXI4/rtl/axi_split_r_merge.v ==========
 //=============================================================================
 // axi_split_r_merge — R-channel merger for 4KB-split read transactions
 //=============================================================================
@@ -3338,6 +3585,8 @@ module axi_split_r_merge #(
 
 endmodule
 
+
+// ========== c:/Users/22612/Desktop/AXI4/rtl/cross_4k_if.v ==========
 // INCR BURST ONLY
 // 4KB boundary splitter: splits AW/AR when transaction crosses 4KB
 // W channel: forces WLAST=1 on last beat of sub-transaction 1
@@ -3488,8 +3737,8 @@ always @(posedge clk) begin
         ST_AR_C4K <= 0;
     end else begin
         case (ST_AR_C4K)
-            IDLE: begin 
-                if (ar_cross4k_flag) begin
+            IDLE: begin
+                if (ar_cross4k_flag && m_axi_arvalid) begin
                     ST_AR_C4K  <= TRANS1;
                 end
             end
@@ -3552,8 +3801,8 @@ always @(posedge clk) begin
         ST_AW_C4K <= 0;
     end else begin
         case (ST_AW_C4K)
-            IDLE: begin 
-                if (aw_cross4k_flag) begin
+            IDLE: begin
+                if (aw_cross4k_flag && m_axi_awvalid) begin
                     ST_AW_C4K  <= TRANS1;
                 end
             end
@@ -3621,17 +3870,23 @@ reg [W_LEN-1:0] w_beat_cnt;        // beat index within the original transaction
 reg             w_trans1_done;      // sub-transaction 1 W phase completed
 reg             w_aw_split;         // current write transaction was split
 reg [W_LEN-1:0] orig_awlen_reg;    // original AWLEN (from master, before split)
+reg             w_stall_rel;        // latch: once sub-AW2 accepted, permanently release W stall
 
 // Capture original AWLEN when AW handshake completes on master side
 always @(posedge clk) begin
     if (!rst_n) begin
         orig_awlen_reg <= 0;
         w_aw_split     <= 0;
+        w_stall_rel    <= 0;
     end else begin
         if (m_axi_awvalid && m_axi_awready) begin
             orig_awlen_reg <= m_axi_awlen;
             w_aw_split     <= aw_cross4k_flag;
+            w_stall_rel    <= 1'b0;   // reset for new transaction
         end
+        // Release W stall once sub-AW2 is accepted by slave
+        if (ST_AW_C4K == TRANS2 && s_axi_awvalid && s_axi_awready)
+            w_stall_rel <= 1;
     end
 end
 
@@ -3641,7 +3896,7 @@ always @(posedge clk) begin
         w_beat_cnt    <= 0;
         w_trans1_done <= 0;
     end else begin
-        // Load / start on TRANS1 AW handshake
+        // Load / start on TRANS1 AW handshake (reset for each new split transaction)
         if (ST_AW_C4K == TRANS1 && s_axi_awvalid && s_axi_awready && aw_cross4k_flag) begin
             w_beat_cnt    <= 0;
             w_trans1_done <= 0;
@@ -3659,10 +3914,9 @@ always @(posedge clk) begin
 end
 
 // W channel routing
-// Stalling: between TRANS1 W done and TRANS2 AW accepted, stall W to prevent
-// sub-transaction 2 data from reaching the slave before its AW is sent.
-wire w_stall = w_trans1_done && w_aw_split &&
-               !(ST_AW_C4K == TRANS2 && s_axi_awvalid && s_axi_awready);
+// Stalling: between sub-W1 WLAST and sub-AW2 acceptance, stall W.
+// Once sub-AW2 is accepted (w_stall_rel=1), stall is permanently released.
+wire w_stall = w_trans1_done && w_aw_split && !w_stall_rel;
 
 assign s_axi_wdata  = m_axi_wdata;
 assign s_axi_wstrb  = m_axi_wstrb;
@@ -3672,8 +3926,25 @@ assign s_axi_wlast  = (!w_trans1_done && w_aw_split && w_beat_cnt == trans1_awle
                       : m_axi_wlast;      // passthrough otherwise
 assign m_axi_wready = s_axi_wready && !w_stall;
 
+// TRACE: 4KB split debug
+always @(posedge clk) begin
+    if (rst_n) begin
+        if (w_aw_split || w_trans1_done)
+            $display("[TRACE_C4K] %0t ST_AW=%0d split=%b t1done=%b stall=%b beat=%0d",
+                     $time, ST_AW_C4K, w_aw_split, w_trans1_done, w_stall, w_beat_cnt);
+    end
+end
+always @(posedge clk) begin
+    if (rst_n) begin
+        if (m_axi_wvalid || s_axi_wvalid)
+            $display("[TRACE_C4K] %0t W m_vld=%b m_rdy=%b s_vld=%b s_rdy=%b slast=%b",
+                     $time, m_axi_wvalid, m_axi_wready, s_axi_wvalid, s_axi_wready, s_axi_wlast);
+    end
+end
+
 endmodule
 
+// ========== c:/Users/22612/Desktop/AXI4/rtl/reorder.v ==========
 //=============================================================================
 // Module: reorder
 // Desc  : Parameterized read response reorder controller
@@ -3768,6 +4039,8 @@ end
 
 endmodule
 
+
+// ========== c:/Users/22612/Desktop/AXI4/rtl/sid_buffer.v ==========
 c_sel_wr → push_grant → XNOR → s_push_rdy
 //         - Clear logic (rf-style): clr_last & clr_sid_vld → clr_select
 //           → priority_sel_clr → clr_grant → XNOR → s_clr_rdy
@@ -3971,4 +4244,5 @@ function [NUM_CLR-1:0] priority_sel_clr;
 endfunction
 
 endmodule
+
 

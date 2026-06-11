@@ -111,7 +111,9 @@ reg [W_ADDR-1:0]    trans1_awaddr ;
 reg [W_LEN-1:0]     trans1_awlen  ; 
 reg [W_ADDR-1:0]    trans2_awaddr ; 
 reg [W_LEN-1:0]     trans2_awlen  ; 
-reg                 trans_awvalid ; 
+reg                 trans_awvalid ;
+reg                 trans_awvalid_r;    // registered latch for split sub-AW
+reg                 trans_arvalid_r;    // registered latch for split sub-AR
 reg                 aw_trans_stall;
 
 always @(*) begin
@@ -172,7 +174,7 @@ always @(*) begin
         s_axi_arlen   = trans1_arlen  ;
         s_axi_arsize  = trans_arsize ;
         s_axi_arburst = trans_arburst;
-        s_axi_arvalid = trans_arvalid;
+        s_axi_arvalid = trans_arvalid_r;
         m_axi_arready = 0;
     end
     else if (ST_AR_C4K==TRANS2) begin
@@ -181,7 +183,7 @@ always @(*) begin
         s_axi_arlen   = trans2_arlen  ;
         s_axi_arsize  = trans_arsize ;
         s_axi_arburst = trans_arburst;
-        s_axi_arvalid = trans_arvalid;
+        s_axi_arvalid = trans_arvalid_r;
         m_axi_arready = 1;
     end
     else if(ST_AR_C4K==IDLE) begin
@@ -236,7 +238,7 @@ always @(*) begin
         s_axi_awlen   = trans1_awlen  ;
         s_axi_awsize  = trans_awsize ;
         s_axi_awburst = trans_awburst;
-        s_axi_awvalid = trans_awvalid;
+        s_axi_awvalid = trans_awvalid_r;
         m_axi_awready = 0;
     end
     else if (ST_AW_C4K == TRANS2) begin
@@ -245,7 +247,7 @@ always @(*) begin
         s_axi_awlen   = trans2_awlen  ;
         s_axi_awsize  = trans_awsize ;
         s_axi_awburst = trans_awburst;
-        s_axi_awvalid = trans_awvalid;
+        s_axi_awvalid = trans_awvalid_r;
         m_axi_awready = 1;
     end
     else if(ST_AW_C4K == IDLE) begin
@@ -282,6 +284,24 @@ reg             w_trans1_done;      // sub-transaction 1 W phase completed
 reg             w_aw_split;         // current write transaction was split
 reg [W_LEN-1:0] orig_awlen_reg;    // original AWLEN (from master, before split)
 reg             w_stall_rel;        // latch: once sub-AW2 accepted, permanently release W stall
+
+// Registered latch for trans_awvalid / trans_arvalid (holds valid until sub-handshake)
+always @(posedge clk) begin
+    if (!rst_n) begin
+        trans_awvalid_r <= 0;
+        trans_arvalid_r <= 0;
+    end else begin
+        if (m_axi_awvalid && aw_cross4k_flag)
+            trans_awvalid_r <= 1'b1;
+        else if (ST_AW_C4K == IDLE)
+            trans_awvalid_r <= 1'b0;
+
+        if (m_axi_arvalid && ar_cross4k_flag)
+            trans_arvalid_r <= 1'b1;
+        else if (ST_AR_C4K == IDLE)
+            trans_arvalid_r <= 1'b0;
+    end
+end
 
 // Capture original AWLEN when AW handshake completes on master side
 always @(posedge clk) begin
