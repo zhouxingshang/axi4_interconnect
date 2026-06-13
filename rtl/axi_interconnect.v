@@ -573,6 +573,21 @@ generate
     end
 endgenerate
 
+// TRACE: slave W pre-FIFO state (wr_rdy back to crossbar)
+generate
+    for(s = 0; s < SLV_AMT; s = s + 1) begin : TRACE_W_SLV_FIFO
+        always @(posedge AXI_CLK) begin
+            if(AXI_RSTn) begin
+                if(S_WVALID[s] || s_wvalid_out[s])
+                    $display("[TRACE_W_PREFIFO] %0t s=%0d wr_hs=%b (vld=%b rdy=%b) rd_hs=%b (vld=%b rdy=%b)",
+                             $time, s,
+                             S_WVALID[s] && S_WREADY[s], S_WVALID[s], S_WREADY[s],
+                             s_wvalid_out[s] && s_wready_out[s], s_wvalid_out[s], s_wready_out[s]);
+            end
+        end
+    end
+endgenerate
+
 // Gate AR ready to crossbar: use s_push_rdy from shared sid_buffer per slave
 // rf-style push_rdy = ~(select ^ grant) & clr_allowed
 // When buffer has space: push_rdy[s]=1 → arready passes
@@ -1092,7 +1107,11 @@ generate
                 if (M_AWVALID[tm] && M_AWREADY[tm])
                     $display("[TRACE] %0t AW pre-FIFO m=%0d addr=0x%08h len=%0d", $time, tm, M_AWADDR[tm], M_AWLEN[tm]);
                 if (M_WVALID[tm] && M_WREADY[tm])
-                    $display("[TRACE] %0t W  pre-FIFO m=%0d", $time, tm);
+                    $display("[TRACE_W] %0t W pre-FIFO HS m=%0d last=%b data=0x%08h strb=0x%01h",
+                             $time, tm, M_WLAST[tm], M_WDATA[tm], M_WSTRB[tm]);
+                else if (M_WVALID[tm] && !M_WREADY[tm])
+                    $display("[TRACE_W] %0t W pre-FIFO STALL m=%0d vld=1 rdy=0 last=%b",
+                             $time, tm, M_WLAST[tm]);
                 if (M_BVALID[tm] && M_BREADY[tm])
                     $display("[TRACE] %0t B  to master m=%0d", $time, tm);
                 if (M_ARVALID[tm] && M_ARREADY[tm])
@@ -1111,8 +1130,12 @@ generate
             if (AXI_RSTn) begin
                 if (s_awvalid_out[ts])
                     $display("[TRACE] %0t AW at slave s=%0d addr=0x%08h len=%0d", $time, ts, s_awaddr_out[ts], s_awlen_out[ts]);
-                if (s_wvalid_out[ts])
-                    $display("[TRACE] %0t W  at slave s=%0d", $time, ts);
+                if (s_wvalid_out[ts] && s_wready_out[ts])
+                    $display("[TRACE_W] %0t W slave HS s=%0d last=%b data=0x%08h",
+                             $time, ts, s_wlast_out[ts], s_wdata_out[ts]);
+                else if (s_wvalid_out[ts] && !s_wready_out[ts])
+                    $display("[TRACE_W] %0t W slave STALL s=%0d vld=1 rdy=0 last=%b",
+                             $time, ts, s_wlast_out[ts]);
                 if (s_bvalid_in[ts] && s_bready_in[ts])
                     $display("[TRACE] %0t B  from slave s=%0d", $time, ts);
                 if (s_arvalid_out[ts])
@@ -1124,20 +1147,62 @@ generate
     end
 endgenerate
 
-// TRACE: WLAST monitoring — master write to FIFO and read from FIFO
-always @(posedge AXI_CLK) begin
-    if (AXI_RSTn) begin
-        // FIFO write side (master drives)
-        if (c4k_wvalid[0] && c4k_wready[0])
-            $display("[TRACE] %0t W FIFO write m=0 last=%b data=0x%08h", $time, c4k_wlast[0], c4k_wdata[0]);
-        // FIFO read side (to crossbar)
-        if (M_WVALID[0] && M_WREADY[0])
-            $display("[TRACE] %0t W FIFO read m=0 last=%b data=0x%08h", $time, M_WLAST[0], M_WDATA[0]);
-        // Slave side
-        if (s_wvalid_out[0])
-            $display("[TRACE] %0t W at slave s=0 last=%b data=0x%08h", $time, s_wlast_out[0], s_wdata_out[0]);
+// TRACE_W: W FIFO per master (after cross_4k, before xbar)
+generate
+    for (tm = 0; tm < MST_AMT; tm = tm + 1) begin : TRACE_W_FIFO
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                // W FIFO write: cross_4k output → pre-FIFO input
+                if (c4k_wvalid[tm] && c4k_wready[tm])
+                    $display("[TRACE_W_FIFO] %0t W_FIFO_WR m=%0d last=%b data=0x%08h",
+                             $time, tm, c4k_wlast[tm], c4k_wdata[tm]);
+                else if (c4k_wvalid[tm] && !c4k_wready[tm])
+                    $display("[TRACE_W_FIFO] %0t W_FIFO_WR_STALL m=%0d vld=1 rdy=0 last=%b",
+                             $time, tm, c4k_wlast[tm]);
+
+                // W post-FIFO: pre-FIFO output → crossbar input
+                if (M_WVALID[tm] && M_WREADY[tm])
+                    $display("[TRACE_W_FIFO] %0t W_FIFO_RD m=%0d last=%b data=0x%08h",
+                             $time, tm, M_WLAST[tm], M_WDATA[tm]);
+                else if (M_WVALID[tm] && !M_WREADY[tm])
+                    $display("[TRACE_W_FIFO] %0t W_FIFO_RD_STALL m=%0d vld=1 rdy=0 last=%b",
+                             $time, tm, M_WLAST[tm]);
+            end
+        end
     end
-end
+endgenerate
+
+// TRACE_W: Crossbar internal W — master side (all masters)
+generate
+    for (tm = 0; tm < MST_AMT; tm = tm + 1) begin : TRACE_W_XBAR_M
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                if (x_m_WVALID[tm] && x_m_WREADY[tm])
+                    $display("[TRACE_W_XBAR] %0t W_XBAR_M m=%0d last=%b data=0x%08h",
+                             $time, tm, x_m_WLAST[tm], x_m_WDATA[tm]);
+                else if (x_m_WVALID[tm] && !x_m_WREADY[tm])
+                    $display("[TRACE_W_XBAR] %0t W_XBAR_M_STALL m=%0d vld=1 rdy=0",
+                             $time, tm);
+            end
+        end
+    end
+endgenerate
+
+// TRACE_W: Crossbar internal W — slave side (all slaves)
+generate
+    for (ts = 0; ts < SLV_AMT; ts = ts + 1) begin : TRACE_W_XBAR_S
+        always @(posedge AXI_CLK) begin
+            if (AXI_RSTn) begin
+                if (x_s_WVALID[ts] && x_s_WREADY[ts])
+                    $display("[TRACE_W_XBAR] %0t W_XBAR_S s=%0d last=%b data=0x%08h",
+                             $time, ts, x_s_WLAST[ts], x_s_WDATA[ts]);
+                else if (x_s_WVALID[ts] && !x_s_WREADY[ts])
+                    $display("[TRACE_W_XBAR] %0t W_XBAR_S_STALL s=%0d vld=1 rdy=0",
+                             $time, ts);
+            end
+        end
+    end
+endgenerate
 
 // TRACE: B merge monitor for m=0
 always @(posedge AXI_CLK) begin

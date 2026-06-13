@@ -745,8 +745,8 @@ generate
             assign m_awlen_packed[TRANS_DATA_LEN_W*m +: TRANS_DATA_LEN_W] = m_awlen[m];
             assign m_awsize_packed[TRANS_DATA_SIZE_W*m +: TRANS_DATA_SIZE_W] = m_awsize[m];
             assign m_awburst_packed[TRANS_BURST_W*m +: TRANS_BURST_W] = m_awburst[m];
-            // AW: stalled if this master has pending W anywhere (same-slave pipeline via AW-order FIFO)
-            assign m_awvalid_packed[m] = m_awvalid[m] && !m_w_busy[m];
+            // AW: passthrough (W gate handles routing; AW-order FIFO handles same-slave pipeline)
+            assign m_awvalid_packed[m] = m_awvalid[m];
             assign m_wdata_packed[DATA_WIDTH*m +: DATA_WIDTH] = m_wdata[m];
             assign m_wstrb_packed[W_STRB*m +: W_STRB] = m_wstrb[m];
             assign m_wlast_packed[m] = m_wlast[m];
@@ -2969,6 +2969,26 @@ always @(*) begin
     end
 end
 
+//=========================================================================
+// Debug: AW/AR handshake trace
+//=========================================================================
+wire [MST_ID_W-1:0] ar_grant_mst;
+assign ar_grant_mst = ARGRANT[3] ? 3'd3 : ARGRANT[2] ? 3'd2 : ARGRANT[1] ? 3'd1 : 3'd0;
+
+always @(posedge AXI_CLK) begin
+    if (|aw_handshake)
+        $display("[%0t] M2S[%0d] AW: handshake mst=%0d AWID=0x%0h ADDR=0x%0h LEN=%0d",
+                 $time, aw_grant_idx, aw_grant_idx, m_awid[aw_grant_idx],
+                 S_AWADDR, S_AWLEN);
+end
+
+always @(posedge AXI_CLK) begin
+    if (|(ARGRANT & {MST_AMT{S_ARREADY}} & m_arvalid))
+        $display("[%0t] M2S[%0d] AR: handshake ARGRANT=%b mst=%0d ARID=0x%0h ADDR=0x%0h LEN=%0d",
+                 $time, ar_grant_mst, ARGRANT, ar_grant_mst,
+                 S_ARID[W_ID-1:0], S_ARADDR, S_ARLEN);
+end
+
 endmodule
 
 // ========== c:/Users/22612/Desktop/AXI4/rtl/axi_s2m_s_amt.v ==========
@@ -3122,33 +3142,40 @@ generate
 endgenerate
 
 //=========================================================================
+// Debug: B channel monitoring
+//=========================================================================
+always @(posedge AXI_CLK) begin
+    if (M_BVALID && M_BREADY)
+        $display("[%0t] S2M[M%0d] B: ->MASTER BID=0x%0h BRESP=%0d",
+                 $time, MASTER_ID, M_BID, M_BRESP);
+end
+
+//=========================================================================
 // Debug: R channel monitoring
 //=========================================================================
-/*
 genvar di;
 generate
     for (di = 0; di < SLV_AMT; di = di + 1) begin : DBG_S_R
         always @(posedge AXI_CLK) begin
             if (s_rvalid[di] && s_rready[di])
-                $display("[%0t] S2M[M%0d] R: slave[%0d] handshake RID=0x%0h RDATA=0x%08h RLAST=%0d RRESP=%0d",
-                         $time, MASTER_ID, di, s_rid[di], s_rdata[di], s_rlast[di], s_rresp[di]);
+                $display("[%0t] S2M[M%0d] R: slv[%0d] HS RID=0x%0h DATA=0x%08h LAST=%0d mst_idx=%0d",
+                         $time, MASTER_ID, di, s_rid[di], s_rdata[di], s_rlast[di],
+                         s_rid[di][MST_ID_FIELD_MSB:MST_ID_FIELD_LSB]);
         end
     end
 endgenerate
 
 always @(posedge AXI_CLK) begin
     if (M_RVALID && M_RREADY)
-        $display("[%0t] S2M[M%0d] R: -> MASTER RID=0x%0h RDATA=0x%08h RLAST=%0d",
+        $display("[%0t] S2M[M%0d] R: ->MASTER RID=0x%0h DATA=0x%08h LAST=%0d",
                  $time, MASTER_ID, M_RSID, M_RDATA, M_RLAST);
 end
 
-// Debug: RGRANT / rgrant_d / RSELECT state (only when RSELECT active)
 always @(posedge AXI_CLK) begin
     if (|RSELECT)
-        $display("[%0t] S2M[M%0d] R: RSELECT=0x%0h RGRANT=0x%0h rgrant_d=0x%0h S_RVALID=0x%0h M_RREADY=%0d M_RVALID=%0d",
-                 $time, MASTER_ID, RSELECT, RGRANT, rgrant_d, S_RVALID, M_RREADY, M_RVALID);
+        $display("[%0t] S2M[M%0d] R: RSELECT=%b RGRANT=%b S_RVALID=%b M_RREADY=%0d M_RVALID=%0d",
+                 $time, MASTER_ID, RSELECT, RGRANT, S_RVALID, M_RREADY, M_RVALID);
 end
-*/
 
 endmodule
 

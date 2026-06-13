@@ -106,9 +106,9 @@ wire [MST_AMT-1:0]       m_awready;
 
 wire [W_DATA-1:0]      m_wdata     [0:MST_AMT-1];
 wire [W_STRB-1:0]      m_wstrb     [0:MST_AMT-1];
-wire                   m_wlast     [0:MST_AMT-1];
-wire                   m_wvalid    [0:MST_AMT-1];
-wire                   m_wready    [0:MST_AMT-1];
+wire [MST_AMT-1:0]      m_wlast;
+wire [MST_AMT-1:0]      m_wvalid;
+wire [MST_AMT-1:0]      m_wready;
 
 wire [W_ID-1:0]        m_arid      [0:MST_AMT-1];
 wire [W_ADDR-1:0]      m_araddr    [0:MST_AMT-1];
@@ -130,8 +130,7 @@ wire                   aw_fifo_empty;
 
 reg  [CNT_W-1:0]       w_beat_cnt;                  // Remaining beats for current W transaction
 reg  [MST_ID_W-1:0]    cur_w_mst_id;                // Current master whose W data should be routed
-wire                   w_transaction_active;        // Flag: W transaction in progress
-assign w_transaction_active = (w_beat_cnt > 0);
+reg                    w_transaction_active;        // Flag: W transaction in progress (FSM-controlled, not combinational)
 
 //=============================================================================
 // Address Decode & Arbitration Signals
@@ -288,26 +287,70 @@ always @(posedge AXI_CLK) begin
         from_fifo    <= 1'b0;
     end else begin
         // AW / W beat counter state machine
-        // 优先级: 新 AW 直达 > W 传输递减 > FIFO 取出下一笔
+        // Priority: new AW direct > W decrement > FIFO next
+        // Uses w_beat_cnt==0 instead of !w_transaction_active for idle detection,
+        // so w_transaction_active (registered) can stay high across sub-burst gaps.
         // Case 1: AW handshake while W idle -> direct load (bypass FIFO latency)
-        if(|aw_handshake && !w_transaction_active) begin
+        if(|aw_handshake && w_beat_cnt == 0) begin
             w_beat_cnt   <= m_awlen[aw_grant_idx] + 1'b1;  // beats = LEN+1
             cur_w_mst_id <= aw_grant_idx;
             from_fifo    <= 1'b0;  // Direct loaded, not from FIFO
         end
-        // Case 2: W handshake occurs -> decrement counter
-        else if(w_transaction_active && S_WREADY && S_WVALID) begin
+        // Case 2: W handshake occurs -> decrement counter (guard: w_beat_cnt > 0)
+        else if(w_beat_cnt > 0 && w_transaction_active && S_WREADY && S_WVALID) begin
             if(w_beat_cnt == 1'b1 && S_WLAST) begin
                 w_beat_cnt <= 0;  // Transaction complete, FIFO pop triggered if from_fifo
             end else begin
                 w_beat_cnt <= w_beat_cnt - 1'b1;
             end
         end
-        // Case 3: W idle, FIFO has pending AW -> load next transaction
-        else if(!w_transaction_active && !aw_fifo_empty) begin
+        // Case 3: W idle (counter=0), FIFO has pending AW -> load next
+        else if(w_beat_cnt == 0 && !aw_fifo_empty) begin
             cur_w_mst_id <= fifo_mst_idx;
             w_beat_cnt   <= fifo_awlen + 1'b1;
             from_fifo    <= 1'b1;  // Loaded from FIFO
+        end
+
+        // w_transaction_active: registered flag controlled by FSM, NOT combinational.
+        // Holds high across sub-burst gaps (w_beat_cnt=0 but AW FIFO not empty).
+        if ((|aw_handshake && w_beat_cnt == 0) || (w_beat_cnt == 0 && !aw_fifo_empty))
+            w_transaction_active <= 1'b1;
+        else if (w_beat_cnt == 0 && aw_fifo_empty)
+            w_transaction_active <= 1'b0;
+    end
+end
+
+// TRACE: M2S W beat counter state (per-cycle)
+reg [3:0] trace_case;  // which case fired: 1,2,3 or 0=none
+always @(posedge AXI_CLK) begin
+    if(AXI_RSTn) begin
+        trace_case = 0;
+        if(|aw_handshake && w_beat_cnt == 0)
+            trace_case = 1;
+        else if(w_beat_cnt > 0 && w_transaction_active && S_WREADY && S_WVALID)
+            trace_case = 2;
+        else if(w_beat_cnt == 0 && !aw_fifo_empty)
+            trace_case = 3;
+        else
+            trace_case = 0;
+
+        if(w_transaction_active || !aw_fifo_empty || |aw_handshake)
+            $display("[TRACE_M2S_W] %0t case=%0d w_beat=%0d active=%b from_fifo=%b fifo_empty=%b aw_hs=%b",
+                     $time, trace_case, w_beat_cnt, w_transaction_active, from_fifo,
+                     aw_fifo_empty, |aw_handshake);
+    end
+end
+
+// TRACE: M2S W output handshake
+always @(posedge AXI_CLK) begin
+    if(AXI_RSTn) begin
+        if(w_transaction_active) begin
+            if(S_WVALID && S_WREADY)
+                $display("[TRACE_M2S_W] %0t W_OUT_HS mst=%0d last=%b beat_left=%0d",
+                         $time, cur_w_mst_id, S_WLAST, w_beat_cnt);
+            else if(S_WVALID && !S_WREADY)
+                $display("[TRACE_M2S_W] %0t W_OUT_STALL mst=%0d vld=1 rdy=0 beat_left=%0d",
+                         $time, cur_w_mst_id, w_beat_cnt);
         end
     end
 end
@@ -349,12 +392,19 @@ endgenerate
 //=============================================================================
 // W Channel: axi_fifo_sync + Dynamic Mux Routing (W follows AW)
 //=============================================================================
-wire [W_DATA+W_STRB+1-1:0] w_fifo_dout [0:MST_AMT-1];
-wire [MST_AMT-1:0]         w_fifo_vld;
-wire [MST_AMT-1:0]         m_wready_fifo;  // internal FIFO ready (ungated)
+wire [W_DATA-1:0]  w_fifo_wdata [0:MST_AMT-1];
+wire [W_STRB-1:0]  w_fifo_wstrb [0:MST_AMT-1];
+wire                w_fifo_wlast [0:MST_AMT-1];
+wire [MST_AMT-1:0]  w_fifo_vld;
+wire [MST_AMT-1:0]  m_wready_fifo;  // internal FIFO ready (ungated)
+wire [MST_AMT-1:0]  w_wr_vld;       // per-master W FIFO write valid
+wire [MST_AMT-1:0]  w_aw_ready;     // AW handshake done: this master's W is accepted
 
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : W_FIFO_PER_MASTER
+        assign w_aw_ready[m] = AWGRANT[m] || (pending_aw_cnt[m] > 0);
+        assign w_wr_vld[m]   = m_wvalid[m] && w_aw_ready[m];
+
         axi_fifo_sync #(
             .FDW(W_DATA + W_STRB + 1),  // {WDATA, WSTRB, WLAST}
             .FAW(2)                      // depth = 2^2 = 4
@@ -365,24 +415,21 @@ generate
 
             // Write side: from master
             .wr_rdy (m_wready_fifo[m]),
-             .wr_vld (m_wvalid[m] && (AWGRANT[m] || (pending_aw_cnt[m] > 0))),
+            .wr_vld (w_wr_vld[m]),
             .wr_din ({m_wdata[m], m_wstrb[m], m_wlast[m]}),
 
             // Read side: to slave (gated by W-follows-AW logic)
             .rd_rdy ((cur_w_mst_id == m[MST_ID_W-1:0]) && w_transaction_active && S_WREADY),
             .rd_vld (w_fifo_vld[m]),
-            .rd_dout(w_fifo_dout[m])
+            .rd_dout({w_fifo_wdata[m], w_fifo_wstrb[m], w_fifo_wlast[m]})
         );
     end
 endgenerate
 
 // Gate m_wready: stall pre-crossbar W FIFO until AW is ready.
-//   pending_aw_cnt[m]>0:     AW accepted by this M2S, waiting for W (covers burst)
-//   AWSELECT[m] & m_awvalid: AW present at crossbar input targeting this slave
 generate
     for(m = 0; m < MST_AMT; m = m + 1) begin : GATE_WREADY
-        assign m_wready[m] = m_wready_fifo[m]
-                           && (AWGRANT[m] || (pending_aw_cnt[m] > 0));
+        assign m_wready[m] = m_wready_fifo[m] && w_aw_ready[m];
     end
 endgenerate
 
@@ -392,13 +439,26 @@ always @(*) begin
     S_WSTRB = '0;
     S_WLAST = 1'b0;
     S_WVALID = 1'b0;
-    
+
     if(w_transaction_active) begin
         // Only route data from the master whose AW was granted first
-        S_WDATA = w_fifo_dout[cur_w_mst_id][W_DATA+W_STRB:W_STRB+1];
-        S_WSTRB = w_fifo_dout[cur_w_mst_id][W_STRB:1];
-        S_WLAST = w_fifo_dout[cur_w_mst_id][0];
+        S_WDATA = w_fifo_wdata[cur_w_mst_id];
+        S_WSTRB = w_fifo_wstrb[cur_w_mst_id];
+        S_WLAST = w_fifo_wlast[cur_w_mst_id];
         S_WVALID = w_fifo_vld[cur_w_mst_id];
+    end
+end
+
+// TRACE: per-master W FIFO output state (debug beat 7 loss)
+always @(posedge AXI_CLK) begin
+    if(AXI_RSTn) begin
+        if(w_transaction_active && cur_w_mst_id < MST_AMT)
+            $display("[TRACE_M2S_WFIFO] %0t mst=%0d f_vld=%b f_last=%b f_wdata=0x%08h f_rdy=%b S_WREADY=%b",
+                     $time, cur_w_mst_id, w_fifo_vld[cur_w_mst_id],
+                     w_fifo_wlast[cur_w_mst_id],
+                     w_fifo_wdata[cur_w_mst_id],
+                     w_transaction_active && S_WREADY,
+                     S_WREADY);
     end
 end
 

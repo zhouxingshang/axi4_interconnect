@@ -28,6 +28,8 @@ class split4k_seq extends uvm_sequence #(axi_transaction);
         pre_offset + post_bytes == (len + 1) * 4;
         // derive addr (word-aligned, since boundary and pre_offset are aligned)
         addr == boundary - pre_offset;
+        // TEMP: force start address to 0x1ffc for 1-beat sub-transaction 1 test
+        addr == 32'h1ffc;
     }
 
     function new(string n="split4k_seq");
