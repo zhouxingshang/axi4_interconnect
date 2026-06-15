@@ -149,6 +149,7 @@ class axi_driver extends uvm_driver #(axi_transaction);
                 if (b == t.len) begin
                     vif.M_WVALID[mst_id] <= 1'b0;
                     vif.M_WLAST[mst_id]  <= 1'b0;
+                    //@(posedge vif.ACLK);  // ensure deassertion takes effect before next transaction
                 end
             end
         end

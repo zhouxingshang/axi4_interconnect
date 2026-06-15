@@ -401,809 +401,1060 @@ UVM_INFO ./uvm/axi_driver.sv(115) @ 195000: uvm_test_top.env.mst_ag3.drv_m3 [TRA
 UVM_INFO ./uvm/axi_driver.sv(140) @ 195000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 0/14 last=0
 UVM_INFO ./uvm/axi_driver.sv(140) @ 205000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 1/14 last=0
 [TRACE_XBAR_B] 205000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W_FIFO] 205000 W_FIFO_WR m=3 last=1 data=0xf6a2be52
 [205000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K_W] 205000 M_W_HS beat=0 m_wlast=0 -> s_wlast=1 (src=  FORCED)
+[TRACE_C4K_W] 205000 M_W_HS m_last=0 (buf_empty=1)
+[TRACE_C4K_W] 205000 BUF_LOAD m_last=0
 UVM_INFO ./uvm/axi_driver.sv(140) @ 215000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 2/14 last=0
 [TRACE_XBAR_B] 215000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 215000 AW pre-FIFO m=3 addr=0x00001ffc len=0
-[TRACE_W] 215000 W pre-FIFO HS m=3 last=1 data=0xf6a2be52 strb=0xf
-[TRACE_W_FIFO] 215000 W_FIFO_WR m=3 last=0 data=0xb29d727d
-[TRACE_W_FIFO] 215000 W_FIFO_RD m=3 last=1 data=0xf6a2be52
-[TRACE_W_XBAR] 215000 W_XBAR_M m=3 last=1 data=0x00000000
-[TRACE_M2S_W] 215000 case=1 w_beat=0 active=0 from_fifo=0 fifo_empty=1 aw_hs=1
-[215000] M2S[3] AW: handshake mst=3 AWID=0x1b ADDR=0x1ffc LEN=0
+[TRACE_W_FIFO] 215000 W_FIFO_WR m=3 last=1 data=0xf6a2be52
 [215000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 215000 AW_ST=1 split=1 t1done=0 stall=0 stall_rel=0 beat=1/14
-[TRACE_C4K_W] 215000 M_W_HS beat=1 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
+[TRACE_C4K] 215000 AW_ST=1 split=1 t1done=0 stall=0 stall_rel=0 beat=0/14
+[TRACE_C4K_W] 215000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 215000 S_W_HS beat=0 buf_last=0 -> s_wlast=1 (src=  FORCED)
 [TRACE_C4K] 215000 SPLIT_T1 awlen=0 beats_page1=1 addr_end_bit12=0
-UVM_INFO ./uvm/axi_slave_agent.sv(83) @ 225000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=219 addr=0x00001ffc len=0
-UVM_INFO ./uvm/axi_driver.sv(140) @ 225000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 3/14 last=0
 [TRACE_XBAR_B] 225000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 225000 AW pre-FIFO m=3 addr=0x00001ffc len=0
-[TRACE_W] 225000 W pre-FIFO HS m=3 last=0 data=0xb29d727d strb=0xf
-[TRACE] 225000 AW at slave s=0 addr=0x00001ffc len=0
-[TRACE_W_FIFO] 225000 W_FIFO_WR m=3 last=0 data=0xd926bcd4
-[TRACE_W_FIFO] 225000 W_FIFO_RD m=3 last=0 data=0xb29d727d
-[TRACE_W_XBAR] 225000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 225000 W_XBAR_S s=0 last=1 data=0x00000000
-[TRACE_M2S_W] 225000 case=2 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=1
-[TRACE_M2S_W] 225000 W_OUT_HS mst=3 last=1 beat_left=1
-[TRACE_M2S_WFIFO] 225000 mst=3 f_vld=1 f_last=1 f_wdata=0xf6a2be52 f_rdy=1 S_WREADY=1
-[225000] M2S[3] AW: handshake mst=3 AWID=0x1b ADDR=0x1ffc LEN=0
+[TRACE_W] 225000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=1
+[TRACE_W_FIFO] 225000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=1
+[TRACE_W_XBAR] 225000 W_XBAR_M_STALL m=3 vld=1 rdy=0
 [225000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 225000 AW_ST=2 split=1 t1done=0 stall=0 stall_rel=0 beat=2/14
-[TRACE_C4K_W] 225000 M_W_HS beat=2 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
+[TRACE_C4K] 225000 AW_ST=2 split=1 t1done=1 stall=1 stall_rel=0 beat=1/14
 [TRACE_C4K] 225000 SPLIT_T2 awlen=13 beats_page2=14
-UVM_INFO ./uvm/axi_slave_agent.sv(83) @ 235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AW handshake id=219 addr=0x00001ffc len=0
-UVM_INFO ./uvm/axi_driver.sv(140) @ 235000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 4/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 235000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 0 data=0xf6a2be52 last=1
+[TRACE_C4K] 225000 W_STALL_START waiting for sub-AW2 accept
+UVM_INFO ./uvm/axi_driver.sv(140) @ 235000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 3/14 last=0
 [TRACE_XBAR_B] 235000 M side m=0 m_bvalid=0 m_bready=1
 [TRACE] 235000 AW pre-FIFO m=3 addr=0x00002000 len=13
-[TRACE_W] 235000 W pre-FIFO HS m=3 last=0 data=0xd926bcd4 strb=0xf
-[TRACE] 235000 AW at slave s=0 addr=0x00001ffc len=0
-[TRACE_W] 235000 W slave HS s=0 last=1 data=0xf6a2be52
-[TRACE_W_FIFO] 235000 W_FIFO_WR m=3 last=0 data=0x7b31dd54
-[TRACE_W_FIFO] 235000 W_FIFO_RD m=3 last=0 data=0xd926bcd4
-[TRACE_W_XBAR] 235000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 235000 W_XBAR_S s=0 last=0 data=0x00000001
-[TRACE_M2S_W] 235000 case=3 w_beat=0 active=1 from_fifo=0 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 235000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 235000 mst=3 f_vld=1 f_last=0 f_wdata=0xb29d727d f_rdy=1 S_WREADY=1
+[TRACE_W] 235000 W pre-FIFO HS m=3 last=1 data=0xf6a2be52 strb=0xf
+[TRACE_W_FIFO] 235000 W_FIFO_WR m=3 last=0 data=0xd926bcd4
+[TRACE_W_FIFO] 235000 W_FIFO_RD m=3 last=1 data=0xf6a2be52
+[TRACE_W_XBAR] 235000 W_XBAR_M m=3 last=1 data=0x00000000
 [TRACE_M2S_W] 235000 case=1 w_beat=0 active=0 from_fifo=0 fifo_empty=1 aw_hs=1
 [235000] M2S[3] AW: handshake mst=3 AWID=0x2b ADDR=0x2000 LEN=13
 [235000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 235000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=3/14
-[TRACE_C4K_W] 235000 M_W_HS beat=3 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
+[TRACE_C4K] 235000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=2/14
+[TRACE_C4K_W] 235000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 235000 S_W_HS beat=2 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
 UVM_INFO ./uvm/axi_slave_agent.sv(83) @ 245000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV AW handshake id=235 addr=0x00002000 len=13
-UVM_INFO ./uvm/axi_driver.sv(140) @ 245000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 5/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 245000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 0 data=0xb29d727d last=0
+UVM_INFO ./uvm/axi_driver.sv(140) @ 245000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 4/14 last=0
 [TRACE_XBAR_B] 245000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 245000 B slave handshake s=0 id=0xdb
-[TRACE_W] 245000 W pre-FIFO HS m=3 last=0 data=0x7b31dd54 strb=0xf
-[TRACE_W] 245000 W slave HS s=0 last=0 data=0xb29d727d
-[TRACE] 245000 B  from slave s=0
+[TRACE_W] 245000 W pre-FIFO HS m=3 last=0 data=0xd926bcd4 strb=0xf
 [TRACE] 245000 AW at slave s=1 addr=0x00002000 len=13
-[TRACE_W_FIFO] 245000 W_FIFO_WR m=3 last=0 data=0x7bf2539d
-[TRACE_W_FIFO] 245000 W_FIFO_RD m=3 last=0 data=0x7b31dd54
+[TRACE_W_FIFO] 245000 W_FIFO_WR m=3 last=0 data=0xd926bcd4
+[TRACE_W_FIFO] 245000 W_FIFO_RD m=3 last=0 data=0xd926bcd4
 [TRACE_W_XBAR] 245000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 245000 W_XBAR_S s=0 last=0 data=0x00000000
-[TRACE_W_XBAR] 245000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 245000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 245000 W_OUT_HS mst=3 last=0 beat_left=1
-[TRACE_M2S_WFIFO] 245000 mst=3 f_vld=1 f_last=0 f_wdata=0xd926bcd4 f_rdy=1 S_WREADY=1
+[TRACE_W_XBAR] 245000 W_XBAR_S s=1 last=1 data=0x00000000
 [TRACE_M2S_W] 245000 case=2 w_beat=14 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 245000 W_OUT_HS mst=3 last=0 beat_left=14
-[TRACE_M2S_WFIFO] 245000 mst=3 f_vld=1 f_last=0 f_wdata=0xd926bcd4 f_rdy=1 S_WREADY=1
+[TRACE_M2S_W] 245000 W_OUT_HS mst=3 last=1 beat_left=14
+[TRACE_M2S_WFIFO] 245000 mst=3 f_vld=1 f_last=1 f_wdata=0xf6a2be52 f_rdy=1 S_WREADY=1
 [245000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 245000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=4/14
-[TRACE_C4K_W] 245000 M_W_HS beat=4 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 255000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 6/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 255000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 1 data=0xd926bcd4 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 255000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 0 data=0xd926bcd4 last=0
-[TRACE_XBAR_B] 255000 S side s=0 s_bvalid=1 s_bready=1
+[TRACE_C4K] 245000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=3/14
+[TRACE_C4K_W] 245000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 245000 S_W_HS beat=3 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_ERROR ./uvm/axi_scoreboard.sv(148) @ 245000: uvm_test_top.env.sb [ROUTE] WR M[3] addr=0x00001ffc exp S0 got S1
+UVM_INFO ./uvm/axi_driver.sv(140) @ 255000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 5/14 last=0
+UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 255000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 0 data=0xf6a2be52 last=1
 [TRACE_XBAR_B] 255000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 255000 B pre-FIFO out s=0 id=0xdb
-[TRACE_W] 255000 W pre-FIFO HS m=3 last=0 data=0x7bf2539d strb=0xf
-[TRACE] 255000 B  to master m=3
-[TRACE_W] 255000 W slave HS s=0 last=0 data=0xd926bcd4
-[TRACE_W] 255000 W slave HS s=1 last=0 data=0xd926bcd4
-[TRACE_W_FIFO] 255000 W_FIFO_WR m=3 last=0 data=0xa88c4d86
-[TRACE_W_FIFO] 255000 W_FIFO_RD m=3 last=0 data=0x7bf2539d
+[TRACE_W] 255000 W pre-FIFO HS m=3 last=0 data=0xd926bcd4 strb=0xf
+[TRACE_W] 255000 W slave HS s=1 last=1 data=0xf6a2be52
+[TRACE_W_FIFO] 255000 W_FIFO_WR m=3 last=0 data=0x7b31dd54
+[TRACE_W_FIFO] 255000 W_FIFO_RD m=3 last=0 data=0xd926bcd4
 [TRACE_W_XBAR] 255000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 255000 W_XBAR_S s=0 last=0 data=0x00000000
 [TRACE_W_XBAR] 255000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 255000 case=3 w_beat=0 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 255000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 255000 mst=3 f_vld=1 f_last=0 f_wdata=0x7b31dd54 f_rdy=1 S_WREADY=1
 [TRACE_M2S_W] 255000 case=2 w_beat=13 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
 [TRACE_M2S_W] 255000 W_OUT_HS mst=3 last=0 beat_left=13
-[TRACE_M2S_WFIFO] 255000 mst=3 f_vld=1 f_last=0 f_wdata=0x7b31dd54 f_rdy=1 S_WREADY=1
+[TRACE_M2S_WFIFO] 255000 mst=3 f_vld=1 f_last=0 f_wdata=0xd926bcd4 f_rdy=1 S_WREADY=1
 [255000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[255000] S2M[M3] B: ->MASTER BID=0xdb BRESP=0
-[TRACE_C4K] 255000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=5/14
-[TRACE_C4K_W] 255000 M_W_HS beat=5 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 265000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 7/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 265000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 2 data=0x7b31dd54 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 265000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 1 data=0x7b31dd54 last=0
+[TRACE_C4K] 255000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=4/14
+[TRACE_C4K_W] 255000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 255000 S_W_HS beat=4 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_ERROR ./uvm/axi_slave_agent.sv(144) @ 255000: uvm_test_top.env.slv_ag1 [LEN_MISMATCH] S[1] Protocol violation! Expected 14 beats but received 1 beats
+UVM_INFO ./uvm/axi_driver.sv(140) @ 265000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 6/14 last=0
 [TRACE_XBAR_B] 265000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 265000 W pre-FIFO HS m=3 last=0 data=0xa88c4d86 strb=0xf
-[TRACE_W] 265000 W slave HS s=0 last=0 data=0x7b31dd54
-[TRACE_W] 265000 W slave HS s=1 last=0 data=0x7b31dd54
-[TRACE_W_FIFO] 265000 W_FIFO_WR m=3 last=0 data=0xb9d391c2
-[TRACE_W_FIFO] 265000 W_FIFO_RD m=3 last=0 data=0xa88c4d86
+[TRACE_W] 265000 W pre-FIFO HS m=3 last=0 data=0x7b31dd54 strb=0xf
+[TRACE_W] 265000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE] 265000 B  from slave s=1
+[TRACE_W_FIFO] 265000 W_FIFO_WR m=3 last=0 data=0x7bf2539d
+[TRACE_W_FIFO] 265000 W_FIFO_RD m=3 last=0 data=0x7b31dd54
 [TRACE_W_XBAR] 265000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 265000 W_XBAR_S s=0 last=0 data=0x00000001
 [TRACE_W_XBAR] 265000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 265000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 265000 W_OUT_HS mst=3 last=0 beat_left=1
-[TRACE_M2S_WFIFO] 265000 mst=3 f_vld=1 f_last=0 f_wdata=0x7bf2539d f_rdy=1 S_WREADY=1
 [TRACE_M2S_W] 265000 case=2 w_beat=12 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
 [TRACE_M2S_W] 265000 W_OUT_HS mst=3 last=0 beat_left=12
-[TRACE_M2S_WFIFO] 265000 mst=3 f_vld=1 f_last=0 f_wdata=0x7bf2539d f_rdy=1 S_WREADY=1
+[TRACE_M2S_WFIFO] 265000 mst=3 f_vld=1 f_last=0 f_wdata=0xd926bcd4 f_rdy=1 S_WREADY=1
 [265000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 265000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=6/14
-[TRACE_C4K_W] 265000 M_W_HS beat=6 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 275000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 8/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 275000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 3 data=0x7bf2539d last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 275000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 2 data=0x7bf2539d last=0
+[TRACE_C4K] 265000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=5/14
+[TRACE_C4K_W] 265000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 265000 S_W_HS beat=5 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 275000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 7/14 last=0
 [TRACE_XBAR_B] 275000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 275000 W pre-FIFO HS m=3 last=0 data=0xb9d391c2 strb=0xf
-[TRACE_W] 275000 W slave HS s=0 last=0 data=0x7bf2539d
-[TRACE_W] 275000 W slave HS s=1 last=0 data=0x7bf2539d
-[TRACE_W_FIFO] 275000 W_FIFO_WR m=3 last=0 data=0x913150d2
-[TRACE_W_FIFO] 275000 W_FIFO_RD m=3 last=0 data=0xb9d391c2
+[TRACE_W] 275000 W pre-FIFO HS m=3 last=0 data=0x7bf2539d strb=0xf
+[TRACE] 275000 B  to master m=3
+[TRACE_W] 275000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 275000 W_FIFO_WR m=3 last=0 data=0xa88c4d86
+[TRACE_W_FIFO] 275000 W_FIFO_RD m=3 last=0 data=0x7bf2539d
 [TRACE_W_XBAR] 275000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 275000 W_XBAR_S s=0 last=0 data=0x00000000
-[TRACE_W_XBAR] 275000 W_XBAR_S s=1 last=0 data=0x00000001
-[TRACE_M2S_W] 275000 case=3 w_beat=0 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 275000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 275000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=1 S_WREADY=1
+[TRACE_W_XBAR] 275000 W_XBAR_S s=1 last=0 data=0x00000000
 [TRACE_M2S_W] 275000 case=2 w_beat=11 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
 [TRACE_M2S_W] 275000 W_OUT_HS mst=3 last=0 beat_left=11
-[TRACE_M2S_WFIFO] 275000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=1 S_WREADY=1
+[TRACE_M2S_WFIFO] 275000 mst=3 f_vld=1 f_last=0 f_wdata=0x7b31dd54 f_rdy=1 S_WREADY=1
 [275000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 275000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=7/14
-[TRACE_C4K_W] 275000 M_W_HS beat=7 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 285000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 9/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 285000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 4 data=0xa88c4d86 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 285000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 3 data=0xa88c4d86 last=0
+[275000] S2M[M3] B: ->MASTER BID=0xeb BRESP=0
+[TRACE_C4K] 275000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=6/14
+[TRACE_C4K_W] 275000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 275000 S_W_HS beat=6 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 285000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 8/14 last=0
 [TRACE_XBAR_B] 285000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 285000 W pre-FIFO HS m=3 last=0 data=0x913150d2 strb=0xf
-[TRACE_W] 285000 W slave HS s=0 last=0 data=0xa88c4d86
-[TRACE_W] 285000 W slave HS s=1 last=0 data=0xa88c4d86
-[TRACE_W_FIFO] 285000 W_FIFO_WR m=3 last=0 data=0xa72d3da1
-[TRACE_W_FIFO] 285000 W_FIFO_RD m=3 last=0 data=0x913150d2
+[TRACE_W] 285000 W pre-FIFO HS m=3 last=0 data=0xa88c4d86 strb=0xf
+[TRACE_W] 285000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 285000 W_FIFO_WR m=3 last=0 data=0xb9d391c2
+[TRACE_W_FIFO] 285000 W_FIFO_RD m=3 last=0 data=0xa88c4d86
 [TRACE_W_XBAR] 285000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 285000 W_XBAR_S s=0 last=0 data=0x00000000
-[TRACE_W_XBAR] 285000 W_XBAR_S s=1 last=0 data=0x00000001
-[TRACE_M2S_W] 285000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 285000 W_OUT_HS mst=3 last=0 beat_left=1
-[TRACE_M2S_WFIFO] 285000 mst=3 f_vld=1 f_last=0 f_wdata=0xb9d391c2 f_rdy=1 S_WREADY=1
+[TRACE_W_XBAR] 285000 W_XBAR_S s=1 last=0 data=0x00000000
 [TRACE_M2S_W] 285000 case=2 w_beat=10 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
 [TRACE_M2S_W] 285000 W_OUT_HS mst=3 last=0 beat_left=10
-[TRACE_M2S_WFIFO] 285000 mst=3 f_vld=1 f_last=0 f_wdata=0xb9d391c2 f_rdy=1 S_WREADY=1
+[TRACE_M2S_WFIFO] 285000 mst=3 f_vld=1 f_last=0 f_wdata=0x7bf2539d f_rdy=1 S_WREADY=1
 [285000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 285000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=8/14
-[TRACE_C4K_W] 285000 M_W_HS beat=8 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 295000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 10/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 295000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 5 data=0xb9d391c2 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 295000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 4 data=0xb9d391c2 last=0
+[TRACE_C4K] 285000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=7/14
+[TRACE_C4K_W] 285000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 285000 S_W_HS beat=7 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 295000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 9/14 last=0
 [TRACE_XBAR_B] 295000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 295000 W pre-FIFO HS m=3 last=0 data=0xa72d3da1 strb=0xf
-[TRACE_W] 295000 W slave HS s=0 last=0 data=0xb9d391c2
-[TRACE_W] 295000 W slave HS s=1 last=0 data=0xb9d391c2
-[TRACE_W_FIFO] 295000 W_FIFO_WR m=3 last=0 data=0xf04d8d3b
-[TRACE_W_FIFO] 295000 W_FIFO_RD m=3 last=0 data=0xa72d3da1
+[TRACE_W] 295000 W pre-FIFO HS m=3 last=0 data=0xb9d391c2 strb=0xf
+[TRACE_W] 295000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 295000 W_FIFO_WR m=3 last=0 data=0x913150d2
+[TRACE_W_FIFO] 295000 W_FIFO_RD m=3 last=0 data=0xb9d391c2
 [TRACE_W_XBAR] 295000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 295000 W_XBAR_S s=0 last=0 data=0x00000000
-[TRACE_W_XBAR] 295000 W_XBAR_S s=1 last=0 data=0x00000001
-[TRACE_M2S_W] 295000 case=3 w_beat=0 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 295000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 295000 mst=3 f_vld=1 f_last=0 f_wdata=0x913150d2 f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 295000 case=2 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 295000 W_OUT_HS mst=3 last=0 beat_left=9
-[TRACE_M2S_WFIFO] 295000 mst=3 f_vld=1 f_last=0 f_wdata=0x913150d2 f_rdy=1 S_WREADY=1
+[TRACE_W_XBAR] 295000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 295000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 295000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 295000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [295000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 295000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=9/14
-[TRACE_C4K_W] 295000 M_W_HS beat=9 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 305000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 11/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 305000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 6 data=0x913150d2 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 305000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 5 data=0x913150d2 last=0
+[TRACE_C4K] 295000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=8/14
+[TRACE_C4K_W] 295000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 295000 S_W_HS beat=8 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 305000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 10/14 last=0
 [TRACE_XBAR_B] 305000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 305000 W pre-FIFO HS m=3 last=0 data=0xf04d8d3b strb=0xf
-[TRACE_W] 305000 W slave HS s=0 last=0 data=0x913150d2
-[TRACE_W] 305000 W slave HS s=1 last=0 data=0x913150d2
-[TRACE_W_FIFO] 305000 W_FIFO_WR m=3 last=0 data=0x334b46fc
-[TRACE_W_FIFO] 305000 W_FIFO_RD m=3 last=0 data=0xf04d8d3b
+[TRACE_W] 305000 W pre-FIFO HS m=3 last=0 data=0x913150d2 strb=0xf
+[TRACE_W] 305000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 305000 W_FIFO_WR m=3 last=0 data=0xa72d3da1
+[TRACE_W_FIFO] 305000 W_FIFO_RD m=3 last=0 data=0x913150d2
 [TRACE_W_XBAR] 305000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 305000 W_XBAR_S s=0 last=0 data=0x00000001
-[TRACE_W_XBAR] 305000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 305000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 305000 W_OUT_HS mst=3 last=0 beat_left=1
-[TRACE_M2S_WFIFO] 305000 mst=3 f_vld=1 f_last=0 f_wdata=0xa72d3da1 f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 305000 case=2 w_beat=8 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 305000 W_OUT_HS mst=3 last=0 beat_left=8
-[TRACE_M2S_WFIFO] 305000 mst=3 f_vld=1 f_last=0 f_wdata=0xa72d3da1 f_rdy=1 S_WREADY=1
+[TRACE_W_XBAR] 305000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 305000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 305000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 305000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [305000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 305000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=10/14
-[TRACE_C4K_W] 305000 M_W_HS beat=10 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 315000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 12/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 315000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 7 data=0xa72d3da1 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 315000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 6 data=0xa72d3da1 last=0
+[TRACE_C4K] 305000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=9/14
+[TRACE_C4K_W] 305000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 305000 S_W_HS beat=9 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 315000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 11/14 last=0
 [TRACE_XBAR_B] 315000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 315000 W pre-FIFO HS m=3 last=0 data=0x334b46fc strb=0xf
-[TRACE_W] 315000 W slave HS s=0 last=0 data=0xa72d3da1
-[TRACE_W] 315000 W slave HS s=1 last=0 data=0xa72d3da1
-[TRACE_W_FIFO] 315000 W_FIFO_WR m=3 last=0 data=0x45883299
-[TRACE_W_FIFO] 315000 W_FIFO_RD m=3 last=0 data=0x334b46fc
+[TRACE_W] 315000 W pre-FIFO HS m=3 last=0 data=0xa72d3da1 strb=0xf
+[TRACE_W] 315000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 315000 W_FIFO_WR m=3 last=0 data=0xf04d8d3b
+[TRACE_W_FIFO] 315000 W_FIFO_RD m=3 last=0 data=0xa72d3da1
 [TRACE_W_XBAR] 315000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 315000 W_XBAR_S s=0 last=0 data=0x00000001
-[TRACE_W_XBAR] 315000 W_XBAR_S s=1 last=0 data=0x00000001
-[TRACE_M2S_W] 315000 case=3 w_beat=0 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 315000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 315000 mst=3 f_vld=1 f_last=0 f_wdata=0xf04d8d3b f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 315000 case=2 w_beat=7 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 315000 W_OUT_HS mst=3 last=0 beat_left=7
-[TRACE_M2S_WFIFO] 315000 mst=3 f_vld=1 f_last=0 f_wdata=0xf04d8d3b f_rdy=1 S_WREADY=1
+[TRACE_W_XBAR] 315000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 315000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 315000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 315000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [315000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 315000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=11/14
-[TRACE_C4K_W] 315000 M_W_HS beat=11 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 325000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 13/14 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 325000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 8 data=0xf04d8d3b last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 325000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 7 data=0xf04d8d3b last=0
+[TRACE_C4K] 315000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=10/14
+[TRACE_C4K_W] 315000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 315000 S_W_HS beat=10 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 325000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 12/14 last=0
 [TRACE_XBAR_B] 325000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 325000 W pre-FIFO HS m=3 last=0 data=0x45883299 strb=0xf
-[TRACE_W] 325000 W slave HS s=0 last=0 data=0xf04d8d3b
-[TRACE_W] 325000 W slave HS s=1 last=0 data=0xf04d8d3b
-[TRACE_W_FIFO] 325000 W_FIFO_WR m=3 last=0 data=0xe677040a
-[TRACE_W_FIFO] 325000 W_FIFO_RD m=3 last=0 data=0x45883299
-[TRACE_W_XBAR] 325000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 325000 W_XBAR_S s=0 last=0 data=0x00000000
-[TRACE_W_XBAR] 325000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 325000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 325000 W_OUT_HS mst=3 last=0 beat_left=1
-[TRACE_M2S_WFIFO] 325000 mst=3 f_vld=1 f_last=0 f_wdata=0x334b46fc f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 325000 case=2 w_beat=6 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 325000 W_OUT_HS mst=3 last=0 beat_left=6
-[TRACE_M2S_WFIFO] 325000 mst=3 f_vld=1 f_last=0 f_wdata=0x334b46fc f_rdy=1 S_WREADY=1
+[TRACE_W] 325000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 325000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 325000 W_FIFO_WR m=3 last=0 data=0x334b46fc
+[TRACE_W_FIFO] 325000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 325000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 325000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 325000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 325000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 325000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [325000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 325000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=12/14
-[TRACE_C4K_W] 325000 M_W_HS beat=12 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_driver.sv(140) @ 335000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 14/14 last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 335000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 9 data=0x334b46fc last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 335000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 8 data=0x334b46fc last=0
+[TRACE_C4K] 325000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=11/14
+[TRACE_C4K_W] 325000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 325000 S_W_HS beat=11 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 335000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 13/14 last=0
 [TRACE_XBAR_B] 335000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 335000 W pre-FIFO HS m=3 last=0 data=0xe677040a strb=0xf
-[TRACE_W] 335000 W slave HS s=0 last=0 data=0x334b46fc
-[TRACE_W] 335000 W slave HS s=1 last=0 data=0x334b46fc
-[TRACE_W_FIFO] 335000 W_FIFO_WR m=3 last=0 data=0xeefd5ca5
-[TRACE_W_FIFO] 335000 W_FIFO_RD m=3 last=0 data=0xe677040a
-[TRACE_W_XBAR] 335000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 335000 W_XBAR_S s=0 last=0 data=0x00000001
-[TRACE_W_XBAR] 335000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 335000 case=3 w_beat=0 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 335000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 335000 mst=3 f_vld=1 f_last=0 f_wdata=0x45883299 f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 335000 case=2 w_beat=5 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 335000 W_OUT_HS mst=3 last=0 beat_left=5
-[TRACE_M2S_WFIFO] 335000 mst=3 f_vld=1 f_last=0 f_wdata=0x45883299 f_rdy=1 S_WREADY=1
+[TRACE_W] 335000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 335000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 335000 W_FIFO_WR m=3 last=0 data=0x45883299
+[TRACE_W_FIFO] 335000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 335000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 335000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 335000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 335000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 335000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [335000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 335000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=13/14
-[TRACE_C4K_W] 335000 M_W_HS beat=13 m_wlast=0 -> s_wlast=0 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 345000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 10 data=0x45883299 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 345000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 9 data=0x45883299 last=0
+[TRACE_C4K] 335000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=12/14
+[TRACE_C4K_W] 335000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 335000 S_W_HS beat=12 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
+UVM_INFO ./uvm/axi_driver.sv(140) @ 345000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV W beat 14/14 last=1
 [TRACE_XBAR_B] 345000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 345000 W pre-FIFO HS m=3 last=0 data=0xeefd5ca5 strb=0xf
-[TRACE_W] 345000 W slave HS s=0 last=0 data=0x45883299
-[TRACE_W] 345000 W slave HS s=1 last=0 data=0x45883299
-[TRACE_W_FIFO] 345000 W_FIFO_WR m=3 last=1 data=0xb487705d
-[TRACE_W_FIFO] 345000 W_FIFO_RD m=3 last=0 data=0xeefd5ca5
-[TRACE_W_XBAR] 345000 W_XBAR_M m=3 last=0 data=0x00000000
-[TRACE_W_XBAR] 345000 W_XBAR_S s=0 last=0 data=0x00000000
-[TRACE_W_XBAR] 345000 W_XBAR_S s=1 last=0 data=0x00000001
-[TRACE_M2S_W] 345000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 345000 W_OUT_HS mst=3 last=0 beat_left=1
-[TRACE_M2S_WFIFO] 345000 mst=3 f_vld=1 f_last=0 f_wdata=0xe677040a f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 345000 case=2 w_beat=4 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 345000 W_OUT_HS mst=3 last=0 beat_left=4
-[TRACE_M2S_WFIFO] 345000 mst=3 f_vld=1 f_last=0 f_wdata=0xe677040a f_rdy=1 S_WREADY=1
+[TRACE_W] 345000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 345000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 345000 W_FIFO_WR m=3 last=0 data=0xe677040a
+[TRACE_W_FIFO] 345000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 345000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 345000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 345000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 345000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 345000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [345000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 345000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=14/14
-[TRACE_C4K_W] 345000 M_W_HS beat=14 m_wlast=1 -> s_wlast=1 (src=PASSTHRU)
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 355000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 11 data=0xe677040a last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 355000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 10 data=0xe677040a last=0
+[TRACE_C4K] 345000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=13/14
+[TRACE_C4K_W] 345000 M_W_HS m_last=0 (buf_empty=0)
+[TRACE_C4K_W] 345000 S_W_HS beat=13 buf_last=0 -> s_wlast=0 (src=PASSTHRU)
 [TRACE_XBAR_B] 355000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 355000 W pre-FIFO HS m=3 last=1 data=0xb487705d strb=0xf
-[TRACE_W] 355000 W slave HS s=0 last=0 data=0xe677040a
-[TRACE_W] 355000 W slave HS s=1 last=0 data=0xe677040a
-[TRACE_W_FIFO] 355000 W_FIFO_RD m=3 last=1 data=0xb487705d
-[TRACE_W_XBAR] 355000 W_XBAR_M m=3 last=1 data=0x00000000
-[TRACE_W_XBAR] 355000 W_XBAR_S s=0 last=0 data=0x00000001
-[TRACE_W_XBAR] 355000 W_XBAR_S s=1 last=0 data=0x00000000
-[TRACE_M2S_W] 355000 case=3 w_beat=0 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 355000 W_OUT_HS mst=3 last=0 beat_left=0
-[TRACE_M2S_WFIFO] 355000 mst=3 f_vld=1 f_last=0 f_wdata=0xeefd5ca5 f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 355000 case=2 w_beat=3 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 355000 W_OUT_HS mst=3 last=0 beat_left=3
-[TRACE_M2S_WFIFO] 355000 mst=3 f_vld=1 f_last=0 f_wdata=0xeefd5ca5 f_rdy=1 S_WREADY=1
+[TRACE_W] 355000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 355000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 355000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 355000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 355000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 355000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 355000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 355000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 355000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [355000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 355000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 365000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 12 data=0xeefd5ca5 last=0
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 365000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 11 data=0xeefd5ca5 last=0
+[TRACE_C4K] 355000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 355000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 365000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 365000 W slave HS s=0 last=0 data=0xeefd5ca5
-[TRACE_W] 365000 W slave HS s=1 last=0 data=0xeefd5ca5
-[TRACE_W_XBAR] 365000 W_XBAR_S s=0 last=1 data=0x00000001
-[TRACE_W_XBAR] 365000 W_XBAR_S s=1 last=1 data=0x00000000
-[TRACE_M2S_W] 365000 case=2 w_beat=1 active=1 from_fifo=1 fifo_empty=0 aw_hs=0
-[TRACE_M2S_W] 365000 W_OUT_HS mst=3 last=1 beat_left=1
-[TRACE_M2S_WFIFO] 365000 mst=3 f_vld=1 f_last=1 f_wdata=0xb487705d f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 365000 case=2 w_beat=2 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_W] 365000 W_OUT_HS mst=3 last=1 beat_left=2
-[TRACE_M2S_WFIFO] 365000 mst=3 f_vld=1 f_last=1 f_wdata=0xb487705d f_rdy=1 S_WREADY=1
+[TRACE_W] 365000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 365000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 365000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 365000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 365000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 365000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 365000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 365000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 365000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [365000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 365000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 375000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV W beat 13 data=0xb487705d last=1
-UVM_INFO ./uvm/axi_slave_agent.sv(111) @ 375000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV W beat 12 data=0xb487705d last=1
+[TRACE_C4K] 365000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 365000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 375000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_W] 375000 W slave HS s=0 last=1 data=0xb487705d
-[TRACE_W] 375000 W slave HS s=1 last=1 data=0xb487705d
-[TRACE_M2S_W] 375000 case=0 w_beat=0 active=1 from_fifo=1 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 375000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[TRACE_M2S_W] 375000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 375000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 375000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 375000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 375000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 375000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 375000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 375000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 375000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 375000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 375000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [375000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 375000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_slave_agent.sv(144) @ 375000: uvm_test_top.env.slv_ag0 [LEN_MISMATCH] S[0] Protocol violation! Expected 1 beats but received 14 beats
-UVM_ERROR ./uvm/axi_slave_agent.sv(144) @ 375000: uvm_test_top.env.slv_ag1 [LEN_MISMATCH] S[1] Protocol violation! Expected 14 beats but received 13 beats
+[TRACE_C4K] 375000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 375000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 385000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 385000 B slave handshake s=0 id=0xdb
-[TRACE] 385000 B  from slave s=0
-[TRACE] 385000 B  from slave s=1
-[TRACE_M2S_W] 385000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 385000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 385000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 385000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 385000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 385000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 385000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 385000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 385000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 385000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 385000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [385000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 385000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-[TRACE_XBAR_B] 395000 S side s=0 s_bvalid=1 s_bready=0
+[TRACE_C4K] 385000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 385000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 395000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 395000 B pre-FIFO stuck s=0 vld=1 rdy=0
-[TRACE] 395000 B  to master m=3
-[TRACE_M2S_W] 395000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 395000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 395000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 395000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 395000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 395000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 395000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 395000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 395000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 395000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 395000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [395000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[395000] S2M[M3] B: ->MASTER BID=0xeb BRESP=0
-[TRACE_C4K] 395000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-[TRACE_XBAR_B] 405000 S side s=0 s_bvalid=1 s_bready=1
+[TRACE_C4K] 395000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 395000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 405000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 405000 B pre-FIFO out s=0 id=0xdb
-[TRACE] 405000 B  to master m=3
-[TRACE_M2S_W] 405000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 405000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 405000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 405000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 405000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 405000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 405000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 405000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 405000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 405000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 405000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [405000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[405000] S2M[M3] B: ->MASTER BID=0xdb BRESP=0
-[TRACE_C4K] 405000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-[415000] M[3] DRV BDEBUG: Handshake Succeeded! BID=11 b_pending_size=1
-UVM_INFO ./uvm/axi_driver.sv(183) @ 415000: uvm_test_top.env.mst_ag3.drv_m3 [TRACE] M[3] DRV B resp=0 id=11
+[TRACE_C4K] 405000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 405000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 415000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 415000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 415000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 415000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 415000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 415000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 415000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 415000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 415000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 415000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 415000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 415000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [415000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 415000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(413) @ 415000: uvm_test_top.env.sb [RESP] B before WLAST M[3] id=11
-UVM_INFO ./uvm/split4k_vseq.sv(36) @ 415000: uvm_test_top.env.vsqr@@vseq [VSEQ] split4k RD m=1: addr=0x00001ffc len=14 size=2 burst=1
-UVM_INFO ./uvm/axi_driver.sv(83) @ 415000: uvm_test_top.env.mst_ag1.drv_m1 [DRIVER] M[1] dispatching: RD id=12 addr=0x00001ffc len=14 size=2 burst=1 mst=1 slv=0
-UVM_INFO ./uvm/axi_driver.sv(207) @ 415000: uvm_test_top.env.mst_ag1.drv_m1 [TRACE] M[1] DRV AR start addr=0x00001ffc len=14
+[TRACE_C4K] 415000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 415000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 425000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 425000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 425000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 425000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 425000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 425000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 425000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 425000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 425000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 425000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 425000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 425000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [425000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 425000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 425000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 425000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 435000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 435000 AR pre-FIFO vld m=1 vld=1 rdy=1
-[TRACE] 435000 AR pre-FIFO out m=1 addr=0x00001ffc
-[TRACE] 435000 AR pre-FIFO m=1 addr=0x00001ffc len=0
-[TRACE] 435000 XBAR S_ARVALID s=0 addr=0x00001ffc
-[435000] M2S[1] AR: handshake ARGRANT=0010 mst=1 ARID=0x1c ADDR=0x1ffc LEN=0
-[TRACE_M2S_W] 435000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 435000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 435000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 435000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 435000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 435000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 435000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 435000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 435000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 435000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 435000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [435000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 435000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_INFO ./uvm/axi_slave_agent.sv(170) @ 445000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=92 addr=0x00001ffc len=0
+[TRACE_C4K] 435000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 435000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 445000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 445000 AR at slave s=0 addr=0x00001ffc
-[TRACE] 445000 AR pre-FIFO out m=1 addr=0x00001ffc
-[TRACE] 445000 AR pre-FIFO m=1 addr=0x00001ffc len=0
-[TRACE] 445000 AR at slave s=0 addr=0x00001ffc len=0
-[TRACE] 445000 XBAR S_ARVALID s=0 addr=0x00001ffc
-[445000] M2S[1] AR: handshake ARGRANT=0010 mst=1 ARID=0x1c ADDR=0x1ffc LEN=0
-[TRACE_M2S_W] 445000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 445000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 445000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 445000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 445000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 445000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 445000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 445000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 445000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 445000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 445000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [445000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 445000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_INFO ./uvm/axi_slave_agent.sv(170) @ 455000: uvm_test_top.env.slv_ag0 [TRACE] S[0] SLV AR handshake id=92 addr=0x00001ffc len=0
+[TRACE_C4K] 445000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 445000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 455000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 455000 AR at slave s=0 addr=0x00001ffc
-[TRACE] 455000 AR pre-FIFO out m=1 addr=0x00002000
-[TRACE] 455000 AR pre-FIFO m=1 addr=0x00002000 len=13
-[TRACE] 455000 AR at slave s=0 addr=0x00001ffc len=0
-[TRACE] 455000 R  from slave s=0
-[TRACE] 455000 XBAR S_ARVALID s=1 addr=0x00002000
-[TRACE_M2S_W] 455000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 455000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[455000] M2S[1] AR: handshake ARGRANT=0010 mst=1 ARID=0x2c ADDR=0x2000 LEN=13
+[TRACE_W] 455000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 455000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 455000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 455000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 455000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 455000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 455000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 455000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 455000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [455000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 455000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_INFO ./uvm/axi_slave_agent.sv(170) @ 465000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV AR handshake id=108 addr=0x00002000 len=13
+[TRACE_C4K] 455000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 455000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 465000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 465000 AR at slave s=1 addr=0x00002000
-[TRACE] 465000 AR pre-FIFO vld m=1 vld=0 rdy=0
-[TRACE] 465000 R  to master m=1
-[TRACE] 465000 R  from slave s=0
-[TRACE] 465000 AR at slave s=1 addr=0x00002000 len=13
-[TRACE_M2S_W] 465000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 465000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[465000] S2M[M0] R: RSELECT=1110 RGRANT=0000 S_RVALID=0001 M_RREADY=1 M_RVALID=0
-[465000] S2M[M1] R: ->MASTER RID=0x5c DATA=0xb29d727d LAST=1
-[465000] S2M[M1] R: RSELECT=0001 RGRANT=0001 S_RVALID=0001 M_RREADY=1 M_RVALID=1
-[465000] S2M[M1] R: slv[0] HS RID=0x5c DATA=0xb29d727d LAST=1 mst_idx=1
-[TRACE_C4K] 465000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_W] 465000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 465000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 465000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 465000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 465000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 465000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 465000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 465000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 465000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[465000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 465000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 465000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 475000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 475000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 475000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 475000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 475000 S_ARREADY s=3 fifo=1 sid=0 final=0
-[TRACE] 475000 R  to master m=1
-[TRACE] 475000 R  from slave s=1
-[TRACE_M2S_W] 475000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 475000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[475000] S2M[M0] R: RSELECT=1110 RGRANT=0000 S_RVALID=0001 M_RREADY=1 M_RVALID=0
-[475000] S2M[M1] R: ->MASTER RID=0x5c DATA=0xb29d727d LAST=1
-[475000] S2M[M1] R: RSELECT=0001 RGRANT=0001 S_RVALID=0001 M_RREADY=1 M_RVALID=1
-[475000] S2M[M1] R: slv[0] HS RID=0x5c DATA=0xb29d727d LAST=1 mst_idx=1
-[TRACE_C4K] 475000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_W] 475000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 475000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 475000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 475000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 475000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 475000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 475000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 475000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 475000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[475000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 475000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 475000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 485000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 485000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 485000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 485000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 485000 S_ARREADY s=3 fifo=1 sid=0 final=0
-[TRACE] 485000 R  to master m=1
-[TRACE] 485000 R  from slave s=1
-[TRACE_M2S_W] 485000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 485000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[485000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[485000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xd926bcd4 LAST=0
-[485000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[485000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xd926bcd4 LAST=0 mst_idx=1
-[TRACE_C4K] 485000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 485000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002000 exp=0xd926bcd4 act=0xb29d727d
+[TRACE_W] 485000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 485000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 485000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 485000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 485000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 485000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 485000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 485000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 485000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[485000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 485000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 485000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 495000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 495000 R  to master m=1
-[TRACE] 495000 R  from slave s=1
-[TRACE_M2S_W] 495000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 495000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[495000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[495000] S2M[M1] R: ->MASTER RID=0x6c DATA=0x7b31dd54 LAST=0
-[495000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[495000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0x7b31dd54 LAST=0 mst_idx=1
-[TRACE_C4K] 495000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 495000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002004 exp=0x7b31dd54 act=0xd926bcd4
+[TRACE_W] 495000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 495000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 495000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 495000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 495000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 495000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 495000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 495000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 495000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[495000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 495000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 495000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 505000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 505000 R  to master m=1
-[TRACE] 505000 R  from slave s=1
-[TRACE_M2S_W] 505000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 505000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[505000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[505000] S2M[M1] R: ->MASTER RID=0x6c DATA=0x7bf2539d LAST=0
-[505000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[505000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0x7bf2539d LAST=0 mst_idx=1
-[TRACE_C4K] 505000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 505000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002008 exp=0x7bf2539d act=0x7b31dd54
+[TRACE_W] 505000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 505000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 505000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 505000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 505000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 505000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 505000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 505000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 505000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[505000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 505000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 505000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 515000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 515000 R  to master m=1
-[TRACE] 515000 R  from slave s=1
-[TRACE_M2S_W] 515000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 515000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[515000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[515000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xa88c4d86 LAST=0
-[515000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[515000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xa88c4d86 LAST=0 mst_idx=1
-[TRACE_C4K] 515000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 515000: uvm_test_top.env.sb [DATA] M[1] addr=0x0000200c exp=0xa88c4d86 act=0x7bf2539d
+[TRACE_W] 515000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 515000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 515000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 515000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 515000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 515000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 515000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 515000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 515000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[515000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 515000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 515000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 525000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 525000 R  to master m=1
-[TRACE] 525000 R  from slave s=1
-[TRACE_M2S_W] 525000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 525000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[525000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[525000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xb9d391c2 LAST=0
-[525000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[525000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xb9d391c2 LAST=0 mst_idx=1
-[TRACE_C4K] 525000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 525000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002010 exp=0xb9d391c2 act=0xa88c4d86
+[TRACE_W] 525000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 525000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 525000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 525000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 525000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 525000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 525000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 525000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 525000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[525000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 525000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 525000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 535000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 535000 R  to master m=1
-[TRACE] 535000 R  from slave s=1
-[TRACE_M2S_W] 535000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 535000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[535000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[535000] S2M[M1] R: ->MASTER RID=0x6c DATA=0x913150d2 LAST=0
-[535000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[535000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0x913150d2 LAST=0 mst_idx=1
-[TRACE_C4K] 535000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 535000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002014 exp=0x913150d2 act=0xb9d391c2
+[TRACE_W] 535000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 535000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 535000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 535000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 535000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 535000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 535000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 535000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 535000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[535000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 535000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 535000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 545000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 545000 R  to master m=1
-[TRACE] 545000 R  from slave s=1
-[TRACE_M2S_W] 545000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 545000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[545000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[545000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xa72d3da1 LAST=0
-[545000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[545000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xa72d3da1 LAST=0 mst_idx=1
-[TRACE_C4K] 545000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 545000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002018 exp=0xa72d3da1 act=0x913150d2
+[TRACE_W] 545000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 545000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 545000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 545000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 545000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 545000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 545000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 545000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 545000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[545000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 545000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 545000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 555000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 555000 R  to master m=1
-[TRACE] 555000 R  from slave s=1
-[TRACE_M2S_W] 555000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 555000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[555000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[555000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xf04d8d3b LAST=0
-[555000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[555000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xf04d8d3b LAST=0 mst_idx=1
-[TRACE_C4K] 555000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 555000: uvm_test_top.env.sb [DATA] M[1] addr=0x0000201c exp=0xf04d8d3b act=0xa72d3da1
+[TRACE_W] 555000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 555000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 555000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 555000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 555000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 555000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 555000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 555000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 555000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[555000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 555000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 555000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 565000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 565000 R  to master m=1
-[TRACE] 565000 R  from slave s=1
-[TRACE_M2S_W] 565000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 565000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[565000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[565000] S2M[M1] R: ->MASTER RID=0x6c DATA=0x334b46fc LAST=0
-[565000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[565000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0x334b46fc LAST=0 mst_idx=1
-[TRACE_C4K] 565000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 565000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002020 exp=0x334b46fc act=0xf04d8d3b
+[TRACE_W] 565000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 565000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 565000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 565000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 565000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 565000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 565000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 565000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 565000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[565000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 565000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 565000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 575000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 575000 R  to master m=1
-[TRACE] 575000 R  from slave s=1
-[TRACE_M2S_W] 575000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 575000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[575000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[575000] S2M[M1] R: ->MASTER RID=0x6c DATA=0x45883299 LAST=0
-[575000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[575000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0x45883299 LAST=0 mst_idx=1
-[TRACE_C4K] 575000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 575000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002024 exp=0x45883299 act=0x334b46fc
+[TRACE_W] 575000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 575000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 575000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 575000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 575000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 575000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 575000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 575000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 575000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[575000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 575000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 575000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 585000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 585000 R  to master m=1
-[TRACE] 585000 R  from slave s=1
-[TRACE_M2S_W] 585000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 585000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[585000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[585000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xe677040a LAST=0
-[585000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[585000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xe677040a LAST=0 mst_idx=1
-[TRACE_C4K] 585000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 585000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002028 exp=0xe677040a act=0x45883299
-UVM_INFO ./uvm/axi_slave_agent.sv(203) @ 595000: uvm_test_top.env.slv_ag1 [TRACE] S[1] SLV R MISS at addr=0x00002034
+[TRACE_W] 585000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 585000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 585000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 585000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 585000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 585000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 585000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 585000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 585000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[585000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 585000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 585000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 595000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 595000 R  to master m=1
-[TRACE] 595000 R  from slave s=1
-[TRACE_M2S_W] 595000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 595000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[595000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[595000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xeefd5ca5 LAST=0
-[595000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[595000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xeefd5ca5 LAST=0 mst_idx=1
-[TRACE_C4K] 595000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 595000: uvm_test_top.env.sb [DATA] M[1] addr=0x0000202c exp=0xeefd5ca5 act=0xe677040a
+[TRACE_W] 595000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 595000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 595000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 595000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 595000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 595000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 595000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 595000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 595000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[595000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 595000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 595000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 605000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 605000 R  to master m=1
-[TRACE] 605000 R  from slave s=1
-[TRACE_M2S_W] 605000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 605000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[605000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[605000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xb487705d LAST=0
-[605000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[605000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xb487705d LAST=0 mst_idx=1
-[TRACE_C4K] 605000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(332) @ 605000: uvm_test_top.env.sb [DATA] M[1] addr=0x00002030 exp=0xb487705d act=0xeefd5ca5
-UVM_ERROR ./uvm/axi_protocol_checker.sv(214) @ 615000: uvm_test_top.env.proto_chk [PROT_ERR_RLEN_OVER] Protocol Error: M[1] Missing RLAST for ID=0xc! Received 15 beats, which already reaches/exceeds ARLEN=14.
-UVM_ERROR ./uvm/axi_driver.sv(251) @ 615000: uvm_test_top.env.mst_ag1.drv_m1 [PROTOCOL_VIOLATION] M[1] RLAST error! beat_cnt=14, expected len=14, RLAST=0
+[TRACE_W] 605000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 605000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 605000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 605000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 605000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 605000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 605000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 605000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 605000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[605000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 605000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 605000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 615000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 615000 R  to master m=1
-[TRACE_M2S_W] 615000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 615000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
-[615000] S2M[M0] R: RSELECT=1101 RGRANT=0000 S_RVALID=0010 M_RREADY=1 M_RVALID=0
-[615000] S2M[M1] R: ->MASTER RID=0x6c DATA=0xdeadbeef LAST=1
-[615000] S2M[M1] R: RSELECT=0010 RGRANT=0010 S_RVALID=0010 M_RREADY=1 M_RVALID=1
-[615000] S2M[M1] R: slv[1] HS RID=0x6c DATA=0xdeadbeef LAST=1 mst_idx=1
-[TRACE_C4K] 615000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_protocol_checker.sv(205) @ 625000: uvm_test_top.env.proto_chk [PROT_ERR_RLEN] Protocol Error: M[1] RLAST Mismatch for ID=0xc! ARLEN expects 15 beats, but got RLAST at beat 16.
-UVM_ERROR ./uvm/axi_driver.sv(251) @ 625000: uvm_test_top.env.mst_ag1.drv_m1 [PROTOCOL_VIOLATION] M[1] RLAST error! beat_cnt=15, expected len=14, RLAST=1
+[TRACE_W] 615000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 615000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 615000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 615000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 615000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 615000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 615000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 615000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 615000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
+[615000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
+[TRACE_C4K] 615000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 615000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 625000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE] 625000 S_ARREADY s=0 fifo=1 sid=0 final=0
-[TRACE] 625000 S_ARREADY s=1 fifo=1 sid=0 final=0
-[TRACE] 625000 S_ARREADY s=2 fifo=1 sid=0 final=0
-[TRACE] 625000 S_ARREADY s=3 fifo=1 sid=0 final=0
-[TRACE_M2S_W] 625000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 625000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 625000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 625000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 625000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 625000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 625000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 625000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 625000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 625000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 625000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [625000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 625000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
-UVM_ERROR ./uvm/axi_scoreboard.sv(338) @ 625000: uvm_test_top.env.sb [DATA] RD beat cnt M[1] id=12 exp=15 got=16
-UVM_ERROR ./uvm/axi_scoreboard.sv(452) @ 625000: uvm_test_top.env.sb [RESP] RLAST mismatch M[1] id=12
+[TRACE_C4K] 625000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 625000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 635000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 635000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 635000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 635000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 635000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 635000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 635000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 635000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 635000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 635000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 635000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 635000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [635000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 635000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 635000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 635000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 645000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 645000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 645000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 645000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 645000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 645000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 645000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 645000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 645000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 645000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 645000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 645000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [645000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 645000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 645000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 645000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 655000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 655000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 655000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 655000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 655000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 655000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 655000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 655000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 655000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 655000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 655000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 655000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [655000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 655000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 655000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 655000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 665000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 665000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 665000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 665000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 665000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 665000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 665000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 665000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 665000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 665000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 665000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 665000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [665000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 665000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 665000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 665000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 675000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 675000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 675000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 675000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 675000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 675000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 675000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 675000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 675000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 675000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 675000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 675000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [675000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 675000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 675000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 675000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 685000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 685000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 685000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 685000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 685000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 685000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 685000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 685000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 685000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 685000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 685000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 685000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [685000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 685000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 685000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 685000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 695000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 695000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 695000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 695000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 695000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 695000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 695000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 695000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 695000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 695000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 695000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 695000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [695000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 695000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 695000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 695000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 705000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 705000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 705000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 705000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 705000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 705000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 705000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 705000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 705000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 705000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 705000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 705000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [705000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 705000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 705000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 705000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 715000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 715000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 715000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 715000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 715000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 715000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 715000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 715000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 715000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 715000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 715000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 715000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [715000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 715000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 715000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 715000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 725000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 725000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 725000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 725000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 725000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 725000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 725000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 725000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 725000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 725000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 725000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 725000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [725000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 725000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 725000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 725000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 735000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 735000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 735000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 735000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 735000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 735000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 735000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 735000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 735000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 735000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 735000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 735000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [735000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 735000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 735000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 735000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 745000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 745000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 745000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 745000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 745000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 745000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 745000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 745000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 745000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 745000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 745000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 745000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [745000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 745000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 745000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 745000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 755000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 755000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 755000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 755000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 755000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 755000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 755000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 755000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 755000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 755000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 755000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 755000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [755000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 755000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 755000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 755000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 765000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 765000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 765000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 765000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 765000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 765000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 765000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 765000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 765000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 765000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 765000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 765000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [765000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 765000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 765000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 765000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 775000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 775000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 775000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 775000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 775000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 775000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 775000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 775000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 775000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 775000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 775000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 775000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [775000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 775000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 775000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 775000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 785000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 785000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 785000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 785000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 785000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 785000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 785000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 785000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 785000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 785000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 785000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 785000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [785000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 785000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 785000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 785000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 795000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 795000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 795000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 795000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 795000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 795000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 795000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 795000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 795000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 795000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 795000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 795000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [795000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 795000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 795000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 795000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 805000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 805000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 805000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 805000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 805000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 805000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 805000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 805000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 805000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 805000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 805000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 805000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [805000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 805000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 805000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 805000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 815000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 815000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 815000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 815000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 815000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 815000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 815000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 815000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 815000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 815000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 815000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 815000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [815000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 815000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 815000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 815000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 825000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 825000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 825000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 825000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 825000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 825000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 825000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 825000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 825000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 825000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 825000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 825000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [825000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 825000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 825000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 825000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 835000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 835000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 835000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 835000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 835000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 835000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 835000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 835000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 835000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 835000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 835000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 835000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [835000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 835000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 835000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 835000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 845000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 845000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 845000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 845000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 845000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 845000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 845000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 845000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 845000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 845000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 845000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 845000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [845000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 845000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 845000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 845000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 855000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 855000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 855000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 855000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 855000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 855000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 855000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 855000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 855000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 855000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 855000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 855000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [855000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 855000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 855000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 855000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 865000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 865000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 865000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 865000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 865000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 865000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 865000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 865000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 865000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 865000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 865000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 865000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [865000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 865000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 865000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 865000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 875000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 875000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 875000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 875000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 875000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 875000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 875000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 875000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 875000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 875000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 875000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 875000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [875000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 875000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 875000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 875000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 885000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 885000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 885000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 885000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 885000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 885000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 885000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 885000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 885000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 885000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 885000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 885000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [885000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 885000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 885000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 885000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 895000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 895000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 895000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 895000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 895000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 895000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 895000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 895000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 895000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 895000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 895000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 895000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [895000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 895000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 895000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 895000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 905000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 905000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 905000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 905000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 905000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 905000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 905000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 905000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 905000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 905000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 905000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 905000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [905000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 905000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 905000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 905000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 915000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 915000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 915000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 915000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 915000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 915000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 915000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 915000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 915000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 915000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 915000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 915000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [915000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 915000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 915000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 915000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 925000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 925000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 925000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 925000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 925000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 925000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 925000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 925000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 925000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 925000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 925000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 925000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [925000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 925000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 925000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 925000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 935000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 935000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 935000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 935000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 935000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 935000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 935000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 935000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 935000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 935000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 935000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 935000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [935000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 935000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 935000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 935000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 945000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 945000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 945000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 945000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 945000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 945000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 945000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 945000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 945000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 945000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 945000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 945000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [945000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 945000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 945000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 945000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 955000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 955000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 955000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 955000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 955000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 955000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 955000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 955000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 955000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 955000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 955000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 955000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [955000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 955000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 955000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 955000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 965000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 965000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 965000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 965000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 965000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 965000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 965000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 965000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 965000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 965000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 965000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 965000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [965000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 965000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 965000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 965000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 975000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 975000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 975000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 975000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 975000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 975000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 975000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 975000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 975000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 975000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 975000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 975000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [975000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 975000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 975000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 975000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 985000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 985000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 985000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 985000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 985000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 985000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 985000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 985000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 985000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 985000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 985000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 985000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [985000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 985000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 985000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 985000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 [TRACE_XBAR_B] 995000 M side m=0 m_bvalid=0 m_bready=1
-[TRACE_M2S_W] 995000 case=0 w_beat=1 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
-[TRACE_M2S_WFIFO] 995000 mst=3 f_vld=0 f_last=0 f_wdata=0x00000000 f_rdy=1 S_WREADY=1
+[TRACE_W] 995000 W pre-FIFO STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W] 995000 W slave STALL s=1 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 995000 W_FIFO_WR_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_FIFO] 995000 W_FIFO_RD_STALL m=3 vld=1 rdy=0 last=0
+[TRACE_W_XBAR] 995000 W_XBAR_M_STALL m=3 vld=1 rdy=0
+[TRACE_W_XBAR] 995000 W_XBAR_S_STALL s=1 vld=1 rdy=0
+[TRACE_M2S_W] 995000 case=0 w_beat=9 active=1 from_fifo=0 fifo_empty=1 aw_hs=0
+[TRACE_M2S_W] 995000 W_OUT_STALL mst=3 vld=1 rdy=0 beat_left=9
+[TRACE_M2S_WFIFO] 995000 mst=3 f_vld=1 f_last=0 f_wdata=0xa88c4d86 f_rdy=0 S_WREADY=0
 [995000] S2M[M0] R: RSELECT=1111 RGRANT=0000 S_RVALID=0000 M_RREADY=1 M_RVALID=0
-[TRACE_C4K] 995000 AW_ST=0 split=1 t1done=0 stall=0 stall_rel=1 beat=15/14
+[TRACE_C4K] 995000 AW_ST=0 split=1 t1done=1 stall=0 stall_rel=1 beat=14/14
+[TRACE_C4K_W] 995000 S_W_STALL beat=14 s_vld=1 s_rdy=0
 UVM_WARNING ./uvm/split4k_test.sv(12) @ 1000000: uvm_test_top [TIMEOUT] Simulation timeout at 6000000ns, stopping
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_objection.svh(1276) @ 1000000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
 COVERAGE REPORT:
-  Outstanding: AW peak=1 AR peak=1
-  Arbitration: 2 total grants
+  Outstanding: AW peak=1 AR peak=0
+  Arbitration: 1 total grants
   4KB Splits: 1 total
     by_len: 1-3=0 4-7=0 8-15=1
     by_slv: S0=1 S1=0 S2=0 S3=0
@@ -1213,15 +1464,15 @@ COVERAGE REPORT:
 UVM_INFO ./uvm/axi_protocol_checker.sv(233) @ 1000000: uvm_test_top.env.proto_chk [PROT_CHKER_SUMMARY] 
 ==================================================
   AXI PROTOCOL CHECKER仿真报告:
-  AW次数: 1 | W次数: 15 | B次数: 1
-  AR次数: 1 | R次数: 16
-  总计发现协议违例错误(Error): 2
+  AW次数: 1 | W次数: 14 | B次数: 0
+  AR次数: 0 | R次数: 0
+  总计发现协议违例错误(Error): 0
 ==================================================
-REF MODEL: 1 writes, 1 reads, 1 4KB splits predicted
+REF MODEL: 1 writes, 0 reads, 1 4KB splits predicted
 AXI SCOREBOARD:
-  Routing : 2 checks, 0 errors
-  Data    : 16 checks, 14 errors
-  Response: 1 writes, 1 reads, 2 errors, 0 reorder events
+  Routing : 1 checks, 1 errors
+  Data    : 0 checks, 0 errors
+  Response: 1 writes, 0 reads, 0 errors, 0 reorder events
 UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_catcher.svh(705) @ 1000000: reporter [UVM/REPORT/CATCHER] 
 --- UVM Report catcher Summary ---
 
@@ -1237,29 +1488,25 @@ UVM_INFO /home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_report_server.svh
 --- UVM Report Summary ---
 
 ** Report counts by severity
-UVM_INFO :   65
+UVM_INFO :   28
 UVM_WARNING :    1
-UVM_ERROR :   22
+UVM_ERROR :    2
 UVM_FATAL :    0
 ** Report counts by id
-[DATA]    14
-[DRIVER]     2
-[LEN_MISMATCH]     2
+[DRIVER]     1
+[LEN_MISMATCH]     1
 [NO_DPI_TSTNAME]     1
-[PROTOCOL_VIOLATION]     2
 [PROT_CHKER_SUMMARY]     1
-[PROT_ERR_RLEN]     1
-[PROT_ERR_RLEN_OVER]     1
-[RESP]     2
 [RNTST]     1
+[ROUTE]     1
 [TEST_DONE]     1
 [TIMEOUT]     1
-[TRACE]    53
+[TRACE]    18
 [UVM/COMP/NAMECHECK]     1
 [UVM/RELNOTES]     1
 [UVM/REPORT/CATCHER]     1
 [UVMTOP]     1
-[VSEQ]     2
+[VSEQ]     1
 
 $finish called from file "/home/synopsys/vcs/O-2018.09-SP2/etc/uvm-1.2/base/uvm_root.svh", line 527.
 $finish at simulation time              1000000
