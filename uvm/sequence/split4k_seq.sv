@@ -48,5 +48,6 @@ class split4k_seq extends uvm_sequence #(axi_transaction);
         });
         t.addr = addr;          // assign after randomization to bypass addr_range_c
         finish_item(t);
+        get_response(t);
     endtask
 endclass

@@ -16,5 +16,6 @@ class burst_seq extends uvm_sequence #(axi_transaction);
             len==local::burst_len; burst==2'b01; size==2;
             is_write dist {1:=1, 0:=1}; }) `uvm_fatal("SEQ","randomize failed")
         finish_item(t);
+        get_response(t);
     endtask
 endclass

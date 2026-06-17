@@ -18,6 +18,7 @@ class stress_seq extends uvm_sequence #(axi_transaction);
                 is_write dist {1:=1, 0:=1};
             }) `uvm_fatal("SEQ","randomize failed")
             finish_item(t);
+            get_response(t);
         end
     endtask
 endclass

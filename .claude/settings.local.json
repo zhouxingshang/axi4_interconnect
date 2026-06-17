@@ -19,7 +19,8 @@
       "Bash(sed -i '1054,1057d' \"c:/Users/22612/Desktop/AXI4/axi.txt\")",
       "Bash(cat)",
       "Bash(python3 -c ':*)",
-      "Bash(sed -i '/^endmodule$/d' axi_interconnect.v)"
+      "Bash(sed -i '/^endmodule$/d' axi_interconnect.v)",
+      "Bash(grep -v '^\\\\s\\\\+//')"
     ]
   }
 }

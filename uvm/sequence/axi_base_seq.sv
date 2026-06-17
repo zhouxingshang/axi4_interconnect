@@ -28,5 +28,6 @@ class axi_base_seq extends uvm_sequence #(axi_transaction);
 
         actual_len = t.len;
         finish_item(t);
+        get_response(t);
     endtask
 endclass

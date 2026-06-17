@@ -341,7 +341,8 @@ end
 // W channel routing
 // Stalling: between sub-W1 WLAST and sub-AW2 acceptance, stall W.
 // Once sub-AW2 is accepted (w_stall_rel=1), stall is permanently released.
-wire w_stall = w_trans1_done && w_aw_split && !w_stall_rel;
+wire aw2_accept = (ST_AW_C4K == TRANS2) && s_axi_awvalid && s_axi_awready;
+wire w_stall = w_trans1_done && w_aw_split && !(w_stall_rel || aw2_accept);
 
 // Combinational split indicator: true even before w_aw_split is registered
 wire w_split_comb = w_aw_split || (m_axi_awvalid && aw_cross4k_flag);

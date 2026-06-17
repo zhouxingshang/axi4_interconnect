@@ -1,0 +1,15 @@
+当前实现已经能够正确统计 Split Read 场景下 Slave 侧应收到的 RLAST 数量，并通过 r_s_exp 与 r_s_got 
+完成两个子事务的合并判断，但问题在于 Master 侧和 Slave 侧的 R 通道监控是由两个独立线程并行执行的，
+现有代码在 Master 侧检测到最终 RLAST 后会立即将对应事务从 rd_out 中删除，并同时清理 
+r_s_exp、r_s_got、r_s_merge_resp、RID 缓存等状态信息，而此时 Slave 侧可能尚未收到最后一个子事务
+的 RLAST。如果发生这种调度顺序，后续 process_slv_r 再尝试执行 R Cross Check 时，相关事务状态已经
+被提前释放，从而导致检查逻辑无法执行，最终出现错误被漏检但 Scoreboard 仍然通过的情况。因此应
+将“收到 Master 侧 RLAST”与“事务结束”这两个概念解耦，不再把 Master RLAST 作为事务完成的唯一条件，
+而是分别维护 Master 完成状态和 Slave 完成状态：当 Master 收到最终 RLAST 时仅记录该事务已完成，
+不立即删除任何状态；当 Slave 侧收到所有预期的 RLAST 并确认 Split Read 的所有子事务都已返回时，
+也仅记录 Slave 侧完成，同样不进行清理；只有当 Master 完成和 Slave 完成两个条件同时满足时，
+才统一触发一次 R Cross Check，对 RID、合并后的 RRESP 以及所有 R Data 进行最终一致性检查，
+检查完成后再统一释放 rd_out、RLAST 统计信息、RRESP 合并信息以及各种临时缓存。这样无论 Master RLAST 
+先到还是 Slave 最后一个 RLAST 先到，都不会因为线程调度顺序不同而影响检查结果，本质上是将 R 通道
+的完成判定改造成与当前 B 通道类似的双边同步机制，即双方先分别记录完成状态，待条件满足后再执行比较
+和清理，从而彻底消除 Split Read 场景下的 race condition。

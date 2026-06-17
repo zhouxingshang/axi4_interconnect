@@ -78,6 +78,8 @@ class axi_transaction extends uvm_sequence_item;
         `uvm_field_int (resp,     UVM_DEFAULT)
         `uvm_field_int (mst_id,   UVM_DEFAULT)
         `uvm_field_int (slv_id,   UVM_DEFAULT)
+        `uvm_field_array_int(data, UVM_DEFAULT)
+        `uvm_field_array_int(strb, UVM_DEFAULT)
     `uvm_object_utils_end
 
     function new(string name = "axi_transaction");

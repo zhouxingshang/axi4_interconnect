@@ -21,7 +21,9 @@ class axi_env extends uvm_env;
     axi_cov             cov;
     axi_protocol_checker proto_chk;
 
-    function new(string n="axi_env", uvm_component p); super.new(n,p); endfunction
+    function new(string n="axi_env", uvm_component p); 
+        super.new(n,p); 
+    endfunction
 
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
@@ -40,14 +42,17 @@ class axi_env extends uvm_env;
         vsqr = axi_virtual_sequencer::type_id::create("vsqr", this);
 
         // Scoreboard + Reference Model
-        sb    =axi_scoreboard::type_id::create("sb",this);
-        refm  =reference_model::type_id::create("refm",this);
-        cov      =axi_cov::type_id::create("cov",this);
-        proto_chk=axi_protocol_checker::type_id::create("proto_chk",this);
+        sb        = axi_scoreboard::type_id::create("sb",this);
+        refm      = reference_model::type_id::create("refm",this);
+        cov       = axi_cov::type_id::create("cov",this);
+        proto_chk = axi_protocol_checker::type_id::create("proto_chk",this);
     endfunction
 
     function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
+
+        // Connect scoreboard to reference model
+        sb.refm = refm;
 
         // Connect master sequencers to virtual sequencer
         for(int i=0; i<4; i++) begin
@@ -70,8 +75,9 @@ class axi_env extends uvm_env;
             master_agents[i].mon.ap_aw.connect(cov.aw_ap);
             master_agents[i].mon.ap_aw.connect(proto_chk.aw_imp);
 
-            // W -> scoreboard + proto_chk
+            // W -> scoreboard + refm + proto_chk
             master_agents[i].mon.ap_w.connect(sb.w_imp);
+            master_agents[i].mon.ap_w.connect(refm.w_ap);
             master_agents[i].mon.ap_w.connect(proto_chk.w_imp);
 
             // B -> scoreboard + cov + proto_chk
@@ -95,9 +101,9 @@ class axi_env extends uvm_env;
         for(int i=0; i<4; i++) begin
             slave_agents[i].mon.ap_aw.connect(sb.slv_aw_imp);
             slave_agents[i].mon.ap_ar.connect(sb.slv_ar_imp);
-            slave_agents[i].mon.ap_w.connect(sb.w_imp);
-            slave_agents[i].mon.ap_b.connect(sb.b_imp);
-            slave_agents[i].mon.ap_r.connect(sb.r_imp);
+            slave_agents[i].mon.ap_w.connect(sb.slv_w_imp);
+            slave_agents[i].mon.ap_b.connect(sb.slv_b_imp);
+            slave_agents[i].mon.ap_r.connect(sb.slv_r_imp);
         end
     endfunction
 

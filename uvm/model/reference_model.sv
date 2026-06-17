@@ -1,44 +1,39 @@
 //=============================================================================
-// Reference Model: models interconnect behavior
+// Reference Model: golden predictor for interconnect behavior
+// - Shadow memory (W data captured from M-side W beats)
+// - AW→W ordering per master (handles outstanding + out-of-order)
+// - W-before-AW buffering
+// - 4KB split awareness
 // - Address decode (routing prediction)
-// - 4KB Split prediction (cross_4k_if behavior)
-// - ID extension (c4k prefix + mst index concatenation)
-// - Outstanding transaction tracking
-// - Write: updates shadow memory
-// - Read:  reads from shadow memory, predicts RID
+// - Public API for scoreboard to query expected values
 //=============================================================================
 class reference_model extends uvm_component;
     `uvm_component_utils(reference_model)
 
-    // Input: master-side AW/AR from channel monitors
+    // Input: master-side AW/AR/W from channel monitors
     uvm_analysis_export #(axi_aw_item) aw_ap;
     uvm_analysis_export #(axi_ar_item) ar_ap;
+    uvm_analysis_export #(axi_w_item)  w_ap;
     uvm_tlm_analysis_fifo #(axi_aw_item) aw_fifo;
     uvm_tlm_analysis_fifo #(axi_ar_item) ar_fifo;
+    uvm_tlm_analysis_fifo #(axi_w_item)  w_fifo;
 
-    // Output: predicted slave-side AW/AR + expected B/R info
-    uvm_analysis_port #(axi_aw_item) pred_aw_ap;   // predicted slave-side AWs
-    uvm_analysis_port #(axi_ar_item) pred_ar_ap;   // predicted slave-side ARs
-
-    // Shadow memory
+    //---- Shadow memory: word-addressable expected data ----
     bit[31:0] shadow[bit[31:0]];
 
-    // Outstanding transaction tables
+    //---- AW tracking: per-master ordered for W beat address calculation ----
     typedef struct {
-        bit[1:0] mst_idx; bit[3:0] orig_id;
-        bit[31:0] addr; bit[7:0] len; bit[2:0] size;
-        bit will_split; int beats_done; bit[3:0] data_q[$];  // W data queue
-    } wr_entry_t;
-    
-    typedef struct {
-        bit[1:0] mst_idx; bit[3:0] orig_id;
-        bit[31:0] addr; bit[7:0] len; bit[2:0] size;
-        bit will_split; int beats_done;
-    } rd_entry_t;
+        bit[3:0] id; bit[31:0] addr; bit[7:0] len; bit[2:0] size; bit[1:0] burst;
+    } aw_info_t;
+    aw_info_t aw_info_pool[int];   // key={mst_id[1:0], id[3:0]} → AW info
+    typedef int int_q[$];
+    int_q     aw_key_order[4];     // per-master[0..3] ordered key FIFO
+    int       aw_beat_cnt[int];    // key={mst_id,id} → beats written so far
 
-    wr_entry_t wr_tbl[int];  // key={mst_idx, orig_id}
-    rd_entry_t rd_tbl[int];  // key={mst_idx, orig_id}
+    //---- W-before-AW tolerance: buffer orphan W beats, replay when AW arrives ----
+    axi_w_item w_pending[int][$];  // key=mst_id → buffered W beats
 
+    //---- Statistics ----
     int wr_cnt=0, rd_cnt=0, split_cnt=0;
 
     function new(string name="reference_model", uvm_component parent);
@@ -47,24 +42,26 @@ class reference_model extends uvm_component;
 
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
-        aw_ap=new("aw_ap",this); ar_ap=new("ar_ap",this);
-        aw_fifo=new("aw_fifo",this); ar_fifo=new("ar_fifo",this);
-        pred_aw_ap=new("pred_aw_ap",this); pred_ar_ap=new("pred_ar_ap",this);
+        aw_ap=new("aw_ap",this); ar_ap=new("ar_ap",this); w_ap=new("w_ap",this);
+        aw_fifo=new("aw_fifo",this); ar_fifo=new("ar_fifo",this); w_fifo=new("w_fifo",this);
         aw_ap.connect(aw_fifo.analysis_export);
         ar_ap.connect(ar_fifo.analysis_export);
+        w_ap.connect(w_fifo.analysis_export);
     endfunction
 
     task run_phase(uvm_phase phase);
-        fork process_aw(); process_ar(); join
+        fork 
+            process_aw(); 
+            process_w(); 
+            process_ar(); 
+        join
     endtask
 
-    //---- Process AW: predict split, compute expected S-side AW ----
+    //---- Process AW: register write transaction, predict split ----
     task process_aw();
         axi_aw_item t;
         addr_decoder::split_info_t split;
-        axi_aw_item pred;
         int key;
-        bit[31:0] beat_addr; int b;
 
         forever begin
             aw_fifo.get(t);
@@ -73,112 +70,133 @@ class reference_model extends uvm_component;
             wr_cnt++;
             key = {t.mst_id[1:0], t.id[3:0]};
 
-            // Predict 4KB split
+            // Store AW info for W beat address calculation
+            aw_info_pool[key].id    = t.id;
+            aw_info_pool[key].addr  = t.addr;
+            aw_info_pool[key].len   = t.len;
+            aw_info_pool[key].size  = t.size;
+            aw_info_pool[key].burst = t.burst;
+
+            // Push to per-master order queue
+            aw_key_order[t.mst_id[1:0]].push_back(key);
+
+            // Replay any buffered W-before-AW beats for this master
+            if (w_pending.exists(t.mst_id)) begin
+                foreach (w_pending[t.mst_id][i])
+                    replay_w_beat(w_pending[t.mst_id][i]);
+                w_pending[t.mst_id].delete();
+            end
+
+            // Track 4KB splits
             split = addr_decoder::predict_split(t.addr, t.len, t.size);
             if(split.will_split) split_cnt++;
 
-            // Store outstanding entry
-            wr_tbl[key].mst_idx = t.mst_id[1:0];
-            wr_tbl[key].orig_id = t.id[3:0];
-            wr_tbl[key].addr    = t.addr;
-            wr_tbl[key].len     = t.len;
-            wr_tbl[key].size    = t.size;
-            wr_tbl[key].will_split = split.will_split;
-            wr_tbl[key].beats_done = 0;
+            `uvm_info("REFM", $sformatf("AW reg M[%0d] id=%0d addr=0x%08h len=%0d key=%0d",
+                       t.mst_id, t.id, t.addr, t.len, key), UVM_HIGH)
+        end
+    endtask
 
-            // Predict slave-side AW for sub-transaction 1
-            pred = axi_aw_item::type_id::create("pred_aw1");
-            pred.is_master_side = 0;
-            pred.slv_id = addr_decoder::decode(split.sub1_addr);
-            pred.mst_id = t.mst_id[1:0];
-            pred.id     = t.id;   // original ID
-            pred.addr   = split.sub1_addr;
-            pred.len    = split.sub1_len;
-            pred.size   = t.size;
-            pred.burst  = t.burst;
-            pred_aw_ap.write(pred);
-            `uvm_info("REFM",$sformatf("AW split1: M[%0d] id=%0d -> S[%0d] addr=0x%08h len=%0d",
-                      t.mst_id,t.id,pred.slv_id,split.sub1_addr,split.sub1_len),UVM_HIGH)
+    // Replay a buffered W beat using current AW order
+    function void replay_w_beat(axi_w_item t);
+        int key; 
+        aw_info_t info; 
+        bit[31:0] addr; 
+        int bpb;
+        if (aw_key_order[t.mst_id].size() == 0) return;
+        key = aw_key_order[t.mst_id][0];
+        info = aw_info_pool[key];
+        if (!aw_beat_cnt.exists(key)) aw_beat_cnt[key] = 0;
+        bpb = 1 << info.size;
+        addr = (info.burst == 2'b00) ? info.addr : (info.addr + (aw_beat_cnt[key] * bpb));
+        shadow[addr[31:2]] = t.data;
+        aw_beat_cnt[key]++;
+        if (t.last && aw_beat_cnt[key] == info.len + 1) begin
+            aw_info_pool.delete(key);
+            void'(aw_key_order[t.mst_id].pop_front());
+            aw_beat_cnt.delete(key);
+        end
+    endfunction
 
-            // If split: predict slave-side AW for sub-transaction 2
-            if(split.will_split) begin
-                pred = axi_aw_item::type_id::create("pred_aw2");
-                pred.is_master_side = 0;
-                pred.slv_id = addr_decoder::decode(split.sub2_addr);
-                pred.mst_id = t.mst_id[1:0];
-                pred.id     = t.id;
-                pred.addr   = split.sub2_addr;
-                pred.len    = split.sub2_len;
-                pred.size   = t.size;
-                pred.burst  = t.burst;
-                pred_aw_ap.write(pred);
-                `uvm_info("REFM",$sformatf("AW split2: M[%0d] id=%0d -> S[%0d] addr=0x%08h len=%0d",
-                          t.mst_id,t.id,pred.slv_id,split.sub2_addr,split.sub2_len),UVM_HIGH)
+    //---- Process W: write beat data into shadow memory ----
+    task process_w();
+        axi_w_item t;
+        int key; aw_info_t info;
+        bit[31:0] addr; int bpb;
+
+        forever begin
+            w_fifo.get(t);
+            if (!t.is_master_side) continue;
+
+            // W-before-AW: buffer until AW arrives
+            if (aw_key_order[t.mst_id].size() == 0) begin
+                w_pending[t.mst_id].push_back(t);
+                `uvm_info("REFM", $sformatf("W buffered M[%0d] (before AW)", t.mst_id), UVM_HIGH)
+                continue;
             end
 
-            // Update shadow memory (predict write data effect)
-            // sub-transaction 1
-            for(b=0; b<=split.sub1_len; b++) begin
-                beat_addr = split.sub1_addr + (b << t.size);
-                shadow[beat_addr[31:2]] = 32'h0000_0000;  // placeholder
-            end
-            // sub-transaction 2 (if split)
-            if(split.will_split) begin
-                for(b=0; b<=split.sub2_len; b++) begin
-                    beat_addr = split.sub2_addr + (b << t.size);
-                    shadow[beat_addr[31:2]] = 32'h0000_0000;
+            key = aw_key_order[t.mst_id][0];  // oldest pending AW
+            info = aw_info_pool[key];
+            if (!aw_beat_cnt.exists(key)) 
+                aw_beat_cnt[key] = 0;
+
+            bpb = 1 << info.size;
+            addr = (info.burst == 2'b00) ? info.addr : (info.addr + (aw_beat_cnt[key] * bpb));
+            shadow[addr[31:2]] = t.data;
+
+            `uvm_info("REFM", $sformatf("W M[%0d] key=%0d beat=%0d addr=0x%08h data=0x%08h last=%b burst=%0d",
+                       t.mst_id, key, aw_beat_cnt[key], addr, t.data, t.last, info.burst), UVM_HIGH)
+
+            aw_beat_cnt[key]++;
+
+            if (t.last) begin
+                if (aw_beat_cnt[key] != info.len + 1) begin
+                    // 4KB split aware: remaining beats cross boundary → update addr/len
+                    int bytes_sent = aw_beat_cnt[key] * bpb;
+                    bit crosses_4k = ((info.addr[11:0] + bytes_sent) >= 13'h1000);
+                    if (crosses_4k) begin
+                        info.addr = info.addr + bytes_sent;
+                        info.len  = info.len - aw_beat_cnt[key];
+                        aw_info_pool[key] = info;
+                        aw_beat_cnt.delete(key);
+                        `uvm_info("REFM", $sformatf("W 4KB split M[%0d] key=%0d new_addr=0x%08h new_len=%0d",
+                                   t.mst_id, key, info.addr, info.len), UVM_HIGH)
+                    end else begin
+                        `uvm_error("REFM", $sformatf("WLAST but beats_done(%0d) != len+1(%0d) key=%0d",
+                            aw_beat_cnt[key], info.len + 1, key))
+                        aw_info_pool.delete(key);
+                        void'(aw_key_order[t.mst_id].pop_front());
+                        aw_beat_cnt.delete(key);
+                    end
+                end else begin
+                    aw_info_pool.delete(key);
+                    void'(aw_key_order[t.mst_id].pop_front());
+                    aw_beat_cnt.delete(key);
                 end
             end
         end
     endtask
 
-    //---- Process AR: predict expected R path ----
+    //---- Process AR: register read transaction ----
     task process_ar();
         axi_ar_item t;
-        addr_decoder::split_info_t split;
-        axi_ar_item pred;
-        int key;
-
         forever begin
             ar_fifo.get(t);
             if(!t.is_master_side) continue;
-
             rd_cnt++;
-            key = {t.mst_id[1:0], t.id[3:0]};
-
-            split = addr_decoder::predict_split(t.addr, t.len, t.size);
-
-            rd_tbl[key].mst_idx = t.mst_id[1:0];
-            rd_tbl[key].orig_id = t.id[3:0];
-            rd_tbl[key].addr    = t.addr;
-            rd_tbl[key].len     = t.len;
-            rd_tbl[key].size    = t.size;
-            rd_tbl[key].will_split = split.will_split;
-            rd_tbl[key].beats_done = 0;
-
-            // Predict slave-side AR
-            pred = axi_ar_item::type_id::create("pred_ar");
-            pred.is_master_side = 0;
-            pred.slv_id = addr_decoder::decode(split.sub1_addr);
-            pred.mst_id = t.mst_id[1:0];
-            pred.id     = t.id;
-            pred.addr   = t.addr;
-            pred.len    = t.len;
-            pred.size   = t.size;
-            pred.burst  = t.burst;
-            pred_ar_ap.write(pred);
+            `uvm_info("REFM", $sformatf("AR reg M[%0d] id=%0d addr=0x%08h len=%0d",
+                       t.mst_id, t.id, t.addr, t.len), UVM_HIGH)
         end
     endtask
 
-    //---- Public API: predict expected RID from outstanding read table ----
-    function bit[7:0] predict_rid(bit[1:0] mst_idx, bit[3:0] orig_id);
-        return addr_decoder::predict_sid(mst_idx, 2'b00, orig_id);
-    endfunction
-
-    //---- Public API: look up shadow memory for expected read data ----
+    //---- Public API: look up expected read data from shadow ----
     function bit[31:0] read_shadow(bit[31:0] addr);
         if(shadow.exists(addr[31:2])) return shadow[addr[31:2]];
         return 32'hDEAD_BEEF;
+    endfunction
+
+    //---- Public API: predict which slave an address routes to ----
+    function int predict_slv_id(bit[31:0] addr);
+        return addr_decoder::decode(addr);
     endfunction
 
     function void report_phase(uvm_phase phase);

@@ -19,9 +19,10 @@ class axi_slave_agent extends uvm_agent;
     trans_hdr_t aw_queue[$], ar_queue[$];
 
     // W beat tracking: per-burst isolation for 4KB split support
-    typedef struct { 
-        bit[31:0] addr; 
-        bit[2:0] size; 
+    typedef struct {
+        bit[31:0] addr;
+        bit[2:0] size;
+        bit[1:0] burst;
     } wr_aw_t;
     
     wr_aw_t      wr_aw_q   [$]; // AW info per W burst
@@ -91,7 +92,7 @@ class axi_slave_agent extends uvm_agent;
                 wt.burst = vif.S_AWBURST[slv_id*2+:2];
                 
                 aw_queue.push_back(wt);
-                wr_aw_q.push_back('{addr: wt.addr, size: wt.size});
+                wr_aw_q.push_back('{addr: wt.addr, size: wt.size, burst: wt.burst});
             end
         end
     endtask
@@ -112,7 +113,7 @@ class axi_slave_agent extends uvm_agent;
                          slv_id, w_beat_cnt, vif.S_WDATA[slv_id*32+:32], vif.S_WLAST[slv_id]), UVM_MEDIUM)
                 
                 bpb = 1 << wr_aw_q[0].size;
-                beat_addr = wr_aw_q[0].addr + (w_beat_cnt * bpb);
+                beat_addr = (wr_aw_q[0].burst == 2'b00) ? wr_aw_q[0].addr : (wr_aw_q[0].addr + (w_beat_cnt * bpb));
                 
                 // 【简化】WSTRB强行为全1，直接安全覆盖整字 32-bit
                 mem[beat_addr[31:2]] = vif.S_WDATA[slv_id*32+:32];
@@ -196,7 +197,7 @@ class axi_slave_agent extends uvm_agent;
             bpb = 1 << ar_queue[0].size;
             
             for (beat = 0; beat <= ar_queue[0].len; beat++) begin
-                beat_addr = ar_queue[0].addr + (beat * bpb);
+                beat_addr = (ar_queue[0].burst == 2'b00) ? ar_queue[0].addr : (ar_queue[0].addr + (beat * bpb));
                 rdata = mem.exists(beat_addr[31:2]) ? mem[beat_addr[31:2]] : 32'hDEAD_BEEF;
                 
                 if (!mem.exists(beat_addr[31:2])) begin
